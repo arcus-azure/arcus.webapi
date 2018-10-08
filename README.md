@@ -1,4 +1,5 @@
 # Arcus - Web API
+[![Build status](https://dev.azure.com/codit/Arcus/_apis/build/status/CI%20-%20Arcus.WebApi)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=515)
 
 Web API development in a breeze.
 
