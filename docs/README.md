@@ -1,7 +1,7 @@
 Documentation
 ====
 
-All documentation for Arcus Web API Grid which are published via GitHub Pages with Jekyll.
+All documentation for Arcus Web API which are published via GitHub Pages with Jekyll.
 
 ## Running Jekyll locally
 
