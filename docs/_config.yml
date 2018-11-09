@@ -1,7 +1,7 @@
 repository: arcus-azure/arcus.webapi
 theme: jekyll-theme-slate
 logo: https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png
-title: "Arcus Web API"
+title: Arcus Web API
 description: Web API development with Microsoft Azure in a breeze
 plugins:
   - jemoji
