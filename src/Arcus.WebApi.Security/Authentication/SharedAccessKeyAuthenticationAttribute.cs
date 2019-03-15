@@ -91,7 +91,7 @@ namespace Arcus.WebApi.Security.Authentication
                         $"No secret found with name {_secretName} in {nameof(ISecretProvider)} implementation {userDefinedSecretProvider.GetType().Name}");
                 }
 
-                if (requestSecretHeaders.Any(h => !String.Equals(h, foundSecret)))
+                if (requestSecretHeaders.Any(headerValue => !String.Equals(headerValue, foundSecret)))
                 {
                     context.Result = new UnauthorizedResult();
                 }
