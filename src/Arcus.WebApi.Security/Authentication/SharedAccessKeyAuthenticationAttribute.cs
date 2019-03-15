@@ -73,30 +73,30 @@ namespace Arcus.WebApi.Security.Authentication
                     nameof(context.HttpContext.RequestServices));
             }
 
-            var userDefinedSecretProvider = context.HttpContext.RequestServices.GetService<ISecretProvider>();
-            if (userDefinedSecretProvider == null)
+            if (context.HttpContext.Request.Headers
+                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
             {
-                throw new KeyNotFoundException(
-                    $"No configured {nameof(ISecretProvider)} implementation found in the request service container. "
-                    + "Please configure such an implementation (ex. in the Startup) of your application");
+                var userDefinedSecretProvider = context.HttpContext.RequestServices.GetService<ISecretProvider>();
+                if (userDefinedSecretProvider == null)
+                {
+                    throw new KeyNotFoundException(
+                        $"No configured {nameof(ISecretProvider)} implementation found in the request service container. "
+                        + "Please configure such an implementation (ex. in the Startup) of your application");
+                }
+
+                string foundSecret = await userDefinedSecretProvider.Get(_secretName);
+                if (foundSecret == null)
+                {
+                    throw new SecretNotFoundException(
+                        $"No secret found with name {_secretName} in {nameof(ISecretProvider)} implementation {userDefinedSecretProvider.GetType().Name}");
+                }
+
+                if (requestSecretHeaders.Any(h => !String.Equals(h, foundSecret)))
+                {
+                    context.Result = new UnauthorizedResult();
+                }
             }
-
-            var cachedSecretProvider = new CachedSecretProvider(userDefinedSecretProvider);
-            string foundSecret = await cachedSecretProvider.Get(_secretName);
-            if (foundSecret == null)
-            {
-                throw new SecretNotFoundException(
-                    $"No secret found with name {_secretName} in {nameof(ISecretProvider)} implementation {userDefinedSecretProvider.GetType().Name}");
-            }
-
-            bool noRequestSecretHeaderFound = 
-                context.HttpContext.Request.Headers
-                       .TryGetValue(_headerName, out StringValues requestSecretHeaders) == false;
-
-            bool anyRequestSecretHeaderDoesntMatch = 
-                requestSecretHeaders.Any(h => !String.Equals(h, foundSecret));
-
-            if (noRequestSecretHeaderFound || anyRequestSecretHeaderDoesntMatch)
+            else
             {
                 context.Result = new UnauthorizedResult();
             }
