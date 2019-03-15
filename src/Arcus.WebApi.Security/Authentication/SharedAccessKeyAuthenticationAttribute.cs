@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Authentication;
 using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Caching;
+using Arcus.Security.Secrets.Core.Exceptions;
 using Arcus.Security.Secrets.Core.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -84,7 +85,7 @@ namespace Arcus.WebApi.Security.Authentication
             string foundSecret = await cachedSecretProvider.Get(_secretName);
             if (foundSecret == null)
             {
-                throw new AuthenticationException(
+                throw new SecretNotFoundException(
                     $"No secret found with name {_secretName} in {nameof(ISecretProvider)} implementation {userDefinedSecretProvider.GetType().Name}");
             }
 
