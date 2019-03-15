@@ -16,6 +16,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
     <PackageReference Include="Arcus.Security.Secrets.AzureKeyVault" Version="0.1.0" />
   </ItemGroup>

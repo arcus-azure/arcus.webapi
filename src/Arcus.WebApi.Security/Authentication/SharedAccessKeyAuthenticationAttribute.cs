@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Authentication;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Caching;
 using Arcus.Security.Secrets.Core.Exceptions;
 using Arcus.Security.Secrets.Core.Interfaces;
+using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -30,15 +29,8 @@ namespace Arcus.WebApi.Security.Authentication
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
         public SharedAccessKeyAuthenticationAttribute(string headerName, string secretName)
         {
-            if (String.IsNullOrWhiteSpace(headerName))
-            {
-                throw new ArgumentException("Header name cannot be blank", nameof(headerName));
-            }
-
-            if (String.IsNullOrWhiteSpace(secretName))
-            {
-                throw new ArgumentException("Secret name cannot be blank", nameof(secretName));
-            }
+            Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Header name cannot be blank");
+            Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
 
             _headerName = headerName;
             _secretName = secretName;
@@ -47,31 +39,11 @@ namespace Arcus.WebApi.Security.Authentication
         /// <inheritdoc />
         public override async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
         {
-            if (context == null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
-
-            if (context.HttpContext?.Request == null)
-            {
-                throw new ArgumentException(
-                    "Invalid action context given without any HTTP request", 
-                    nameof(context.HttpContext.Request));
-            }
-
-            if (context.HttpContext.Request.Headers == null)
-            {
-                throw new ArgumentException(
-                    "Invalid action context given without any HTTP request headers",
-                    nameof(context.HttpContext.Request.Headers));
-            }
-
-            if (context.HttpContext.RequestServices == null)
-            {
-                throw new ArgumentException(
-                    "Invalid action context given without any HTTP request services", 
-                    nameof(context.HttpContext.RequestServices));
-            }
+            Guard.NotNull(context, nameof(context));
+            Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
+            Guard.For<ArgumentException>(() => context.HttpContext.Request == null, "Invalid action context given without any HTTP request");
+            Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers == null, "Invalid action context given without any HTTP request headers");
+            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices == null, "Invalid action context given without any HTTP request services");
 
             if (context.HttpContext.Request.Headers
                        .TryGetValue(_headerName, out StringValues requestSecretHeaders))
