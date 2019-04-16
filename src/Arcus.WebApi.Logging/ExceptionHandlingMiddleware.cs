@@ -32,7 +32,7 @@ namespace Arcus.WebApi.Logging
             var logger = loggerFactory.CreateLogger("");
             logger.LogCritical(ex, ex.Message);
 
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError; ;
+            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
         }
     }
 }
