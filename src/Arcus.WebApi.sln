@@ -3,7 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28010.2036
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcus.WebApi.All", "Arcus.WebApi.All\Arcus.WebApi.All.csproj", "{19B02A8B-2E0C-44B6-A086-88FE2091D27C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.All", "Arcus.WebApi.All\Arcus.WebApi.All.csproj", "{19B02A8B-2E0C-44B6-A086-88FE2091D27C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcus.WebApi.Logging", "Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj", "{1112242E-FD86-4531-90A3-94B37D0131DA}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -15,6 +17,10 @@ Global
 		{19B02A8B-2E0C-44B6-A086-88FE2091D27C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{19B02A8B-2E0C-44B6-A086-88FE2091D27C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{19B02A8B-2E0C-44B6-A086-88FE2091D27C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1112242E-FD86-4531-90A3-94B37D0131DA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1112242E-FD86-4531-90A3-94B37D0131DA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1112242E-FD86-4531-90A3-94B37D0131DA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1112242E-FD86-4531-90A3-94B37D0131DA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
