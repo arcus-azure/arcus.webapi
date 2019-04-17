@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
