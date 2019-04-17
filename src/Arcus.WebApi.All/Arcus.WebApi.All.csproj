@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Authors>Arcus</Authors>
+    <Authors>Arcus-Test</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
