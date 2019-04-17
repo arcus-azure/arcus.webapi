@@ -54,7 +54,9 @@ namespace Arcus.WebApi.Logging
 
         private void HandleException(HttpContext context, Exception ex, ILoggerFactory loggerFactory)
         {
-            var logger = loggerFactory.CreateLogger(_getLoggingCategory());
+            string categoryName = _getLoggingCategory() ?? string.Empty;
+
+            var logger = loggerFactory.CreateLogger(categoryName);
             logger.LogCritical(ex, ex.Message);
 
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
