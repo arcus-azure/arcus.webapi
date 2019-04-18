@@ -1,5 +1,5 @@
 # Arcus - Web API
-[![Build status](https://dev.azure.com/codit/Arcus/_apis/build/status/CI%20-%20Arcus.WebApi)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=515)
+[![Build status](https://dev.azure.com/codit/Arcus/_apis/build/status/CI%20-%20Arcus.WebApi)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=515)[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/)
 
 Web API development in a breeze.
 
