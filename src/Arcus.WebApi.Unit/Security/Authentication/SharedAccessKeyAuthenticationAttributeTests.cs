@@ -1,96 +1,150 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.Design;
+using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
 using Arcus.WebApi.Security.Authentication;
+using Arcus.WebApi.Unit.Hosting;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Abstractions;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.AspNetCore.Routing;
-using Microsoft.Extensions.Primitives;
 using Xunit;
 
 namespace Arcus.WebApi.Unit.Security.Authentication
 {
-    public class SharedAccessKeyAuthenticationAttributeTests
+    public class SharedAccessKeyAuthenticationAttributeTests : IDisposable
     {
-        [Fact]
-        public async Task OnActionExecutionAsync_MatchRequestHeaderWithSecret_ShouldPassThru()
-        {
-            // Arrange
-            var secret = Guid.NewGuid().ToString();
-            var name = Guid.NewGuid().ToString();
-            var sut = new SharedAccessKeyAuthenticationAttribute(headerName: name, secretName: name);
+        private const string HeaderName = "x-shared-access-key",
+                             SecretName = "custom-access-key-name",
+                             AuthorizedRoute = "/authz/shared-access-key";
 
-            var requestServices = new ServiceContainer();
-            requestServices.AddService(typeof(ISecretProvider), new StubSecretProvider(secret));
+        private readonly TestApiServer _testServer = new TestApiServer();
 
-            // Act
-            ActionExecutingContext context =
-                await ExerciseAuthenticationFilter(
-                    sut,
-                    new Dictionary<string, StringValues>
-                    {
-                        [name] = secret
-                    },
-                    requestServices);
-
-            // Assert
-            Assert.Null(context.Result);
-        }
-        
         [Theory]
-        [InlineData("not-matching-header", "secret")]
-        [InlineData("header", "not-matching-secret")]
-        public async Task OnActionExecutingAsync_UnmatchedRequestHeader_ShouldRespondUnauthorized(
-            string name,
-            string secretValue)
+        [InlineData(null, "not empty or whitespace")]
+        [InlineData("", "not empty or whitespace")]
+        [InlineData(" ", "not empty or whitespace")]
+        [InlineData("not empty or whitespace", null)]
+        [InlineData("not empty or whitespace", "")]
+        [InlineData("not empty or whitespace", " ")]
+        public void SharedAccessKeyAttributeAndFilter_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
+            string headerName,
+            string secretName)
         {
-            // Arrange
-            var sut = new SharedAccessKeyAuthenticationAttribute(headerName: name, secretName: name);
+            Assert.Throws<ArgumentException>(
+                () => new SharedAccessKeyAuthenticationAttribute(headerName, secretName));
 
-            var requestServices = new ServiceContainer();
-            requestServices.AddService(typeof(ISecretProvider), new StubSecretProvider("secret"));
-
-            // Act
-            ActionExecutingContext context = await ExerciseAuthenticationFilter(
-                sut,
-                new Dictionary<string, StringValues>
-                {
-                    ["header"] = secretValue
-                },
-                requestServices);
-
-            // Assert
-            Assert.IsType<UnauthorizedResult>(context.Result);
+            Assert.Throws<ArgumentException>(
+                () => new SharedAccessKeyAuthenticationFilter(headerName, secretName));
         }
 
-        private static async Task<ActionExecutingContext> ExerciseAuthenticationFilter(
-            SharedAccessKeyAuthenticationAttribute sut,
-            Dictionary<string, StringValues> requestHeaders,
-            IServiceContainer requestServices)
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithKeyNotFoundException_WhenNoSecretProviderWasRegistered()
         {
-            var context = new ActionExecutingContext(
-                new ActionContext(
-                    new StubHttpContext(
-                        requestHeaders,
-                        requestServices),
-                    new RouteData(),
-                    new ActionDescriptor()),
-                new List<IFilterMetadata>(),
-                new Dictionary<string, object>(),
-                controller: null);
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
 
-            await sut.OnActionExecutionAsync(
-                context,
-                () => Task.FromResult(
-                    new ActionExecutedContext(
-                        new ActionContext(),
-                        new List<IFilterMetadata>(),
-                        controller: null)));
+            // Act / Assert
+            await Assert.ThrowsAsync<KeyNotFoundException>(
+                () => SendAuthorizedHttpRequestWithHeader(HeaderName, secretValue));
+        }
 
-            return context;
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldNotFailWithUnauthorized_WhenHeaderValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithHeader(HeaderName, secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenHeaderValueNotMatchesSecretValue()
+        {
+           // Arrange
+           string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithHeader(HeaderName, $"something else then {nameof(secretValue)}"))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenHeaderIsNotPresent()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithHeader($"something-else-then-{nameof(HeaderName)}", "some header value"))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenAnyHeaderValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = 
+                await SendAuthorizedHttpRequestWithHeader(HeaderName, new [] { secretValue, $"second header value other then {nameof(secretValue)}" }))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        private Task<HttpResponseMessage> SendAuthorizedHttpRequestWithHeader(string headerName, string headerValue)
+        {
+            return SendAuthorizedHttpRequestWithHeader(headerName, new[] { headerValue });
+        }
+
+        private async Task<HttpResponseMessage> SendAuthorizedHttpRequestWithHeader(string headerName, IEnumerable<string> headerValues)
+        {
+            using (HttpClient client = _testServer.CreateClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute)
+                {
+                    Headers = { { headerName, headerValues } }
+                };
+
+                return await client.SendAsync(request);
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _testServer.Dispose();
+        }
+    }
+    
+    [ApiController]
+    public class SharedAccessKeyAuthenticationController : ControllerBase
+    {
+        [HttpGet]
+        [Route("authz/shared-access-key")]
+        [SharedAccessKeyAuthentication(headerName: "x-shared-access-key", secretName: "custom-access-key-name")]
+        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKeyHeaderName(HttpRequestMessage message)
+        {
+            return Task.FromResult<IActionResult>(Ok());
         }
     }
 }

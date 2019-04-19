@@ -13,11 +13,14 @@
       <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
       <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
       <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+      <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="System.Web.Http" Version="4.0.0" />
     <PackageReference Include="Guard.Net" Version="1.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="1.1.2" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
     <PackageReference Include="Arcus.Security.Secrets.AzureKeyVault" Version="0.1.0" />
   </ItemGroup>
+
 </Project>
