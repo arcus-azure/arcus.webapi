@@ -26,13 +26,25 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         [InlineData("not empty or whitespace", null)]
         [InlineData("not empty or whitespace", "")]
         [InlineData("not empty or whitespace", " ")]
-        public void SharedAccessKeyAttributeAndFilter_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
+        public void SharedAccessKeyAttribute_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
             string headerName,
             string secretName)
         {
             Assert.Throws<ArgumentException>(
                 () => new SharedAccessKeyAuthenticationAttribute(headerName, secretName));
+        }
 
+        [Theory]
+        [InlineData(null, "not empty or whitespace")]
+        [InlineData("", "not empty or whitespace")]
+        [InlineData(" ", "not empty or whitespace")]
+        [InlineData("not empty or whitespace", null)]
+        [InlineData("not empty or whitespace", "")]
+        [InlineData("not empty or whitespace", " ")]
+        public void SharedAccessKeyFilter_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
+            string headerName,
+            string secretName)
+        {
             Assert.Throws<ArgumentException>(
                 () => new SharedAccessKeyAuthenticationFilter(headerName, secretName));
         }
