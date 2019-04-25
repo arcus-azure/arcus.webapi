@@ -14,7 +14,6 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionHandlingMiddleware"/> class.
         /// </summary>
-        /// <param name="next"></param>
         public ExceptionHandlingMiddleware(RequestDelegate next)
             : this(next, string.Empty)
         { }
@@ -22,7 +21,7 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionHandlingMiddleware"/> class.
         /// </summary>
-        /// <param name="next"></param>
+
         /// <param name="categoryName">The category-name for messages produced by the logger.</param>
         public ExceptionHandlingMiddleware(RequestDelegate next, string categoryName)
             : this(next, () => categoryName)
@@ -31,7 +30,6 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionHandlingMiddleware"/> class.
         /// </summary>
-        /// <param name="next"></param>
         /// <param name="getLoggingCategory">The function that returns the category-name that must be used by the logger
         /// when writing log messages.</param>
         public ExceptionHandlingMiddleware(RequestDelegate next, Func<string> getLoggingCategory)
