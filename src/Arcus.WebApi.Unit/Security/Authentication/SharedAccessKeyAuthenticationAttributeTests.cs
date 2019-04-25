@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
 using Arcus.WebApi.Security.Authentication;
 using Arcus.WebApi.Unit.Hosting;
-using Microsoft.AspNetCore.Mvc;
 using Xunit;
 
 namespace Arcus.WebApi.Unit.Security.Authentication
@@ -160,18 +159,6 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         public void Dispose()
         {
             _testServer.Dispose();
-        }
-    }
-    
-    [ApiController]
-    public class SharedAccessKeyAuthenticationController : ControllerBase
-    {
-        [HttpGet]
-        [Route("authz/shared-access-key")]
-        [SharedAccessKeyAuthentication(headerName: "x-shared-access-key", secretName: "custom-access-key-name")]
-        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKeyHeaderName(HttpRequestMessage message)
-        {
-            return Task.FromResult<IActionResult>(Ok());
         }
     }
 }
