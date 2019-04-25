@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+    <PropertyGroup>
+        <TargetFramework>netcoreapp2.2</TargetFramework>
+        <Authors>Arcus</Authors>
+        <Company>Arcus</Company>
+        <RepositoryType>Git</RepositoryType>
+        <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
+        <Description>Provides capabilities to easily build Web APIs running in Azure.</Description>
+        <Copyright>Copyright (c) Arcus</Copyright>
+        <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
+        <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
+        <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+    <ItemGroup>
+      <PackageReference Include="System.Web.Http" Version="4.0.0" />
+      <PackageReference Include="Microsoft.AspNetCore.App" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
+      <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
+      <PackageReference Include="xunit" Version="2.4.1" />
+      <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
+    </ItemGroup>
+    <ItemGroup>
+      <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
+    </ItemGroup>
+</Project>
