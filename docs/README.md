@@ -40,6 +40,6 @@ WebHost.CreateDefaultBuilder(args)
        .UseStartup<Startup>();
 ```
 
-To be able to use the AddApplicationInsights extension method, the Microsoft.Extensions.Logging.ApplicationInsights package must be installed.
+To be able to use the `AddApplicationInsights` extension method, the Microsoft.Extensions.Logging.ApplicationInsights package must be installed.
 
-If the parameter-less AddApplicationInsights method is used, the configurationsetting ApplicationInsights:TelemetryKey must be specified and the value of the telemetry-key of the ApplicationInsights resource must be set.
+If the parameter-less `AddApplicationInsights` method is used, the configurationsetting `ApplicationInsights:TelemetryKey` must be specified and the value of the telemetry-key of the Application Insights resource must be set.
