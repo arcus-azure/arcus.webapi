@@ -49,11 +49,26 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldNotFailWithUnauthorized_WhenHeaderValueMatchesSecretValue()
+        public async Task AuthorizedRoute_WithSharedAccessKey__RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenHeaderValueMatchesSecretValue()
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithHeader(HeaderName, secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenHeaderValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
 
             // Act
             using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithHeader(HeaderName, secretValue))

@@ -54,11 +54,14 @@ namespace Arcus.WebApi.Security.Authentication
             if (context.HttpContext.Request.Headers
                        .TryGetValue(_headerName, out StringValues requestSecretHeaders))
             {
-                var userDefinedSecretProvider = context.HttpContext.RequestServices.GetService<ISecretProvider>();
+                ISecretProvider userDefinedSecretProvider = 
+                    context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
+                    ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
+                
                 if (userDefinedSecretProvider == null)
                 {
                     throw new KeyNotFoundException(
-                        $"No configured {nameof(ISecretProvider)} implementation found in the request service container. "
+                        $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
                         + "Please configure such an implementation (ex. in the Startup) of your application");
                 }
 
