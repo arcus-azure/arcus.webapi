@@ -30,7 +30,7 @@ PM > Install-Package Arcus.WebApi.Logging
 
 The `Arcus.WebApi.Logging` package contains functionality that can be incorporated in API projects to easily add logging capabilities to an API project.
 
-- [Logging unhandled exceptions](features/log-unhandled-exceptions.md)
+- [Logging unhandled exceptions](features/logging.md)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
