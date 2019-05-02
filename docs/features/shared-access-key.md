@@ -12,6 +12,26 @@ This authentication process consists of two parts:
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
 - [Shared access key filter](#ArcusWebApiSecuritySharedAccessKeyAUthenticationFilter) enforce shared access key authentication on a global level
 - [Shared access key attribute](#ArcusWebApiSecuritySharedAccessKeyAuthenticationAttribute) enforce shared access key authentication on  `Controller` or method level
+ 
+## Arcus.WebApi.Security.SharedAccessKeyAuthenticationFilter
+
+### Introduction
+
+The `SharedAccessKeyAuthenticationFilter` can be added to the request filters in an <span>ASP.NET</span> Core application.
+This filter will then add authetication to all routes via a shared access key configurable on the filter itself.
+
+### Usage
+
+The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class).
+After that, you can add the filter to the MVC services:
+
+```csharp
+public void ConfigureServices(IServiceCollections services)
+{
+    services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+}
+```
 
 ## Arcus.WebApi.Security.SharedAccessKeyAuthenticationAttribute
 
@@ -47,25 +67,3 @@ public class MyApiController : ControllerBase
     }
 }
 ```
-
-## Arcus.WebApi.Security.SharedAccessKeyAuthenticationFilter
-
-### Introduction
-
-The `SharedAccessKeyAuthenticationFilter` can be added to the request filters in an <span>ASP.NET</span> Core application.
-This filter will then add authetication to all routes via a shared access key configurable on the filter itself.
-
-### Usage
-
-The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class).
-After that, you can add the filter to the MVC services:
-
-```csharp
-public void ConfigureServices(IServiceCollections services)
-{
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
-}
-```
-
-
