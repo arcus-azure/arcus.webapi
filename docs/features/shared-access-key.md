@@ -47,18 +47,8 @@ This filter will then add authetication to all routes via a shared access key co
 
 ### Usage
 
-The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class):
-
-```csharp
-public void ConfigureServices(IServiceCollections services)
-{
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc();
-}
-```
-
+The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class).
 After that, you can add the filter to the MVC services:
-
 
 ```csharp
 public void ConfigureServices(IServiceCollections services)
@@ -67,3 +57,5 @@ public void ConfigureServices(IServiceCollections services)
     services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
 }
 ```
+
+
