@@ -10,8 +10,8 @@ This authentication process consists of two parts:
 2. Matches this value with the **Key Vault** secret that is requested via a `ICachedSecretProvider` or `ISecretProvider`
 
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
-- [Shared access key attribute](#ArcusWebApiSecuritySharedAccessKeyAuthenticationAttribute) allows local authentication on  `Controller` or method level
-- [Shared access key filter](#ArcusWebApiSecuritySharedAccessKeyAUthenticationFilter) allows global authentication 
+- [Shared access key filter](#ArcusWebApiSecuritySharedAccessKeyAUthenticationFilter) enforce shared access key authentication on a global level
+- [Shared access key attribute](#ArcusWebApiSecuritySharedAccessKeyAuthenticationAttribute) enforce shared access key authentication on  `Controller` or method level
 
 ## Arcus.WebApi.Security.SharedAccessKeyAuthenticationAttribute
 
