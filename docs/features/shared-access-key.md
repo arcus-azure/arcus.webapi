@@ -7,7 +7,7 @@ The `Arcus.WebApi.Security` package provides an mechanism that uses shared acces
 This authentication process consists of two parts:
 
 1. Looks for the configured HTTP request header that contains the shared access key
-2. Matches this value with the **Key Vault** secret that is requested via a `ICachedSecretProvider` or `ISecretProvider`
+2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
 - [Shared access key filter](#ArcusWebApiSecuritySharedAccessKeyAUthenticationFilter) enforce shared access key authentication on a global level
