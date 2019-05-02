@@ -3,8 +3,6 @@ title: "Authentication with shared access keys via ASP.NET Core authentication f
 layout: default
 ---
 
-## Arcus.WebApi.Security.SharedAccessKeyAuthentication
-
 The `Arcus.WebApi.Security` package provides an mechanism that uses shared access keys to authenticate users.
 This authentication process consists of two parts:
 
