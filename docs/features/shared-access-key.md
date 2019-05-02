@@ -3,6 +3,18 @@ title: "Authentication with shared access keys via ASP.NET Core authentication f
 layout: default
 ---
 
+## Arcus.WebApi.Security.SharedAccessKeyAuthentication
+
+The `Arcus.WebApi.Security` package provides an mechanism that uses shared access keys to authenticate users.
+This authentication process consists of two parts:
+
+1. Looks for the configured HTTP request header that contains the shared access key
+2. Matches this value with the configured **Key Vault** secret
+
+The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
+- [Shared access key attribute](#ArcusWebApiSecuritySharedAccessKeyAuthenticationAttribute) allows local authentication on  `Controller` or method level
+- [Shared access key filter](#ArcusWebApiSecuritySharedAccessKeyAUthenticationFilter) allows global authentication 
+
 ## Arcus.WebApi.Security.SharedAccessKeyAuthenticationAttribute
 
 ### Introduction
