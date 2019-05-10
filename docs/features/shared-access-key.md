@@ -3,10 +3,10 @@ title: "Authentication with shared access keys via ASP.NET Core authentication f
 layout: default
 ---
 
-The `Arcus.WebApi.Security` package provides a mechanism that uses shared access keys to authenticate users.
+The `Arcus.WebApi.Security` package provides a mechanism that uses shared access keys to grant access to a web application.
 This authentication process consists of two parts:
 
-1. Looks for the configured HTTP request header that contains the shared access key
+1. Find the configured HTTP request header that contains the shared access key
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
@@ -18,12 +18,12 @@ The package allows two ways to configure this type of authentication mechanmism 
 ### Introduction
 
 The `SharedAccessKeyAuthenticationFilter` can be added to the request filters in an <span>ASP.NET</span> Core application.
-This filter will then add authetication to all routes via a shared access key configurable on the filter itself.
+This filter will then add authentication to all endpoints via a shared access key configurable on the filter itself.
 
 ### Usage
 
-The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class).
-After that, you can add the filter to the MVC services:
+The authentication requires an `ICachedSecretProvider` or `ISecretProvider` dependency to be registered with the services container of the ASP.NET request pipeline.  This is typically done in the `ConfigureServices` method of the `Startup` class.
+Once this is done, the `SharedAccessKeyAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
 public void ConfigureServices(IServiceCollections services)
@@ -37,12 +37,12 @@ public void ConfigureServices(IServiceCollections services)
 
 ### Introduction
 
-The `SharedAccessKeyAuthenticationAttribute` can be added on both `Controller` and method level in an <span>ASP.NET</span> Core application.
-This attribute will then add authentication to the route(s) via shared access keys configurable on the attribute itself.
+The `SharedAccessKeyAuthenticationAttribute` can be added on both controller- and operation level in an <span>ASP.NET</span> Core application.
+The shared access key authentication will then be applied to the endpoint(s) that are decorated with the `SharedAccessKeyAuthenticationAttribute`.
 
 ### Usage
 
-The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class):
+The authentication requires an `ICachedSecretProvider` or `ISecretProvider` dependency to be registered with the services container of the ASP.NET request pipeline.  This is typically done in the `ConfigureServices` method of the `Startup` class:
 
 ```csharp
 public void ConfigureServices(IServiceCollections services)
@@ -52,7 +52,7 @@ public void ConfigureServices(IServiceCollections services)
 }
 ```
 
-After that, you can freely use the attribute on the route (single method) or routes (multiple methods or `Controller` level) that requires authentication:
+After that, the `SharedAccessKeyAuthenticationFilter` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:
 
 ```csharp
 [ApiController]
