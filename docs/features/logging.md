@@ -3,7 +3,7 @@ title: "Logging unhandled exceptions via ASP.NET Core middleware"
 layout: default
 ---
 
-## Arcus.WebApi.Logging.ExceptionHandlingMiddleware
+## Logging unhandled exceptions
 
 ### Introduction
 

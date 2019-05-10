@@ -10,10 +10,10 @@ This authentication process consists of two parts:
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
-- [Shared access key filter](#ArcusWebApiSecuritySharedAccessKeyAUthenticationFilter) enforce shared access key authentication on a global level
-- [Shared access key attribute](#ArcusWebApiSecuritySharedAccessKeyAuthenticationAttribute) enforce shared access key authentication on  `Controller` or method level
+- [Global Shared access key authentication](#globally-enforce-shared-access-key-authentication)
+- [Shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
  
-## Arcus.WebApi.Security.SharedAccessKeyAuthenticationFilter
+## Globally enforce shared access key authentication
 
 ### Introduction
 
@@ -33,7 +33,7 @@ public void ConfigureServices(IServiceCollections services)
 }
 ```
 
-## Arcus.WebApi.Security.SharedAccessKeyAuthenticationAttribute
+## Enforce shared access key authentication per controller or operation
 
 ### Introduction
 
