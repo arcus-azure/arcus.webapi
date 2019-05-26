@@ -14,6 +14,9 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     <ItemGroup>
+      <PackageReference Include="BouncyCastle" Version="1.8.5" />
+      <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
+      <PackageReference Include="Pluralsight.Crypto" Version="1.1.0" />
       <PackageReference Include="System.Web.Http" Version="4.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.App" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
