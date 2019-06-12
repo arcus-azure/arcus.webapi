@@ -92,32 +92,32 @@ namespace Arcus.WebApi.Unit.Hosting
 
             _clientCertificate = clientCertificate;
         }
-    }
 
-    public class CertificateConfiguration : IStartupFilter
-    {
-        private readonly X509Certificate2 _clientCertificate;
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="clientCertificate"></param>
-        public CertificateConfiguration(X509Certificate2 clientCertificate)
+        private class CertificateConfiguration : IStartupFilter
         {
-            _clientCertificate = clientCertificate;
-        }
+            private readonly X509Certificate2 _clientCertificate;
 
-        public  Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-        {
-            return builder =>
+            /// <summary>
+            /// Initializes a new instance of the <see cref="CertificateConfiguration"/> class.
+            /// </summary>
+            /// <param name="clientCertificate">The client certificate.</param>
+            public CertificateConfiguration(X509Certificate2 clientCertificate)
             {
-                builder.Use((context, nxt) =>
+                _clientCertificate = clientCertificate;
+            }
+
+            public  Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
+            {
+                return builder =>
                 {
-                    context.Connection.ClientCertificate = _clientCertificate;
-                    return nxt();
-                });
-                next(builder);
-            };
+                    builder.Use((context, nxt) =>
+                    {
+                        context.Connection.ClientCertificate = _clientCertificate;
+                        return nxt();
+                    });
+                    next(builder);
+                };
+            }
         }
     }
 }
