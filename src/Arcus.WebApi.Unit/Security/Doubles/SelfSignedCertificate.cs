@@ -42,8 +42,8 @@ namespace Arcus.WebApi.Unit.Security.Doubles
             Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");
             Guard.NotNullOrWhitespace(issuerName, nameof(issuerName), "Issuer name should not be blank");
 
-            issuerName = "CN=" + issuerName;
-            subjectName = "CN=" + subjectName;
+            issuerName = issuerName.StartsWith("CN=") ? issuerName : "CN=" + issuerName;
+            subjectName = subjectName.StartsWith("CN=") ? subjectName : "CN=" + subjectName;
 
             SecureRandom random = GetSecureRandom();
             AsymmetricCipherKeyPair subjectKeyPair = GenerateKeyPair(random, 2048);
