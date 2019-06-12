@@ -19,7 +19,7 @@ namespace Arcus.WebApi.Unit.Security.Doubles
     /// <summary>
     /// Exposes several certificate generation function to control the OCSP and/or CRL information of the certificates.
     /// </summary>
-    public static class StubCertificate
+    public static class SelfSignedCertificate
     {
         /// <summary>
         /// Generates a self-signed certificate with a specified <paramref name="subjectName"/>.
@@ -29,25 +29,35 @@ namespace Arcus.WebApi.Unit.Security.Doubles
         {
             Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");
 
-            return GenerateSelfSignedCertificate(generator => generator.SetSubjectDN(new X509Name("CN=" + subjectName)));
+            return CreateWithIssuerAndSubjectName("TestCA", subjectName);
         }
 
-        private static X509Certificate2 GenerateSelfSignedCertificate(Action<X509V3CertificateGenerator> additions)
+        /// <summary>
+        /// Generates a self-signed certificate with a specified <paramref name="issuerName"/> and <paramref name="subjectName"/>.
+        /// </summary>
+        /// <param name="subjectName">The subject name of the self-signed certificate.</param>
+        /// <param name="issuerName">The issuer name of the self-signed certificate.</param>
+        public static X509Certificate2 CreateWithIssuerAndSubjectName(string issuerName, string subjectName)
         {
+            Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");
+            Guard.NotNullOrWhitespace(issuerName, nameof(issuerName), "Issuer name should not be blank");
+
+            issuerName = "CN=" + issuerName;
+            subjectName = "CN=" + subjectName;
+
             SecureRandom random = GetSecureRandom();
             AsymmetricCipherKeyPair subjectKeyPair = GenerateKeyPair(random, 2048);
             BigInteger serialNumber = GenerateSerialNumber(random);
 
-            using (X509Certificate2 issuerCert = GenerateCA("CN=Test CA"))
+            using (X509Certificate2 issuerCert = GenerateCA(issuerName))
             {
                 AsymmetricCipherKeyPair issuerKeyPair = DotNetUtilities.GetKeyPair(issuerCert.PrivateKey);
-                string issuerName = issuerCert.SubjectName.Name;
                 var issuerSerialNumber = new BigInteger(issuerCert.GetSerialNumber());
 
                 var certificateGenerator = new X509V3CertificateGenerator();
             
                 certificateGenerator.AddIssuer(issuerName, issuerKeyPair, issuerSerialNumber);
-            
+                certificateGenerator.SetSubjectDN(new X509Name(subjectName));
 
                 certificateGenerator.SetNotBefore(DateTime.UtcNow.Date);
                 certificateGenerator.SetNotAfter(DateTime.UtcNow.Date.AddYears(30));
@@ -56,7 +66,6 @@ namespace Arcus.WebApi.Unit.Security.Doubles
 
                 certificateGenerator.AddSubjectKeyIdentifier(subjectKeyPair);
                 certificateGenerator.AddBasicConstraints(isCertificateAuthority: false);
-                additions(certificateGenerator);
 
                 X509Certificate certificate = certificateGenerator.GenerateCertificateAsn1(issuerKeyPair, random);
                 return ConvertCertificate(certificate, subjectKeyPair, random);
