@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Security.Cryptography.X509Certificates;
 using GuardNet;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -112,33 +111,6 @@ namespace Arcus.WebApi.Unit.Hosting
             Guard.NotNull(clientCertificate, nameof(clientCertificate));
 
             _clientCertificate = clientCertificate;
-        }
-
-        private class CertificateConfiguration : IStartupFilter
-        {
-            private readonly X509Certificate2 _clientCertificate;
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="CertificateConfiguration"/> class.
-            /// </summary>
-            /// <param name="clientCertificate">The client certificate.</param>
-            public CertificateConfiguration(X509Certificate2 clientCertificate)
-            {
-                _clientCertificate = clientCertificate;
-            }
-
-            public  Action<IApplicationBuilder> Configure(Action<IApplicationBuilder> next)
-            {
-                return builder =>
-                {
-                    builder.Use((context, nxt) =>
-                    {
-                        context.Connection.ClientCertificate = _clientCertificate;
-                        return nxt();
-                    });
-                    next(builder);
-                };
-            }
         }
     }
 }
