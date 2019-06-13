@@ -1,14 +1,14 @@
 ﻿using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Arcus.WebApi.Security.Authentication;
 using Arcus.WebApi.Unit.Hosting;
 using Arcus.WebApi.Unit.Security.Doubles;
 using Xunit;
-using static Arcus.WebApi.Unit.Security.Authentication.CertificateAuthenticationOnMethodController;
 
 namespace Arcus.WebApi.Unit.Security.Authentication
 {
-    public class CertificateAuthenticationAttributeTests
+    public class CertificateAuthenticationFilterTests
     {
         private readonly TestApiServer _testServer = new TestApiServer();
 
@@ -16,13 +16,14 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
             // Arrange
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509Validation.SubjectName, "subject-name"));
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
 
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
-                    AuthorizedRoute_SubjectName);
+                    NoneAuthenticationController.Route);
 
                 // Act
                 using (HttpResponseMessage response = await client.SendAsync(request))
@@ -34,9 +35,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Theory]
-        [InlineData(ExpectedSubjectName, ExpectedIssuerName, false)]
-        [InlineData("unrecognizedSubjectName", ExpectedIssuerName, true)]
-        [InlineData(ExpectedSubjectName, "unrecognizedIssuerName", true)]
+        [InlineData("known-subject", "known-issuername", false)]
+        [InlineData("unrecognizedSubjectName", "known-issuername", true)]
+        [InlineData("known-subject", "unrecognizedIssuerName", true)]
         [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
             string subjectName,
@@ -44,6 +45,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             bool expected)
         {
             // Arrange
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509Validation.SubjectName, "CN=known-subject"));
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509Validation.IssuerName, "CN=known-issuername"));
+
             _testServer.SetClientCertificate(
                 SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName));
 
@@ -51,7 +55,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
-                    AuthorizedRoute_SubjectAndIssuerName);
+                    NoneAuthenticationController.Route);
 
                 // Act
                 using (HttpResponseMessage response = await client.SendAsync(request))

@@ -5,7 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -17,6 +17,7 @@ namespace Arcus.WebApi.Unit.Hosting
     public class TestApiServer : WebApplicationFactory<TestStartup>
     {
         private readonly ICollection<Action<IServiceCollection>> _addServices;
+        private readonly ICollection<IFilterMetadata> _filters;
 
         private X509Certificate2 _clientCertificate;
 
@@ -34,6 +35,7 @@ namespace Arcus.WebApi.Unit.Hosting
             Guard.NotNull(configureServices, "Configure services cannot be 'null'");
 
             _addServices = new Collection<Action<IServiceCollection>> { configureServices };
+            _filters = new Collection<IFilterMetadata>();
         }
 
         /// <summary>
@@ -53,6 +55,14 @@ namespace Arcus.WebApi.Unit.Hosting
                 {
                     configureServices(services);
                 }
+
+                services.AddMvc(options =>
+                {
+                    foreach (IFilterMetadata filter in _filters)
+                    {
+                        options.Filters.Add(filter);
+                    }
+                });
             });
         }
 
@@ -80,6 +90,17 @@ namespace Arcus.WebApi.Unit.Hosting
             Guard.NotNull(service, "Service cannot be 'null'");
 
             _addServices.Add(services => services.AddScoped(_ => service));
+        }
+
+        /// <summary>
+        /// Adds a filter to the current MVC setup to run on every call in this hosted test server.
+        /// </summary>
+        /// <param name="filter">The filter to add.</param>
+        public void AddFilter(IFilterMetadata filter)
+        {
+            Guard.NotNull(filter, "Filter cannot be 'null'");
+
+            _filters.Add(filter);
         }
 
         /// <summary>

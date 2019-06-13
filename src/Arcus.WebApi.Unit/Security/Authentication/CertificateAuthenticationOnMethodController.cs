@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Arcus.WebApi.Unit.Security.Authentication
 {
     [ApiController]
-    public class CertificateAuthenticationController : ControllerBase
+    public class CertificateAuthenticationOnMethodController : ControllerBase
     {
         public const string AuthorizedRoute_SubjectName = "authz/certificate-subject",
                             AuthorizedRoute_SubjectAndIssuerName = "authz/certificate-subject-and-issuername";
