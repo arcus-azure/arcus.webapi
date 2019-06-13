@@ -13,19 +13,19 @@ namespace Arcus.WebApi.Security.Authentication
     /// </summary>
     public class CertificateAuthenticationFilter : IAuthorizationFilter
     {
-        private readonly X509Validation _validation;
+        private readonly X509ValidationRequirement _requirement;
         private readonly string _expectedValue;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
         /// </summary>
-        /// <param name="validation">The property of the client <see cref="X509Certificate2"/> to validate.</param>
+        /// <param name="requirement">The property of the client <see cref="X509Certificate2"/> to validate.</param>
         /// <param name="expectedValue">The expected value the property of the <see cref="X509Certificate2"/> should have.</param>
-        public CertificateAuthenticationFilter(X509Validation validation, string expectedValue)
+        public CertificateAuthenticationFilter(X509ValidationRequirement requirement, string expectedValue)
         {
             Guard.NotNullOrWhitespace(expectedValue, nameof(expectedValue), "Expected value in certificate cannot be blank");
 
-            _validation = validation;
+            _requirement = requirement;
             _expectedValue = expectedValue;
         }
 
@@ -48,18 +48,18 @@ namespace Arcus.WebApi.Security.Authentication
 
         private bool IsAllowedCertificate(X509Certificate2 clientCertificate)
         {
-            switch (_validation)
+            switch (_requirement)
             {
-                case X509Validation.SubjectName:
+                case X509ValidationRequirement.SubjectName:
                     return IsAllowedCertificateSubject(clientCertificate);
-                case X509Validation.IssuerName:
+                case X509ValidationRequirement.IssuerName:
                     return IsAllowedCertificateIssuer(clientCertificate);
-                case X509Validation.Thumbprint:
+                case X509ValidationRequirement.Thumbprint:
                     return IsAllowedCertificateThumbprint(clientCertificate);
                 default:
                     throw new ArgumentOutOfRangeException(
-                        nameof(_validation), 
-                        _validation, 
+                        nameof(_requirement), 
+                        _requirement, 
                         "Unknown validation type specified");
             }
         }

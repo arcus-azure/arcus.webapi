@@ -6,7 +6,7 @@ namespace Arcus.WebApi.Security.Authentication
     /// <summary>
     /// Represents which value of the client <see cref="X509Certificate2"/> should be validated in the <see cref="CertificateAuthenticationFilter"/>.
     /// </summary>
-    public enum X509Validation
+    public enum X509ValidationRequirement
     {
         /// <summary>
         /// Allow only certificates where the <see cref="X509Certificate.Subject"/> matches.

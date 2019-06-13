@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
         [HttpGet]
         [Route(AuthorizedRoute_SubjectName)]
-        [CertificateAuthentication(X509Validation.SubjectName, ExpectedSubjectName)]
+        [CertificateAuthentication(X509ValidationRequirement.SubjectName, ExpectedSubjectName)]
         public Task<IActionResult> TestHardCodedConfiguredClientCertificateSubjectName(HttpRequestMessage message)
         {
             return Task.FromResult<IActionResult>(Ok());
@@ -24,8 +24,8 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
         [HttpGet]
         [Route(AuthorizedRoute_SubjectAndIssuerName)]
-        [CertificateAuthentication(X509Validation.SubjectName, ExpectedSubjectName)]
-        [CertificateAuthentication(X509Validation.IssuerName, ExpectedIssuerName)]
+        [CertificateAuthentication(X509ValidationRequirement.SubjectName, ExpectedSubjectName)]
+        [CertificateAuthentication(X509ValidationRequirement.IssuerName, ExpectedIssuerName)]
         public Task<IActionResult> TestHardCodedConfiguredClientCertificateSubjectAndIssuerName(HttpRequestMessage message)
         {
             return Task.FromResult<IActionResult>(Ok());

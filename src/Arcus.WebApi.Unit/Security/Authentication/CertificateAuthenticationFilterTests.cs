@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
             // Arrange
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509Validation.SubjectName, "subject-name"));
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, "subject-name"));
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
 
             using (HttpClient client = _testServer.CreateClient())
@@ -45,8 +45,8 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             bool expected)
         {
             // Arrange
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509Validation.SubjectName, "CN=known-subject"));
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509Validation.IssuerName, "CN=known-issuername"));
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, "CN=known-subject"));
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.IssuerName, "CN=known-issuername"));
 
             _testServer.SetClientCertificate(
                 SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName));
