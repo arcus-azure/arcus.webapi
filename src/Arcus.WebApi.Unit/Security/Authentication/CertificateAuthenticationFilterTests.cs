@@ -45,8 +45,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             bool expected)
         {
             // Arrange
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, "CN=known-subject"));
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.IssuerName, "CN=known-issuername"));
+            _testServer.AddFilter(
+                new CertificateAuthenticationFilter(
+                    (X509ValidationRequirement.SubjectName, "CN=known-subject"),
+                    (X509ValidationRequirement.IssuerName, "CN=known-issuername")));
 
             _testServer.SetClientCertificate(
                 SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName));

@@ -13,8 +13,7 @@ namespace Arcus.WebApi.Security.Authentication
     /// </summary>
     public class CertificateAuthenticationFilter : IAuthorizationFilter
     {
-        private readonly X509ValidationRequirement _requirement;
-        private readonly string _expectedValue;
+        private readonly (X509ValidationRequirement requirement, string expectedValue)[] _requirements;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
@@ -22,11 +21,19 @@ namespace Arcus.WebApi.Security.Authentication
         /// <param name="requirement">The property of the client <see cref="X509Certificate2"/> to validate.</param>
         /// <param name="expectedValue">The expected value the property of the <see cref="X509Certificate2"/> should have.</param>
         public CertificateAuthenticationFilter(X509ValidationRequirement requirement, string expectedValue)
-        {
-            Guard.NotNullOrWhitespace(expectedValue, nameof(expectedValue), "Expected value in certificate cannot be blank");
+            : this((requirement, expectedValue)) { }
 
-            _requirement = requirement;
-            _expectedValue = expectedValue;
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
+        /// </summary>
+        /// <param name="requirements">The sequence of requirement property of the client <see cref="X509Certificate2"/> and expected values it should have.</param>
+        public CertificateAuthenticationFilter(
+            params (X509ValidationRequirement requirement, string expectedValue)[] requirements)
+        {
+            Guard.NotNull(requirements, nameof(requirements), "Sequence of requirements and their expected values should not be 'null'");
+            Guard.For<ArgumentException>(() => requirements.Any(requirement => requirement.expectedValue is null), "Sequence of requirements cannot contain any expected value that is blank");
+
+            _requirements = requirements;
         }
 
         /// <summary>
@@ -48,46 +55,49 @@ namespace Arcus.WebApi.Security.Authentication
 
         private bool IsAllowedCertificate(X509Certificate2 clientCertificate)
         {
-            switch (_requirement)
+            return _requirements.All(item =>
             {
-                case X509ValidationRequirement.SubjectName:
-                    return IsAllowedCertificateSubject(clientCertificate);
-                case X509ValidationRequirement.IssuerName:
-                    return IsAllowedCertificateIssuer(clientCertificate);
-                case X509ValidationRequirement.Thumbprint:
-                    return IsAllowedCertificateThumbprint(clientCertificate);
-                default:
-                    throw new ArgumentOutOfRangeException(
-                        nameof(_requirement), 
-                        _requirement, 
-                        "Unknown validation type specified");
-            }
+                switch (item.requirement)
+                {
+                    case X509ValidationRequirement.SubjectName:
+                        return IsAllowedCertificateSubject(clientCertificate, item.expectedValue);
+                    case X509ValidationRequirement.IssuerName:
+                        return IsAllowedCertificateIssuer(clientCertificate, item.expectedValue);
+                    case X509ValidationRequirement.Thumbprint:
+                        return IsAllowedCertificateThumbprint(clientCertificate, item.expectedValue);
+                    default:
+                        throw new ArgumentOutOfRangeException(
+                            nameof(item.requirement),
+                            item.requirement,
+                            "Unknown validation type specified");
+                }
+            });
         }
 
-        private bool IsAllowedCertificateSubject(X509Certificate2 clientCertificate)
+        private static bool IsAllowedCertificateSubject(X509Certificate2 clientCertificate, string expectedValue)
         {
             IEnumerable<string> certificateSubjectNames =
                 clientCertificate.Subject
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(subject => subject.Trim());
 
-            return certificateSubjectNames.Any(subject => String.Equals(subject, _expectedValue));
+            return certificateSubjectNames.Any(subject => String.Equals(subject, expectedValue));
         }
 
-        private bool IsAllowedCertificateIssuer(X509Certificate2 clientCertificate)
+        private static bool IsAllowedCertificateIssuer(X509Certificate2 clientCertificate, string expectedValue)
         {
             IEnumerable<string> issuerNames = 
                 clientCertificate.Issuer
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(issuer => issuer.Trim());
 
-            return issuerNames.Any(issuer => String.Equals(issuer, _expectedValue));
+            return issuerNames.Any(issuer => String.Equals(issuer, expectedValue));
         }
 
-        private bool IsAllowedCertificateThumbprint(X509Certificate2 clientCertificate)
+        private static bool IsAllowedCertificateThumbprint(X509Certificate2 clientCertificate, string expectedValue)
         {
             return String.Equals(
-                _expectedValue,
+                expectedValue,
                 clientCertificate.Thumbprint?.Trim());
         }
     }
