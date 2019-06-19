@@ -5,6 +5,9 @@ using System.Security.Cryptography.X509Certificates;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Arcus.WebApi.Security.Authentication
 {
@@ -46,25 +49,39 @@ namespace Arcus.WebApi.Security.Authentication
             Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
             Guard.For<ArgumentException>(() => context.HttpContext.Connection == null, "Invalid action context given without any HTTP connection");
 
+            ILogger logger = 
+                context.HttpContext.RequestServices
+                       ?.GetService<ILoggerFactory>()
+                       ?.CreateLogger<CertificateAuthenticationFilter>() 
+                ?? (ILogger) NullLogger.Instance;
+
             X509Certificate2 clientCertificate = context.HttpContext.Connection.ClientCertificate;
-            if (clientCertificate == null || !IsAllowedCertificate(clientCertificate))
+            if (clientCertificate == null)
+            {
+                logger.LogWarning(
+                    "No client certificate was specified in the HTTP request while this authentication filter "
+                    + $"requires a certificate to validate on the {String.Join(", ", _requirements.Select(item => item.requirement))}");
+                
+                context.Result = new UnauthorizedResult();
+            }
+            else if (!IsAllowedCertificate(clientCertificate, logger))
             {
                 context.Result = new UnauthorizedResult();
             }
         }
 
-        private bool IsAllowedCertificate(X509Certificate2 clientCertificate)
+        private bool IsAllowedCertificate(X509Certificate2 clientCertificate, ILogger logger)
         {
             return _requirements.All(item =>
             {
                 switch (item.requirement)
                 {
                     case X509ValidationRequirement.SubjectName:
-                        return IsAllowedCertificateSubject(clientCertificate, item.expectedValue);
+                        return IsAllowedCertificateSubject(clientCertificate, item.expectedValue, logger);
                     case X509ValidationRequirement.IssuerName:
-                        return IsAllowedCertificateIssuer(clientCertificate, item.expectedValue);
+                        return IsAllowedCertificateIssuer(clientCertificate, item.expectedValue, logger);
                     case X509ValidationRequirement.Thumbprint:
-                        return IsAllowedCertificateThumbprint(clientCertificate, item.expectedValue);
+                        return IsAllowedCertificateThumbprint(clientCertificate, item.expectedValue, logger);
                     default:
                         throw new ArgumentOutOfRangeException(
                             nameof(item.requirement),
@@ -74,31 +91,55 @@ namespace Arcus.WebApi.Security.Authentication
             });
         }
 
-        private static bool IsAllowedCertificateSubject(X509Certificate2 clientCertificate, string expectedValue)
+        private static bool IsAllowedCertificateSubject(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
             IEnumerable<string> certificateSubjectNames =
                 clientCertificate.Subject
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(subject => subject.Trim());
 
-            return certificateSubjectNames.Any(subject => String.Equals(subject, expectedValue));
+            bool isAllowed = certificateSubjectNames.Any(subject => String.Equals(subject, expected));
+            if (!isAllowed)
+            {
+                logger.LogWarning(
+                    "Client certificate authentication failed on subject: "
+                    + $"no subject found (actual={String.Join(", ", certificateSubjectNames)}) in certificate that matches expected={expected}");
+            }
+
+            return isAllowed;
         }
 
-        private static bool IsAllowedCertificateIssuer(X509Certificate2 clientCertificate, string expectedValue)
+        private static bool IsAllowedCertificateIssuer(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
             IEnumerable<string> issuerNames = 
                 clientCertificate.Issuer
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(issuer => issuer.Trim());
 
-            return issuerNames.Any(issuer => String.Equals(issuer, expectedValue));
+            bool isAllowed = issuerNames.Any(issuer => String.Equals(issuer, expected));
+            if (!isAllowed)
+            {
+                logger.LogWarning(
+                    "Client certificate authentication failed on issuer: "
+                    + $"no issuer found (actual={String.Join(", ", issuerNames)}) in certificate that matches expected={expected}");
+            }
+
+            return isAllowed;
         }
 
-        private static bool IsAllowedCertificateThumbprint(X509Certificate2 clientCertificate, string expectedValue)
+        private static bool IsAllowedCertificateThumbprint(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
-            return String.Equals(
-                expectedValue,
-                clientCertificate.Thumbprint?.Trim());
+            string actual = clientCertificate.Thumbprint?.Trim();
+           
+            bool isAllowed = String.Equals(expected, actual);
+            if (!isAllowed)
+            {
+                logger.LogWarning(
+                    "Client certificate authentication failed on thumbprint: "
+                    + $"expected={expected} <> actual={actual}");
+            }
+
+            return isAllowed;
         }
     }
 }
