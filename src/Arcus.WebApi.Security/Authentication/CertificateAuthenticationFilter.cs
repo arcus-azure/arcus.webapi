@@ -5,6 +5,7 @@ using System.Security.Cryptography.X509Certificates;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -16,7 +17,7 @@ namespace Arcus.WebApi.Security.Authentication
     /// </summary>
     public class CertificateAuthenticationFilter : IAuthorizationFilter
     {
-        private readonly (X509ValidationRequirement requirement, string expectedValue)[] _requirements;
+        private readonly (X509ValidationRequirement requirement, string configurationKey)[] _requirements;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
@@ -31,10 +32,10 @@ namespace Arcus.WebApi.Security.Authentication
         /// </summary>
         /// <param name="requirements">The sequence of requirement property of the client <see cref="X509Certificate2"/> and expected values it should have.</param>
         public CertificateAuthenticationFilter(
-            params (X509ValidationRequirement requirement, string expectedValue)[] requirements)
+            params (X509ValidationRequirement requirement, string configurationKey)[] requirements)
         {
             Guard.NotNull(requirements, nameof(requirements), "Sequence of requirements and their expected values should not be 'null'");
-            Guard.For<ArgumentException>(() => requirements.Any(requirement => requirement.expectedValue is null), "Sequence of requirements cannot contain any expected value that is blank");
+            Guard.For<ArgumentException>(() => requirements.Any(requirement => requirement.configurationKey is null), "Sequence of requirements cannot contain any expected value that is blank");
 
             _requirements = requirements;
         }
@@ -47,13 +48,22 @@ namespace Arcus.WebApi.Security.Authentication
         {
             Guard.NotNull(context, nameof(context));
             Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
-            Guard.For<ArgumentException>(() => context.HttpContext.Connection == null, "Invalid action context given without any HTTP connection");
+            Guard.For<ArgumentException>(() => context.HttpContext.Connection is null, "Invalid action context given without any HTTP connection");
+            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
             ILogger logger = 
                 context.HttpContext.RequestServices
-                       ?.GetService<ILoggerFactory>()
+                       .GetService<ILoggerFactory>()
                        ?.CreateLogger<CertificateAuthenticationFilter>() 
                 ?? (ILogger) NullLogger.Instance;
+
+            var configuration = context.HttpContext.RequestServices.GetService<IConfiguration>();
+            if (configuration == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No configured {nameof(IConfiguration)} implementation found in the request service container. "
+                    + "Please configure such an implementation (ex. in the Startup) of your application");
+            }
 
             X509Certificate2 clientCertificate = context.HttpContext.Connection.ClientCertificate;
             if (clientCertificate == null)
@@ -64,24 +74,31 @@ namespace Arcus.WebApi.Security.Authentication
                 
                 context.Result = new UnauthorizedResult();
             }
-            else if (!IsAllowedCertificate(clientCertificate, logger))
+            else if (!IsAllowedCertificate(clientCertificate, configuration, logger))
             {
                 context.Result = new UnauthorizedResult();
             }
         }
 
-        private bool IsAllowedCertificate(X509Certificate2 clientCertificate, ILogger logger)
+        private bool IsAllowedCertificate(X509Certificate2 clientCertificate, IConfiguration configuration, ILogger logger)
         {
             return _requirements.All(item =>
             {
+                string expected = configuration[item.configurationKey];
+                if (expected == null)
+                {
+                    logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={item.configurationKey}");
+                    return false;
+                }
+
                 switch (item.requirement)
                 {
                     case X509ValidationRequirement.SubjectName:
-                        return IsAllowedCertificateSubject(clientCertificate, item.expectedValue, logger);
+                        return IsAllowedCertificateSubject(clientCertificate, expected, logger);
                     case X509ValidationRequirement.IssuerName:
-                        return IsAllowedCertificateIssuer(clientCertificate, item.expectedValue, logger);
+                        return IsAllowedCertificateIssuer(clientCertificate, expected, logger);
                     case X509ValidationRequirement.Thumbprint:
-                        return IsAllowedCertificateThumbprint(clientCertificate, item.expectedValue, logger);
+                        return IsAllowedCertificateThumbprint(clientCertificate, expected, logger);
                     default:
                         throw new ArgumentOutOfRangeException(
                             nameof(item.requirement),

@@ -18,7 +18,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
             // Arrange
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, "subject-name"));
+            string subjectKey = "subject", subjectValue = $"subject-{Guid.NewGuid()}";
+            _testServer.AddConfigKeyValue(subjectKey, subjectValue);
+            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, subjectKey));
+            
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
             {
                 _testServer.SetClientCertificate(clientCertificate);
@@ -48,7 +51,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             // Arrange
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.Create())
             {
-                _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.Thumbprint, clientCertificate.Thumbprint + thumbprintNoise));
+                const string thumbprintKey = "thumbprint";
+                _testServer.AddConfigKeyValue(thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise);
+                _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.Thumbprint, thumbprintKey));
                 _testServer.SetClientCertificate(clientCertificate);
 
                 using (HttpClient client = _testServer.CreateClient())
@@ -75,17 +80,21 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         [InlineData("known-subject", "unrecognizedIssuerName", true)]
         [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
-            string subjectName,
-            string issuerName,
+            string subjectValue,
+            string issuerValue,
             bool expected)
         {
             // Arrange
+            const string subjectKey = "subject", issuerKey = "issuer";
+            _testServer.AddConfigKeyValue(subjectKey, "CN=known-subject");
+            _testServer.AddConfigKeyValue(issuerKey, "CN=known-issuername");
+
             _testServer.AddFilter(
                 new CertificateAuthenticationFilter(
-                    (X509ValidationRequirement.SubjectName, "CN=known-subject"),
-                    (X509ValidationRequirement.IssuerName, "CN=known-issuername")));
+                    (X509ValidationRequirement.SubjectName, subjectKey),
+                    (X509ValidationRequirement.IssuerName, issuerKey)));
 
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.WebApi.Unit.Hosting;
 using Arcus.WebApi.Unit.Security.Doubles;
@@ -17,6 +18,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
             // Arrange
+            _testServer.AddConfigKeyValue(SubjectKey, "CN=subject");
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
 
             using (HttpClient client = _testServer.CreateClient())
@@ -35,32 +37,42 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Theory]
-        [InlineData(ExpectedSubjectName, ExpectedIssuerName, false)]
-        [InlineData("unrecognizedSubjectName", ExpectedIssuerName, true)]
-        [InlineData(ExpectedSubjectName, "unrecognizedIssuerName", true)]
-        [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
+        [InlineData("subject", "issuer", "", false)]
+        [InlineData("subject", "issuer", "unrecognized-thumbprint", true)]
+        [InlineData("subject", "unrecognized-issuer", "", true)]
+        [InlineData("subject", "unrecognized-issuer", "unrecognized-thumbprint", true)]
+        [InlineData("unrecognized-subject", "issuer", "", true)]
+        [InlineData("unrecognized-subject", "issuer", "unrecognized-thumbprint", true)]
+        [InlineData("unrecognized-subject", "unrecognized-issuer", "", true)]
+        [InlineData("unrecognized-subject", "unrecognized-issuer", "unrecognized-thumbprint", true)]
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
             string subjectName,
             string issuerName,
+            string thumbprintNoise,
             bool expected)
         {
             // Arrange
-            _testServer.SetClientCertificate(
-                SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName));
-
-            using (HttpClient client = _testServer.CreateClient())
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Get,
-                    AuthorizedRoute_SubjectAndIssuerName);
+                _testServer.AddConfigKeyValue(SubjectKey, "CN=subject");
+                _testServer.AddConfigKeyValue(IssuerKey, "CN=issuer");
+                _testServer.AddConfigKeyValue(ThumbprintKey, clientCertificate.Thumbprint + thumbprintNoise);
+                _testServer.SetClientCertificate(clientCertificate);
 
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
+                using (HttpClient client = _testServer.CreateClient())
                 {
-                    // Assert
-                    Assert.True(
-                        (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
-                        $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
+                    var request = new HttpRequestMessage(
+                        HttpMethod.Get,
+                        AuthorizedRoute_SubjectAndIssuerName);
+
+                    // Act
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        // Assert
+                        Assert.True(
+                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
+                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
+                    }
                 }
             }
         }
