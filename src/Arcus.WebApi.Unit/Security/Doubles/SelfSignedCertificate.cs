@@ -22,6 +22,14 @@ namespace Arcus.WebApi.Unit.Security.Doubles
     public static class SelfSignedCertificate
     {
         /// <summary>
+        /// Generates a self-signed certificate.
+        /// </summary>
+        public static X509Certificate2 Create()
+        {
+            return CreateWithSubject("TestSubject");
+        }
+
+        /// <summary>
         /// Generates a self-signed certificate with a specified <paramref name="subjectName"/>.
         /// </summary>
         /// <param name="subjectName">The subject name of the self-signed certificate.</param>
@@ -68,7 +76,8 @@ namespace Arcus.WebApi.Unit.Security.Doubles
                 certificateGenerator.AddBasicConstraints(isCertificateAuthority: false);
 
                 X509Certificate certificate = certificateGenerator.GenerateCertificateAsn1(issuerKeyPair, random);
-                return ConvertCertificate(certificate, subjectKeyPair, random);
+                X509Certificate2 convertCertificate = ConvertCertificate(certificate, subjectKeyPair, random);
+                return convertCertificate;
             }
         }
 

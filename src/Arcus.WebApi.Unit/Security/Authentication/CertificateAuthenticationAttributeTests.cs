@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.WebApi.Unit.Hosting;
@@ -8,7 +9,7 @@ using static Arcus.WebApi.Unit.Security.Authentication.CertificateAuthentication
 
 namespace Arcus.WebApi.Unit.Security.Authentication
 {
-    public class CertificateAuthenticationAttributeTests
+    public class CertificateAuthenticationAttributeTests : IDisposable
     {
         private readonly TestApiServer _testServer = new TestApiServer();
 
@@ -62,6 +63,14 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                         $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
                 }
             }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _testServer.Dispose();
         }
     }
 }

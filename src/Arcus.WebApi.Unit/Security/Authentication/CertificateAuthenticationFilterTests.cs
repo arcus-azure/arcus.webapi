@@ -1,5 +1,7 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authentication;
 using Arcus.WebApi.Unit.Hosting;
@@ -8,7 +10,7 @@ using Xunit;
 
 namespace Arcus.WebApi.Unit.Security.Authentication
 {
-    public class CertificateAuthenticationFilterTests
+    public class CertificateAuthenticationFilterTests : IDisposable
     {
         private readonly TestApiServer _testServer = new TestApiServer();
 
@@ -17,19 +19,52 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         {
             // Arrange
             _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, "subject-name"));
-            _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
-
-            using (HttpClient client = _testServer.CreateClient())
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Get,
-                    NoneAuthenticationController.Route);
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
+                _testServer.SetClientCertificate(clientCertificate);
+                using (HttpClient client = _testServer.CreateClient())
                 {
-                    // Arrange
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    var request = new HttpRequestMessage(
+                        HttpMethod.Get,
+                        NoneAuthenticationController.Route);
+
+                    // Act
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        // Arrange
+                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    }
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData("", false)]
+        [InlineData("thumbprint-noise", true)]
+        public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateThumbprintDoesntMatch(
+            string thumbprintNoise,
+            bool expected)
+        {
+            // Arrange
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.Create())
+            {
+                _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.Thumbprint, clientCertificate.Thumbprint + thumbprintNoise));
+                _testServer.SetClientCertificate(clientCertificate);
+
+                using (HttpClient client = _testServer.CreateClient())
+                {
+                    var request = new HttpRequestMessage(
+                        HttpMethod.Get,
+                        NoneAuthenticationController.Route);
+
+                    // Act
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        // Arrange
+                        Assert.True(
+                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
+                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
+                    }
                 }
             }
         }
@@ -50,24 +85,33 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                     (X509ValidationRequirement.SubjectName, "CN=known-subject"),
                     (X509ValidationRequirement.IssuerName, "CN=known-issuername")));
 
-            _testServer.SetClientCertificate(
-                SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName));
-
-            using (HttpClient client = _testServer.CreateClient())
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Get,
-                    NoneAuthenticationController.Route);
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
+                _testServer.SetClientCertificate(clientCertificate);
+                using (HttpClient client = _testServer.CreateClient())
                 {
-                    // Assert
-                    Assert.True(
-                        (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
-                        $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
+                    var request = new HttpRequestMessage(
+                        HttpMethod.Get,
+                        NoneAuthenticationController.Route);
+
+                    // Act
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        // Assert
+                        Assert.True(
+                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
+                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
+                    }
                 }
             }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _testServer.Dispose();
         }
     }
 }
