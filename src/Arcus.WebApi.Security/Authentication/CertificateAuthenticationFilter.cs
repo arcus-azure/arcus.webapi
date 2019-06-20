@@ -7,7 +7,6 @@ using Arcus.Security.Secrets.Core.Interfaces;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -37,7 +36,7 @@ namespace Arcus.WebApi.Security.Authentication
             params (X509ValidationRequirement requirement, string configurationKey)[] requirements)
         {
             Guard.NotNull(requirements, nameof(requirements), "Sequence of requirements and their expected values should not be 'null'");
-            Guard.For<ArgumentException>(() => requirements.Any(requirement => requirement.configurationKey is null), "Sequence of requirements cannot contain any expected value that is blank");
+            Guard.For<ArgumentException>(() => requirements.Any(requirement => String.IsNullOrWhiteSpace(requirement.configurationKey)), "Sequence of requirements cannot contain any configuration key that is blank");
 
             _requirements = requirements;
         }
