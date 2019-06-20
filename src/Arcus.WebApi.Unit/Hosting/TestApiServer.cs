@@ -6,7 +6,6 @@ using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcus.WebApi.Unit.Hosting
@@ -18,7 +17,6 @@ namespace Arcus.WebApi.Unit.Hosting
     {
         private readonly ICollection<Action<IServiceCollection>> _addServices;
         private readonly ICollection<IFilterMetadata> _filters;
-        private readonly IDictionary<string, string> _configurationCollection;
 
         private X509Certificate2 _clientCertificate;
 
@@ -37,7 +35,6 @@ namespace Arcus.WebApi.Unit.Hosting
 
             _addServices = new Collection<Action<IServiceCollection>> { configureServices };
             _filters = new Collection<IFilterMetadata>();
-            _configurationCollection = new Dictionary<string, string>();
         }
 
         /// <summary>
@@ -79,9 +76,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// <returns>A <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> instance.</returns>
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
-            return new WebHostBuilder()
-                   .ConfigureAppConfiguration(config => config.AddInMemoryCollection(_configurationCollection))
-                   .UseStartup<TestStartup>();
+            return new WebHostBuilder().UseStartup<TestStartup>();
         }
 
         /// <summary>
@@ -105,22 +100,6 @@ namespace Arcus.WebApi.Unit.Hosting
             Guard.NotNull(filter, "Filter cannot be 'null'");
 
             _filters.Add(filter);
-        }
-
-        /// <summary>
-        /// Adds a new configuration key/value pair to the <see cref="IConfiguration"/> instance of this test server.
-        /// </summary>
-        /// <param name="key">The unique key of the configuration pair.</param>
-        /// <param name="value">The value of the configuration pair.</param>
-        public void AddConfigKeyValue(string key, string value)
-        {
-            Guard.NotNull(key, nameof(key), "Configuration key cannot be 'null'");
-            Guard.NotNull(value, nameof(value), "Configuration value cannot be 'null'");
-
-            if (!_configurationCollection.TryAdd(key, value))
-            {
-                throw new InvalidOperationException($"Cannot add duplicate configuration key: {key}");
-            }
         }
 
         /// <summary>
