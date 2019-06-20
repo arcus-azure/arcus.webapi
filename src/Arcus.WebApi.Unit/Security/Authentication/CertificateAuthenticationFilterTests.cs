@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Arcus.Security.Secrets.Core.Interfaces;
 using Arcus.WebApi.Security.Authentication;
 using Arcus.WebApi.Unit.Hosting;
 using Arcus.WebApi.Unit.Security.Doubles;
@@ -19,7 +20,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         {
             // Arrange
             string subjectKey = "subject", subjectValue = $"subject-{Guid.NewGuid()}";
-            _testServer.AddConfigKeyValue(subjectKey, subjectValue);
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((subjectKey, subjectValue)));
             _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, subjectKey));
             
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
@@ -52,7 +53,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.Create())
             {
                 const string thumbprintKey = "thumbprint";
-                _testServer.AddConfigKeyValue(thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise);
+                _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise)));
                 _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.Thumbprint, thumbprintKey));
                 _testServer.SetClientCertificate(clientCertificate);
 
@@ -86,8 +87,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         {
             // Arrange
             const string subjectKey = "subject", issuerKey = "issuer";
-            _testServer.AddConfigKeyValue(subjectKey, "CN=known-subject");
-            _testServer.AddConfigKeyValue(issuerKey, "CN=known-issuername");
+            _testServer.AddService<ISecretProvider>(
+                new InMemorySecretProvider(
+                    (subjectKey, "CN=known-subject"),
+                    (issuerKey, "CN=known-issuername")));
 
             _testServer.AddFilter(
                 new CertificateAuthenticationFilter(

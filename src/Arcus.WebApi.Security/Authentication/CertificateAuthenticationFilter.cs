@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using Arcus.Security.Secrets.Core.Interfaces;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -15,7 +17,7 @@ namespace Arcus.WebApi.Security.Authentication
     /// <summary>
     /// Authentication filter to secure HTTP requests by allowing only certain values in the client certificate.
     /// </summary>
-    public class CertificateAuthenticationFilter : IAuthorizationFilter
+    public class CertificateAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private readonly (X509ValidationRequirement requirement, string configurationKey)[] _requirements;
 
@@ -44,7 +46,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
         /// <param name="context">The <see cref="T:Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext" />.</param>
-        public void OnAuthorization(AuthorizationFilterContext context)
+        public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             Guard.NotNull(context, nameof(context));
             Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
@@ -57,11 +59,14 @@ namespace Arcus.WebApi.Security.Authentication
                        ?.CreateLogger<CertificateAuthenticationFilter>() 
                 ?? (ILogger) NullLogger.Instance;
 
-            var configuration = context.HttpContext.RequestServices.GetService<IConfiguration>();
-            if (configuration == null)
+            ISecretProvider userDefinedSecretProvider = 
+                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
+                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
+
+            if (userDefinedSecretProvider == null)
             {
                 throw new KeyNotFoundException(
-                    $"No configured {nameof(IConfiguration)} implementation found in the request service container. "
+                    $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
                     + "Please configure such an implementation (ex. in the Startup) of your application");
             }
 
@@ -74,36 +79,41 @@ namespace Arcus.WebApi.Security.Authentication
                 
                 context.Result = new UnauthorizedResult();
             }
-            else if (!IsAllowedCertificate(clientCertificate, configuration, logger))
+            else if (!await IsAllowedCertificate(clientCertificate, userDefinedSecretProvider, logger))
             {
                 context.Result = new UnauthorizedResult();
             }
         }
 
-        private bool IsAllowedCertificate(X509Certificate2 clientCertificate, IConfiguration configuration, ILogger logger)
+        private async Task<bool> IsAllowedCertificate(
+            X509Certificate2 clientCertificate, 
+            ISecretProvider provider,
+            ILogger logger)
         {
-            return _requirements.All(item =>
+            var requirementValues = await Task.WhenAll(_requirements.Select(async item =>
             {
-                string expected = configuration[item.configurationKey];
-                if (expected == null)
+                string expected = await provider.Get(item.configurationKey);
+                return (requirement: item.requirement, key: item.configurationKey, expected: expected);
+            }));
+
+            return requirementValues.All(value =>
+            {
+                if (value.expected == null)
                 {
-                    logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={item.configurationKey}");
+                    logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={value.key}");
                     return false;
                 }
 
-                switch (item.requirement)
+                switch (value.requirement)
                 {
                     case X509ValidationRequirement.SubjectName:
-                        return IsAllowedCertificateSubject(clientCertificate, expected, logger);
+                        return IsAllowedCertificateSubject(clientCertificate, value.expected, logger);
                     case X509ValidationRequirement.IssuerName:
-                        return IsAllowedCertificateIssuer(clientCertificate, expected, logger);
+                        return IsAllowedCertificateIssuer(clientCertificate, value.expected, logger);
                     case X509ValidationRequirement.Thumbprint:
-                        return IsAllowedCertificateThumbprint(clientCertificate, expected, logger);
+                        return IsAllowedCertificateThumbprint(clientCertificate, value.expected, logger);
                     default:
-                        throw new ArgumentOutOfRangeException(
-                            nameof(item.requirement),
-                            item.requirement,
-                            "Unknown validation type specified");
+                        throw new ArgumentOutOfRangeException(nameof(value.requirement), value.requirement, "Unknown validation type specified");
                 }
             });
         }

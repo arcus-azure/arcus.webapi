@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
+using Arcus.Security.Secrets.Core.Interfaces;
 using Arcus.WebApi.Unit.Hosting;
 using Arcus.WebApi.Unit.Security.Doubles;
 using Xunit;
@@ -18,7 +19,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
             // Arrange
-            _testServer.AddConfigKeyValue(SubjectKey, "CN=subject");
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SubjectKey, "CN=subject")));
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
 
             using (HttpClient client = _testServer.CreateClient())
@@ -54,9 +55,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             // Arrange
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
             {
-                _testServer.AddConfigKeyValue(SubjectKey, "CN=subject");
-                _testServer.AddConfigKeyValue(IssuerKey, "CN=issuer");
-                _testServer.AddConfigKeyValue(ThumbprintKey, clientCertificate.Thumbprint + thumbprintNoise);
+                _testServer.AddService<ISecretProvider>(
+                    new InMemorySecretProvider(
+                        (SubjectKey, "CN=subject"),
+                        (IssuerKey, "CN=issuer"),
+                        (ThumbprintKey, clientCertificate.Thumbprint + thumbprintNoise)));
                 _testServer.SetClientCertificate(clientCertificate);
 
                 using (HttpClient client = _testServer.CreateClient())
