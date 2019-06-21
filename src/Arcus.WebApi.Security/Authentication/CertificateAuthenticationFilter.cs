@@ -78,21 +78,23 @@ namespace Arcus.WebApi.Security.Authentication
                 
                 context.Result = new UnauthorizedResult();
             }
-            else if (!await IsAllowedCertificate(clientCertificate, userDefinedSecretProvider, logger))
+            else if (!await IsCertificateAllowed(clientCertificate, userDefinedSecretProvider, logger))
             {
                 context.Result = new UnauthorizedResult();
             }
         }
 
-        private async Task<bool> IsAllowedCertificate(
+        private async Task<bool> IsCertificateAllowed(
             X509Certificate2 clientCertificate, 
             ISecretProvider provider,
             ILogger logger)
         {
             var requirementValues = await Task.WhenAll(_requirements.Select(async item =>
             {
-                string expected = await provider.Get(item.configurationKey);
-                return (requirement: item.requirement, key: item.configurationKey, expected: expected);
+                Task<string> getSecretValueAsync = provider.Get(item.configurationKey);
+                return (requirement: item.requirement, 
+                        key: item.configurationKey, 
+                        expected: getSecretValueAsync != null ? await getSecretValueAsync : null);
             }));
 
             return requirementValues.All(value =>
@@ -106,18 +108,18 @@ namespace Arcus.WebApi.Security.Authentication
                 switch (value.requirement)
                 {
                     case X509ValidationRequirement.SubjectName:
-                        return IsAllowedCertificateSubject(clientCertificate, value.expected, logger);
+                        return IsCertificateSubjectNameAllowed(clientCertificate, value.expected, logger);
                     case X509ValidationRequirement.IssuerName:
-                        return IsAllowedCertificateIssuer(clientCertificate, value.expected, logger);
+                        return IsCertificateIssuerNameAllowed(clientCertificate, value.expected, logger);
                     case X509ValidationRequirement.Thumbprint:
-                        return IsAllowedCertificateThumbprint(clientCertificate, value.expected, logger);
+                        return IsCertificateThumbprintAllowed(clientCertificate, value.expected, logger);
                     default:
                         throw new ArgumentOutOfRangeException(nameof(value.requirement), value.requirement, "Unknown validation type specified");
                 }
             });
         }
 
-        private static bool IsAllowedCertificateSubject(X509Certificate2 clientCertificate, string expected, ILogger logger)
+        private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
             IEnumerable<string> certificateSubjectNames =
                 clientCertificate.Subject
@@ -135,7 +137,7 @@ namespace Arcus.WebApi.Security.Authentication
             return isAllowed;
         }
 
-        private static bool IsAllowedCertificateIssuer(X509Certificate2 clientCertificate, string expected, ILogger logger)
+        private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
             IEnumerable<string> issuerNames = 
                 clientCertificate.Issuer
@@ -153,7 +155,7 @@ namespace Arcus.WebApi.Security.Authentication
             return isAllowed;
         }
 
-        private static bool IsAllowedCertificateThumbprint(X509Certificate2 clientCertificate, string expected, ILogger logger)
+        private static bool IsCertificateThumbprintAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
             string actual = clientCertificate.Thumbprint?.Trim();
            
