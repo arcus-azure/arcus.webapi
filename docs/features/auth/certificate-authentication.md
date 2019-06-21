@@ -66,7 +66,7 @@ After that, the `CertificateAuthenticationAttribute` attribute can be applied on
 public class MyApiController : ControllerBase
 {
     [HttpGet]
-    [Route("authz/certificate)]
+    [Route("authz/certificate")]
     public Task<IActionResult> AuthorizedGet()
     {
         return Task.FromResult<IActionResult>(Ok());
