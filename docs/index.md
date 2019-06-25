@@ -24,6 +24,12 @@ To install the Arcus.WebApi.Logging package:
 PM > Install-Package Arcus.WebApi.Logging
 ```
 
+To install the Arcus.WebApi.OpenApi.Extensions package:
+
+```shell
+PM > Install-Package Arcus.WebApi.OpenApi.Extensions
+```
+
 # Features
 
 ## Arcus.WebApi.Security
@@ -37,6 +43,12 @@ The `Arcus.WebApi.Security` package contains functionality to easily add securit
 The `Arcus.WebApi.Logging` package contains functionality that can be incorporated in API projects to easily add logging capabilities to an API project.
 
 - [Logging unhandled exceptions](features/logging.md)
+
+## Arcus.WebApi.OpenApi.Extensions
+
+The `Arcus.WebApi.OpenApi.Extensions` package contains functionality that can be used to easily improve the Open API documentation of an API when making using of Swashbuckle.
+
+- [Exposing security information in Swashbuckle documentation](features/openapi.securitydefinitions.md)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
