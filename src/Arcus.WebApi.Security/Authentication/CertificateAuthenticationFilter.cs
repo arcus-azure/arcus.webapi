@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Interfaces;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -18,7 +17,7 @@ namespace Arcus.WebApi.Security.Authentication
     /// </summary>
     public class CertificateAuthenticationFilter : IAsyncAuthorizationFilter
     {
-        private readonly (X509ValidationRequirement requirement, string configurationKey)[] _requirements;
+        private readonly IDictionary<X509ValidationRequirement, ConfiguredKey> _requirements;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
@@ -26,19 +25,17 @@ namespace Arcus.WebApi.Security.Authentication
         /// <param name="requirement">The property of the client <see cref="X509Certificate2"/> to validate.</param>
         /// <param name="expectedValue">The expected value the property of the <see cref="X509Certificate2"/> should have.</param>
         public CertificateAuthenticationFilter(X509ValidationRequirement requirement, string expectedValue)
-            : this((requirement, expectedValue)) { }
+            : this(new Dictionary<X509ValidationRequirement, string> { [requirement] = expectedValue }) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
         /// </summary>
-        /// <param name="requirements">The sequence of requirement property of the client <see cref="X509Certificate2"/> and expected values it should have.</param>
-        public CertificateAuthenticationFilter(
-            params (X509ValidationRequirement requirement, string configurationKey)[] requirements)
+        public CertificateAuthenticationFilter(IDictionary<X509ValidationRequirement, string> requirements)
         {
             Guard.NotNull(requirements, nameof(requirements), "Sequence of requirements and their expected values should not be 'null'");
-            Guard.For<ArgumentException>(() => requirements.Any(requirement => String.IsNullOrWhiteSpace(requirement.configurationKey)), "Sequence of requirements cannot contain any configuration key that is blank");
+            Guard.For<ArgumentException>(() => requirements.Any(requirement => String.IsNullOrWhiteSpace(requirement.Value)), "Sequence of requirements cannot contain any configuration key that is blank");
 
-            _requirements = requirements;
+            _requirements = requirements.ToDictionary(requirement => requirement.Key, requirement => new ConfiguredKey(requirement.Value));
         }
 
         /// <summary>
@@ -52,122 +49,37 @@ namespace Arcus.WebApi.Security.Authentication
             Guard.For<ArgumentException>(() => context.HttpContext.Connection is null, "Invalid action context given without any HTTP connection");
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
-            ILogger logger = 
-                context.HttpContext.RequestServices
-                       .GetService<ILoggerFactory>()
-                       ?.CreateLogger<CertificateAuthenticationFilter>() 
-                ?? (ILogger) NullLogger.Instance;
-
-            ISecretProvider userDefinedSecretProvider = 
-                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
-                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
-
-            if (userDefinedSecretProvider == null)
-            {
-                throw new KeyNotFoundException(
-                    $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
-                    + "Please configure such an implementation (ex. in the Startup) of your application");
-            }
-
             X509Certificate2 clientCertificate = context.HttpContext.Connection.ClientCertificate;
             if (clientCertificate == null)
             {
+                ILogger logger = 
+                    context.HttpContext.RequestServices
+                           .GetService<ILoggerFactory>()
+                           ?.CreateLogger<CertificateAuthenticationFilter>() 
+                    ?? (ILogger) NullLogger.Instance;
+
                 logger.LogWarning(
                     "No client certificate was specified in the HTTP request while this authentication filter "
-                    + $"requires a certificate to validate on the {String.Join(", ", _requirements.Select(item => item.requirement))}");
+                    + $"requires a certificate to validate on the {String.Join(", ", _requirements.Select(item => item.Key))}");
                 
                 context.Result = new UnauthorizedResult();
             }
-            else if (!await IsCertificateAllowed(clientCertificate, userDefinedSecretProvider, logger))
+            else
             {
-                context.Result = new UnauthorizedResult();
-            }
-        }
-
-        private async Task<bool> IsCertificateAllowed(
-            X509Certificate2 clientCertificate, 
-            ISecretProvider provider,
-            ILogger logger)
-        {
-            var requirementValues = await Task.WhenAll(_requirements.Select(async item =>
-            {
-                Task<string> getSecretValueAsync = provider.Get(item.configurationKey);
-                return (requirement: item.requirement, 
-                        key: item.configurationKey, 
-                        expected: getSecretValueAsync != null ? await getSecretValueAsync : null);
-            }));
-
-            return requirementValues.All(value =>
-            {
-                if (value.expected == null)
+                var validator = context.HttpContext.RequestServices.GetService<CertificateAuthenticationValidator>();
+                if (validator == null)
                 {
-                    logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={value.key}");
-                    return false;
+                    throw new KeyNotFoundException(
+                        $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
+                        + "Please configure such an instance (ex. in the Startup) of your application");
                 }
 
-                switch (value.requirement)
+                bool isCertificateAllowed = await validator.ValidateCertificate(clientCertificate, _requirements, context.HttpContext.RequestServices);
+                if (!isCertificateAllowed)
                 {
-                    case X509ValidationRequirement.SubjectName:
-                        return IsCertificateSubjectNameAllowed(clientCertificate, value.expected, logger);
-                    case X509ValidationRequirement.IssuerName:
-                        return IsCertificateIssuerNameAllowed(clientCertificate, value.expected, logger);
-                    case X509ValidationRequirement.Thumbprint:
-                        return IsCertificateThumbprintAllowed(clientCertificate, value.expected, logger);
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(value.requirement), value.requirement, "Unknown validation type specified");
+                    context.Result = new UnauthorizedResult();
                 }
-            });
-        }
-
-        private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
-        {
-            IEnumerable<string> certificateSubjectNames =
-                clientCertificate.Subject
-                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(subject => subject.Trim());
-
-            bool isAllowed = certificateSubjectNames.Any(subject => String.Equals(subject, expected));
-            if (!isAllowed)
-            {
-                logger.LogWarning(
-                    "Client certificate authentication failed on subject: "
-                    + $"no subject found (actual={String.Join(", ", certificateSubjectNames)}) in certificate that matches expected={expected}");
             }
-
-            return isAllowed;
-        }
-
-        private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
-        {
-            IEnumerable<string> issuerNames = 
-                clientCertificate.Issuer
-                    .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(issuer => issuer.Trim());
-
-            bool isAllowed = issuerNames.Any(issuer => String.Equals(issuer, expected));
-            if (!isAllowed)
-            {
-                logger.LogWarning(
-                    "Client certificate authentication failed on issuer: "
-                    + $"no issuer found (actual={String.Join(", ", issuerNames)}) in certificate that matches expected={expected}");
-            }
-
-            return isAllowed;
-        }
-
-        private static bool IsCertificateThumbprintAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
-        {
-            string actual = clientCertificate.Thumbprint?.Trim();
-           
-            bool isAllowed = String.Equals(expected, actual);
-            if (!isAllowed)
-            {
-                logger.LogWarning(
-                    "Client certificate authentication failed on thumbprint: "
-                    + $"expected={expected} <> actual={actual}");
-            }
-
-            return isAllowed;
         }
     }
 }
