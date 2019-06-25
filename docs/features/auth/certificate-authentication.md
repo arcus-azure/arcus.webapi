@@ -8,7 +8,7 @@ This authentication process consists of following parts:
 
 1. Find the client certificate configured on the HTTP request
 2. Determine which properties of the received client certificate are used for authentication
-3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider
+3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider, configuration or custom implementation
 
 The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
 - [Globally enforce certificate authentication](#Globally-enforce-certificate-authentication)
@@ -23,17 +23,31 @@ This filter will then add authentication to all endpoints via one or many certif
 
 ### Usage
 
-The authentication requires an `ICachedSecretProvider` or `ISecretProvider` dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline. This is typically done in the `ConfigureServices` method of the `Startup` class.
+The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
+- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider
+- `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application
+- `IX509ValidationLocation`: custom implementation that implements the validation location interface
+
+This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class.
+
+Each certificate property that should be validated can use a different service dependency. 
+This mapping of what service which property uses, is defined in an `CertificateAuthenticationValidator` instance.
+
 Once this is done, the `CertificateAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
     services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+
+    services.AddScoped<CertificateAuthenticationValidator>(
+        serviceProvider => new CertificateAuthenticationValidator()
+            .WithRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.SecretProvider));
+
     services.AddMvc(
         options => options.Filters.Add(
             new CertificateAuthenticationFilter(
-                X509CertificateRequirement.SubjectName,
+                X509ValidationRequirement.SubjectName,
                 "key-to-certificate-subject-name"
             )));
 }
@@ -48,12 +62,22 @@ This certificate authentication will then be applied to the endpoint(s) that are
 
 ### Usage
 
-The authentication requires an `ICachedSecretProvider` or `ISecretProvider` dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline. This is typically done in the `ConfigureServices` method of the `Startup` class:
+The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
+- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider
+- `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application
+- `IX509ValidationLocation`: custom implementation that implements the validation location interface
+
+This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class:
 
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+    services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+
+    services.AddScoped<CertificateAuthenticationValidator>(
+        serviceProvider => new CertificateAuthenticationValidator()
+            .WithRequirementLocation(X509ValidationRequirement.IssuerName, X509ValidationLocation.SecretProvider));
+ 
     services.AddMvc();
 }
 ```
