@@ -52,7 +52,7 @@ public void ConfigureServices(IServiceCollections services)
 }
 ```
 
-After that, the `SharedAccessKeyAuthenticationFilter` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:
+After that, the `SharedAccessKeyAuthenticationAttribute` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:
 
 ```csharp
 [ApiController]
