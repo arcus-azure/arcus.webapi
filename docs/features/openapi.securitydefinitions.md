@@ -26,6 +26,6 @@ services.AddSwaggerGen(c =>
       Scopes = scopes
    });
 
-   c.OperationFilter<AuthorizeCheckOperationFilter>("myApiScope1", "myApiScope2");
+   c.OperationFilter<OAuthAuthorizeOperationFilter>("myApiScope1", "myApiScope2");
 });
 ```
