@@ -14,6 +14,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 {
     public class CertificateAuthenticationAttributeTests : IDisposable
     {
+        public const string SubjectKey = "subject", 
+                            IssuerKey = "isser", 
+                            ThumbprintKey = "thumbprint";
+
         private readonly TestApiServer _testServer = new TestApiServer();
 
         [Fact]
@@ -22,15 +26,16 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             // Arrange
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SubjectKey, "CN=subject")));
             _testServer.AddService(
-                new CertificateAuthenticationValidator()
-                    .AddRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.SecretProvider));
+                new CertificateAuthenticationValidator(
+                        new CertificateAuthenticationConfig()
+                            .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)));
 
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(
                     HttpMethod.Get,
-                    AuthorizedRoute_SubjectName);
+                    AuthorizedRoute);
 
                 // Act
                 using (HttpResponseMessage response = await client.SendAsync(request))
@@ -66,17 +71,16 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                         (ThumbprintKey, clientCertificate.Thumbprint + thumbprintNoise)));
 
                 _testServer.AddService(
-                    new CertificateAuthenticationValidator()
-                        .AddRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.SecretProvider)
-                        .AddRequirementLocation(X509ValidationRequirement.IssuerName, X509ValidationLocation.SecretProvider)
-                        .AddRequirementLocation(X509ValidationRequirement.Thumbprint, X509ValidationLocation.SecretProvider));
+                    new CertificateAuthenticationValidator(
+                            new CertificateAuthenticationConfig()
+                                .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
+                                .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
+                                .WithThumbprint(X509ValidationLocation.SecretProvider, ThumbprintKey)));
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())
                 {
-                    var request = new HttpRequestMessage(
-                        HttpMethod.Get,
-                        AuthorizedRoute_SubjectAndIssuerName);
+                    var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -113,17 +117,16 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 _testServer.AddConfigKeyValue(ThumbprintKey, clientCertificate.Thumbprint + thumbprintNoise);
 
                 _testServer.AddService(
-                    new CertificateAuthenticationValidator()
-                        .AddRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.Configuration)
-                        .AddRequirementLocation(X509ValidationRequirement.IssuerName, X509ValidationLocation.Configuration)
-                        .AddRequirementLocation(X509ValidationRequirement.Thumbprint, X509ValidationLocation.Configuration));
+                    new CertificateAuthenticationValidator(
+                            new CertificateAuthenticationConfig()
+                                .WithSubject(X509ValidationLocation.Configuration, SubjectKey)
+                                .WithIssuer(X509ValidationLocation.Configuration, IssuerKey)
+                                .WithThumbprint(X509ValidationLocation.Configuration, ThumbprintKey)));
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())
                 {
-                    var request = new HttpRequestMessage(
-                        HttpMethod.Get,
-                        AuthorizedRoute_SubjectAndIssuerName);
+                    var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -158,17 +161,16 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 _testServer.AddConfigKeyValue(SubjectKey, "CN=subject");
                 _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((IssuerKey, "CN=issuer")));
                 _testServer.AddService(
-                    new CertificateAuthenticationValidator()
-                        .AddRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.Configuration)
-                        .AddRequirementLocation(X509ValidationRequirement.IssuerName, X509ValidationLocation.SecretProvider)
-                        .AddRequirementLocation(X509ValidationRequirement.Thumbprint, new StubX509ValidationLocation(clientCertificate.Thumbprint + thumbprintNoise)));
+                    new CertificateAuthenticationValidator(
+                            new CertificateAuthenticationConfig()
+                                .WithSubject(X509ValidationLocation.Configuration, SubjectKey)
+                                .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
+                                .WithThumbprint(new StubX509ValidationLocation(clientCertificate.Thumbprint + thumbprintNoise), ThumbprintKey)));
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())
                 {
-                    var request = new HttpRequestMessage(
-                        HttpMethod.Get,
-                        AuthorizedRoute_SubjectAndIssuerName);
+                    var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))

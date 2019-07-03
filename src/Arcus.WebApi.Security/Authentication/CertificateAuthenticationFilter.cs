@@ -17,31 +17,6 @@ namespace Arcus.WebApi.Security.Authentication
     /// </summary>
     public class CertificateAuthenticationFilter : IAsyncAuthorizationFilter
     {
-        private readonly IDictionary<X509ValidationRequirement, ConfiguredKey> _configuredKeysByRequirement;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
-        /// </summary>
-        /// <param name="requirement">The property of the client <see cref="X509Certificate2"/> to validate.</param>
-        /// <param name="configuredKey">The configured key to retrieve the expected value of the <see cref="X509Certificate2"/> property.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is <c>null</c>.</exception>
-        public CertificateAuthenticationFilter(X509ValidationRequirement requirement, string configuredKey)
-            : this(new Dictionary<X509ValidationRequirement, string> { [requirement] = configuredKey }) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter"/> class.
-        /// </summary>
-        /// <param name="configuredKeysByRequirement">The series of configured keys with their requirement/property of the client <see cref="X509Certificate2"/> to validate.</param>
-        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configuredKeysByRequirement"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKeysByRequirement"/> contains any configured key that is <c>null</c>.</exception>
-        public CertificateAuthenticationFilter(IDictionary<X509ValidationRequirement, string> configuredKeysByRequirement)
-        {
-            Guard.NotNull(configuredKeysByRequirement, nameof(configuredKeysByRequirement), "Sequence of requirements and their expected values should not be 'null'");
-            Guard.For<ArgumentException>(() => configuredKeysByRequirement.Any(requirement => String.IsNullOrWhiteSpace(requirement.Value)), "Sequence of requirements cannot contain any configuration key that is blank");
-
-            _configuredKeysByRequirement = configuredKeysByRequirement.ToDictionary(requirement => requirement.Key, requirement => new ConfiguredKey(requirement.Value));
-        }
-
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
@@ -61,7 +36,7 @@ namespace Arcus.WebApi.Security.Authentication
                 ILogger logger = GetLoggerOrDefault(services);
                 logger.LogWarning(
                     "No client certificate was specified in the HTTP request while this authentication filter "
-                    + $"requires a certificate to validate on the {String.Join(", ", _configuredKeysByRequirement.Select(item => item.Key))}");
+                    + $"requires a certificate to validate on the configured validation requirements");
 
                 context.Result = new UnauthorizedResult();
             }
@@ -75,7 +50,7 @@ namespace Arcus.WebApi.Security.Authentication
                         + "Please configure such an instance (ex. in the Startup) of your application");
                 }
 
-                bool isCertificateAllowed = await validator.ValidateCertificate(clientCertificate, _configuredKeysByRequirement, services);
+                bool isCertificateAllowed = await validator.ValidateCertificate(clientCertificate, services);
                 if (!isCertificateAllowed)
                 {
                     context.Result = new UnauthorizedResult();

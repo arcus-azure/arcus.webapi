@@ -14,14 +14,19 @@ namespace Arcus.WebApi.Security.Authentication
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationAttribute"/> class.
         /// </summary>
-        /// <param name="requirement">The property of the client <see cref="X509Certificate2"/> to validate.</param>
-        /// <param name="expectedValue">The expected value the property of the <see cref="X509Certificate2"/> should have.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="expectedValue"/> is <c>null</c>, empty or white-space.</exception>
-        public CertificateAuthenticationAttribute(X509ValidationRequirement requirement, string expectedValue) : base(typeof(CertificateAuthenticationFilter))
-        {
-            Guard.NotNullOrWhitespace(expectedValue, nameof(expectedValue), "Expected value in certificate cannot be blank");
+        public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter)) { }
 
-            Arguments = new object[] { requirement, expectedValue };
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationAttribute"/> class.
+        /// </summary>
+        /// <param name="requirement">The property of the client <see cref="X509Certificate2"/> to validate.</param>
+        /// <param name="configuredKey">The configured key the property of the <see cref="X509Certificate2"/> should have.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is <c>null</c>, empty or white-space.</exception>
+        public CertificateAuthenticationAttribute(X509ValidationRequirement requirement, string configuredKey) : base(typeof(CertificateAuthenticationFilter))
+        {
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Expected value in certificate cannot be blank");
+
+            Arguments = new object[] { requirement, configuredKey };
         }
     }
 }

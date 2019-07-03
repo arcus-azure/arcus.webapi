@@ -8,25 +8,12 @@ namespace Arcus.WebApi.Unit.Security.Authentication
     [ApiController]
     public class CertificateAuthenticationOnMethodController : ControllerBase
     {
-        public const string AuthorizedRoute_SubjectName = "authz/certificate-subject",
-                            AuthorizedRoute_SubjectAndIssuerName = "authz/certificate-subject-and-issuername";
-
-        public const string SubjectKey = "subject", IssuerKey = "isser", ThumbprintKey = "thumbprint";
+        public const string AuthorizedRoute = "authz/certificate";
 
         [HttpGet]
-        [Route(AuthorizedRoute_SubjectName)]
-        [CertificateAuthentication(X509ValidationRequirement.SubjectName, SubjectKey)]
-        public Task<IActionResult> TestConfiguredClientCertificateSubjectName(HttpRequestMessage message)
-        {
-            return Task.FromResult<IActionResult>(Ok());
-        }
-
-        [HttpGet]
-        [Route(AuthorizedRoute_SubjectAndIssuerName)]
-        [CertificateAuthentication(X509ValidationRequirement.SubjectName, SubjectKey)]
-        [CertificateAuthentication(X509ValidationRequirement.IssuerName, IssuerKey)]
-        [CertificateAuthentication(X509ValidationRequirement.Thumbprint, ThumbprintKey)]
-        public Task<IActionResult> TestConfiguredAllRequirementsClientCertificate(HttpRequestMessage message)
+        [Route(AuthorizedRoute)]
+        [CertificateAuthentication]
+        public Task<IActionResult> TestCertificateAuthentication(HttpRequestMessage message)
         {
             return Task.FromResult<IActionResult>(Ok());
         }

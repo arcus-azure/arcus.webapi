@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
@@ -23,10 +22,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             string subjectKey = "subject", subjectValue = $"subject-{Guid.NewGuid()}";
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((subjectKey, subjectValue)));
             _testServer.AddService(
-                new CertificateAuthenticationValidator()
-                    .AddRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.SecretProvider));
+                new CertificateAuthenticationValidator(
+                        new CertificateAuthenticationConfig()
+                            .WithSubject(X509ValidationLocation.SecretProvider, subjectKey)));
             
-            _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.SubjectName, subjectKey));
+            _testServer.AddFilter(new CertificateAuthenticationFilter());
             
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
             {
@@ -61,10 +61,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 
                 _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise)));
                 _testServer.AddService(
-                    new CertificateAuthenticationValidator()
-                        .AddRequirementLocation(X509ValidationRequirement.Thumbprint, X509ValidationLocation.SecretProvider));
+                    new CertificateAuthenticationValidator(
+                            new CertificateAuthenticationConfig()
+                                .WithThumbprint(X509ValidationLocation.SecretProvider, thumbprintKey)));
                 
-                _testServer.AddFilter(new CertificateAuthenticationFilter(X509ValidationRequirement.Thumbprint, thumbprintKey));
+                _testServer.AddFilter(new CertificateAuthenticationFilter());
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())
@@ -104,20 +105,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                        new Dictionary<X509ValidationRequirement, X509ValidationLocation>
-                        {
-                            [X509ValidationRequirement.SubjectName] = X509ValidationLocation.SecretProvider,
-                            [X509ValidationRequirement.IssuerName] = X509ValidationLocation.SecretProvider,
-                        }));
+                        new CertificateAuthenticationConfig()
+                            .WithSubject(X509ValidationLocation.SecretProvider, subjectKey)
+                            .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)));
 
-            _testServer.AddFilter(
-                new CertificateAuthenticationFilter(
-                    new Dictionary<X509ValidationRequirement, string>
-                    {
-                        [X509ValidationRequirement.SubjectName] = subjectKey,
-                        [X509ValidationRequirement.IssuerName] = issuerKey
-                    }
-                ));
+            _testServer.AddFilter(new CertificateAuthenticationFilter());
 
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
@@ -157,20 +149,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                        new Dictionary<X509ValidationRequirement, X509ValidationLocation>
-                        {
-                            [X509ValidationRequirement.SubjectName] = X509ValidationLocation.Configuration,
-                            [X509ValidationRequirement.IssuerName] = X509ValidationLocation.Configuration,
-                        }));
+                    new CertificateAuthenticationConfig()
+                        .WithSubject(X509ValidationLocation.Configuration, subjectKey)
+                        .WithIssuer(X509ValidationLocation.Configuration, issuerKey)));
 
-            _testServer.AddFilter(
-                new CertificateAuthenticationFilter(
-                    new Dictionary<X509ValidationRequirement, string>
-                    {
-                        [X509ValidationRequirement.SubjectName] = subjectKey,
-                        [X509ValidationRequirement.IssuerName] = issuerKey
-                    }
-                ));
+            _testServer.AddFilter(new CertificateAuthenticationFilter());
 
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
@@ -209,20 +192,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((issuerKey, "CN=known-issuername")));
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                        new Dictionary<X509ValidationRequirement, X509ValidationLocation>
-                        {
-                            [X509ValidationRequirement.SubjectName] = X509ValidationLocation.Configuration,
-                            [X509ValidationRequirement.IssuerName] = X509ValidationLocation.SecretProvider,
-                        }));
+                    new CertificateAuthenticationConfig()
+                        .WithSubject(X509ValidationLocation.Configuration, subjectKey)
+                        .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)));
 
-            _testServer.AddFilter(
-                new CertificateAuthenticationFilter(
-                    new Dictionary<X509ValidationRequirement, string>
-                    {
-                        [X509ValidationRequirement.SubjectName] = subjectKey,
-                        [X509ValidationRequirement.IssuerName] = issuerKey
-                    }
-                ));
+            _testServer.AddFilter(new CertificateAuthenticationFilter());
 
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
