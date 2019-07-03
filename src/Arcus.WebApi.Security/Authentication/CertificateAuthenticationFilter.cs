@@ -49,24 +49,21 @@ namespace Arcus.WebApi.Security.Authentication
             Guard.For<ArgumentException>(() => context.HttpContext.Connection is null, "Invalid action context given without any HTTP connection");
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
+            IServiceProvider services = context.HttpContext.RequestServices;
+
             X509Certificate2 clientCertificate = context.HttpContext.Connection.ClientCertificate;
             if (clientCertificate == null)
             {
-                ILogger logger = 
-                    context.HttpContext.RequestServices
-                           .GetService<ILoggerFactory>()
-                           ?.CreateLogger<CertificateAuthenticationFilter>() 
-                    ?? (ILogger) NullLogger.Instance;
-
+                ILogger logger = GetLoggerOrDefault(services);
                 logger.LogWarning(
                     "No client certificate was specified in the HTTP request while this authentication filter "
                     + $"requires a certificate to validate on the {String.Join(", ", _requirements.Select(item => item.Key))}");
-                
+
                 context.Result = new UnauthorizedResult();
             }
             else
             {
-                var validator = context.HttpContext.RequestServices.GetService<CertificateAuthenticationValidator>();
+                var validator = services.GetService<CertificateAuthenticationValidator>();
                 if (validator == null)
                 {
                     throw new KeyNotFoundException(
@@ -74,12 +71,19 @@ namespace Arcus.WebApi.Security.Authentication
                         + "Please configure such an instance (ex. in the Startup) of your application");
                 }
 
-                bool isCertificateAllowed = await validator.ValidateCertificate(clientCertificate, _requirements, context.HttpContext.RequestServices);
+                bool isCertificateAllowed = await validator.ValidateCertificate(clientCertificate, _requirements, services);
                 if (!isCertificateAllowed)
                 {
                     context.Result = new UnauthorizedResult();
                 }
             }
+        }
+
+        private static ILogger GetLoggerOrDefault(IServiceProvider services)
+        {
+            return services.GetService<ILoggerFactory>()
+                           ?.CreateLogger<CertificateAuthenticationFilter>()
+                ?? (ILogger) NullLogger.Instance;
         }
     }
 }
