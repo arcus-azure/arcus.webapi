@@ -83,7 +83,7 @@ namespace Arcus.WebApi.Security.Authentication
         {
             return services.GetService<ILoggerFactory>()
                            ?.CreateLogger<CertificateAuthenticationFilter>()
-                ?? (ILogger) NullLogger.Instance;
+                   ?? (ILogger) NullLogger.Instance;
         }
     }
 }
