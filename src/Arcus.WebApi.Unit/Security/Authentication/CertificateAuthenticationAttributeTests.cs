@@ -33,9 +33,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(
-                    HttpMethod.Get,
-                    AuthorizedRoute);
+                var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute);
 
                 // Act
                 using (HttpResponseMessage response = await client.SendAsync(request))

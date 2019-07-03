@@ -32,6 +32,8 @@ namespace Arcus.WebApi.Security.Authentication
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfig WithSubject(X509ValidationLocation location, string configuredKey)
         {
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key to retrieve expected subject cannot be blank");
+
             return WithSubject(GetValidationLocationImplementation(location), configuredKey);
         }
 
@@ -44,6 +46,9 @@ namespace Arcus.WebApi.Security.Authentication
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfig WithSubject(IX509ValidationLocation location, string configuredKey)
         {
+            Guard.NotNull(location, nameof(location), "Location implementation to retrieve the expected subject cannot be 'null'");
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key to retrieve expected subject cannot be blank");
+
             return AddCertificateRequirement(X509ValidationRequirement.SubjectName, location, configuredKey);
         }
 
@@ -55,6 +60,8 @@ namespace Arcus.WebApi.Security.Authentication
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfig WithIssuer(X509ValidationLocation location, string configuredKey)
         {
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key to retrieve expected issuer cannot be blank");
+
             return WithIssuer(GetValidationLocationImplementation(location), configuredKey);
         }
 
@@ -67,6 +74,9 @@ namespace Arcus.WebApi.Security.Authentication
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfig WithIssuer(IX509ValidationLocation location, string configuredKey)
         {
+            Guard.NotNull(location, nameof(location), "Location implementation to retrieve the expected issuer cannot be 'null'");
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key to retrieve expected issuer cannot be blank");
+
             return AddCertificateRequirement(X509ValidationRequirement.IssuerName, location, configuredKey);
         }
 
@@ -78,6 +88,8 @@ namespace Arcus.WebApi.Security.Authentication
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfig WithThumbprint(X509ValidationLocation location, string configuredKey)
         {
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key to retrieve expected thumbprint cannot be blank");
+
             return WithThumbprint(GetValidationLocationImplementation(location), configuredKey);
         }
 
@@ -90,6 +102,9 @@ namespace Arcus.WebApi.Security.Authentication
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfig WithThumbprint(IX509ValidationLocation location, string configuredKey)
         {
+            Guard.NotNull(location, nameof(location), "Location implementation to retrieve the expected thumbprint cannot be 'null'");
+            Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key to retrieve expected thumbprint cannot be blank");
+
             return AddCertificateRequirement(X509ValidationRequirement.Thumbprint, location, configuredKey);
         }
 
@@ -126,8 +141,13 @@ namespace Arcus.WebApi.Security.Authentication
         /// <param name="services">The request services to retrieve the necessary implementations during the retrieval of each expected certificate value.</param>
         /// <param name="logger">The logger used during the retrieval of each expected certificate value.</param>
         /// <returns>The key/value pair of which certificate requirement to validate together with which value in the actual client certificate to expect.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="logger"/> is <c>null</c>.</exception>
         internal async Task<IDictionary<X509ValidationRequirement, ExpectedCertificateValue>> GetAllExpectedCertificateValues(IServiceProvider services, ILogger logger)
         {
+            Guard.NotNull(services, nameof(services), "Request services cannot be 'null'");
+            Guard.NotNull(logger, nameof(logger), "Logger cannot be 'null'");
+
             var expectedValuesByRequirement = await Task.WhenAll(_locationAndKeyByRequirement.Select(async keyValue =>
             {
                 IX509ValidationLocation location = keyValue.Value.location;
