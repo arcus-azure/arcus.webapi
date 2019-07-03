@@ -209,7 +209,7 @@ namespace Arcus.WebApi.Security.Authentication
         private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
         {
             IEnumerable<string> certificateSubjectNames =
-                clientCertificate.Subject
+                (clientCertificate.Subject ?? String.Empty)
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(subject => subject.Trim());
 
@@ -227,7 +227,7 @@ namespace Arcus.WebApi.Security.Authentication
         private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
         {
             IEnumerable<string> issuerNames = 
-                clientCertificate.Issuer
+                (clientCertificate.Issuer ?? String.Empty)
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(issuer => issuer.Trim());
 
