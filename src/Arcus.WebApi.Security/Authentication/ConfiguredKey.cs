@@ -22,5 +22,14 @@ namespace Arcus.WebApi.Security.Authentication
         /// Gets the <c>string</c> value of the configured key.
         /// </summary>
         internal string Value { get; }
+
+        /// <summary>
+        /// Returns a string that represents the current object.
+        /// </summary>
+        /// <returns>A string that represents the current object.</returns>
+        public override string ToString()
+        {
+            return Value;
+        }
     }
 }

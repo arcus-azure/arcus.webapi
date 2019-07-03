@@ -135,42 +135,41 @@ namespace Arcus.WebApi.Security.Authentication
             Guard.NotNull(requirements, nameof(requirements), "Certificate authentication validation requires a series of requirements and their configured key");
             Guard.NotNull(services, nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
             Guard.For<ArgumentException>(
-                () => requirements.Any(requirement => requirement.Value is null), 
+                () => requirements.Any(requirement => requirement.Value is null),
                 "Certificate authentication requires all configured keys in the series of requirements to be not 'null'");
 
-            IDictionary<X509ValidationRequirement, (ConfiguredKey configuredKey, string expected)> requirementValues = 
-                await GetExpectedCertificateValues(requirements, services);
-            
-            ILogger logger = 
-                services.GetService<ILoggerFactory>()
-                       ?.CreateLogger<CertificateAuthenticationValidator>() 
-                ?? (ILogger) NullLogger.Instance;
+            ILogger logger = GetLoggerOrDefault(services);
 
-            return requirementValues.All(keyValue =>
+            IDictionary<X509ValidationRequirement, ExpectedCertificateValue> requirementByExpected =
+                await GetExpectedCertificateValues(requirements, services, logger);
+
+            return requirementByExpected.All(keyValue =>
             {
-                if (keyValue.Value.expected == null)
-                {
-                    logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={keyValue.Value.configuredKey}");
-                    return false;
-                }
-
                 switch (keyValue.Key)
                 {
                     case X509ValidationRequirement.SubjectName:
-                        return IsCertificateSubjectNameAllowed(clientCertificate, keyValue.Value.expected, logger);
+                        return IsCertificateSubjectNameAllowed(clientCertificate, keyValue.Value, logger);
                     case X509ValidationRequirement.IssuerName:
-                        return IsCertificateIssuerNameAllowed(clientCertificate, keyValue.Value.expected, logger);
+                        return IsCertificateIssuerNameAllowed(clientCertificate, keyValue.Value, logger);
                     case X509ValidationRequirement.Thumbprint:
-                        return IsCertificateThumbprintAllowed(clientCertificate, keyValue.Value.expected, logger);
+                        return IsCertificateThumbprintAllowed(clientCertificate, keyValue.Value, logger);
                     default:
                         throw new ArgumentOutOfRangeException(nameof(keyValue.Key), keyValue.Key, "Unknown validation type specified");
                 }
             });
         }
 
-        private async Task<IDictionary<X509ValidationRequirement, (ConfiguredKey, string expected)>> GetExpectedCertificateValues(
+        private static ILogger GetLoggerOrDefault(IServiceProvider services)
+        {
+            return services.GetService<ILoggerFactory>()
+                           ?.CreateLogger<CertificateAuthenticationValidator>()
+                   ?? (ILogger) NullLogger.Instance;
+        }
+
+        private async Task<IDictionary<X509ValidationRequirement, ExpectedCertificateValue>> GetExpectedCertificateValues(
             IDictionary<X509ValidationRequirement, ConfiguredKey> requirements,
-            IServiceProvider services)
+            IServiceProvider services,
+            ILogger logger)
         {
             var requirementsWithoutLocation = 
                 requirements.Where(
@@ -186,26 +185,33 @@ namespace Arcus.WebApi.Security.Authentication
                     + "as a service  (ex. in the Startup) of your application");
             }
 
-            var requirementValues = await Task.WhenAll(requirements.Select(async keyValue =>
+            var requirementResults = await Task.WhenAll(requirements.Select(async keyValue =>
             {
                 IX509ValidationLocation location = _certificateRequirementValidations[keyValue.Key];
                 ConfiguredKey configuredKey = keyValue.Value;
 
                 string expected = await location.GetCertificateValueForConfiguredKey(configuredKey.Value, services);
-                return new KeyValuePair<X509ValidationRequirement, (ConfiguredKey, string)>(keyValue.Key, (keyValue.Value, expected));
+                if (expected == null)
+                {
+                    logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={configuredKey}");
+                }
+
+                return new KeyValuePair<X509ValidationRequirement, string>(keyValue.Key, expected);
             }));
 
-            return requirementValues.ToDictionary(x => x.Key, x => x.Value);
+            return requirementResults
+                   .Where(result => result.Value != null)
+                   .ToDictionary(result => result.Key, result => new ExpectedCertificateValue(result.Value));
         }
 
-        private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
+        private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
         {
             IEnumerable<string> certificateSubjectNames =
                 clientCertificate.Subject
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(subject => subject.Trim());
 
-            bool isAllowed = certificateSubjectNames.Any(subject => String.Equals(subject, expected));
+            bool isAllowed = certificateSubjectNames.Any(subject => String.Equals(subject, expected.Value));
             if (!isAllowed)
             {
                 logger.LogWarning(
@@ -216,14 +222,14 @@ namespace Arcus.WebApi.Security.Authentication
             return isAllowed;
         }
 
-        private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
+        private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
         {
             IEnumerable<string> issuerNames = 
                 clientCertificate.Issuer
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
                     .Select(issuer => issuer.Trim());
 
-            bool isAllowed = issuerNames.Any(issuer => String.Equals(issuer, expected));
+            bool isAllowed = issuerNames.Any(issuer => String.Equals(issuer, expected.Value));
             if (!isAllowed)
             {
                 logger.LogWarning(
@@ -234,11 +240,11 @@ namespace Arcus.WebApi.Security.Authentication
             return isAllowed;
         }
 
-        private static bool IsCertificateThumbprintAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
+        private static bool IsCertificateThumbprintAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
         {
             string actual = clientCertificate.Thumbprint?.Trim();
            
-            bool isAllowed = String.Equals(expected, actual);
+            bool isAllowed = String.Equals(expected.Value, actual);
             if (!isAllowed)
             {
                 logger.LogWarning(
