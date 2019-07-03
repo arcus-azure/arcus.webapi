@@ -25,9 +25,9 @@ This filter will then add authentication to all endpoints via one or many certif
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider
-- `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application
-- `IX509ValidationLocation`: custom implementation that implements the validation location interface
+- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider.
+- `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
+- `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values.
 
 This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class.
 
@@ -42,15 +42,12 @@ public void ConfigureServices(IServiceCollections services)
     services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
     services.AddScoped<CertificateAuthenticationValidator>(
-        serviceProvider => new CertificateAuthenticationValidator()
-            .WithRequirementLocation(X509ValidationRequirement.SubjectName, X509ValidationLocation.SecretProvider));
+        serviceProvider => new CertificateAuthenticationValidator(
+            new CertificateAuthenticationConfig()
+                .WithSubject(X509ValidationLocation.SecretProvider, "key-to-certificate-subject-name")));
 
     services.AddMvc(
-        options => options.Filters.Add(
-            new CertificateAuthenticationFilter(
-                X509ValidationRequirement.SubjectName,
-                "key-to-certificate-subject-name"
-            )));
+        options => options.Filters.Add(new CertificateAuthenticationFilter()));
 }
 ```
 
@@ -64,9 +61,9 @@ This certificate authentication will then be applied to the endpoint(s) that are
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider
-- `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application
-- `IX509ValidationLocation`: custom implementation that implements the validation location interface
+- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider.
+- `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
+- `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values
 
 This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class:
 
@@ -76,8 +73,9 @@ public void ConfigureServices(IServiceCollections services)
     services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
     services.AddScoped<CertificateAuthenticationValidator>(
-        serviceProvider => new CertificateAuthenticationValidator()
-            .WithRequirementLocation(X509ValidationRequirement.IssuerName, X509ValidationLocation.SecretProvider));
+        serviceProvider => new CertificateAuthenticationValidator(
+            new CertificateAuthenticationConfig()
+                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")));
  
     services.AddMvc();
 }
@@ -87,7 +85,7 @@ After that, the `CertificateAuthenticationAttribute` attribute can be applied on
 
 ```csharp
 [ApiController]
-[CertificateAuthentication(X509CertificateRequirement.IssuerName, "key-to-certificate-issuer-name")]
+[CertificateAuthentication]
 public class MyApiController : ControllerBase
 {
     [HttpGet]
