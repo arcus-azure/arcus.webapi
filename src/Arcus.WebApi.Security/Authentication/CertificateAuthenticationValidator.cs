@@ -190,7 +190,9 @@ namespace Arcus.WebApi.Security.Authentication
                 IX509ValidationLocation location = _certificateRequirementValidations[keyValue.Key];
                 ConfiguredKey configuredKey = keyValue.Value;
 
-                string expected = await location.GetCertificateValueForConfiguredKey(configuredKey.Value, services);
+                Task<string> getExpectedAsync = location.GetCertificateValueForConfiguredKey(configuredKey.Value, services);
+                string expected = getExpectedAsync != null ? await getExpectedAsync : null;
+                
                 if (expected == null)
                 {
                     logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={configuredKey}");
