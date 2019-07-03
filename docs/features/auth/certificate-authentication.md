@@ -4,6 +4,7 @@ layout: default
 ---
 
 The `Arcus.WebApi.Security` package provides a mechanism that uses the client certificate of the request to grant access to a web application.
+
 This authentication process consists of following parts:
 
 1. Find the client certificate configured on the HTTP request
