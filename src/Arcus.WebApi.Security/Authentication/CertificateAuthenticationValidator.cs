@@ -190,7 +190,7 @@ namespace Arcus.WebApi.Security.Authentication
                 IX509ValidationLocation location = _certificateLocationsByRequirement[keyValue.Key];
                 ConfiguredKey configuredKey = keyValue.Value;
 
-                Task<string> getExpectedAsync = location.GetCertificateValueForConfiguredKey(configuredKey.Value, services);
+                Task<string> getExpectedAsync = location.GetExpectedCertificateValueForConfiguredKey(configuredKey.Value, services);
                 string expected = getExpectedAsync != null ? await getExpectedAsync : null;
                 
                 if (expected == null)
