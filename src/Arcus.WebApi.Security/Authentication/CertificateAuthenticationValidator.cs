@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Security.Authentication
     /// </summary>
     public class CertificateAuthenticationValidator
     {
-        private readonly IDictionary<X509ValidationRequirement, IX509ValidationLocation> _certificateRequirementValidations;
+        private readonly IDictionary<X509ValidationRequirement, IX509ValidationLocation> _certificateLocationsByRequirement;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationValidator"/> class.
@@ -26,33 +26,33 @@ namespace Arcus.WebApi.Security.Authentication
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationValidator"/> class.
         /// </summary>
-        /// <param name="certificateRequirementValidations">The series of certificate validation locations by their validation requirement.</param>
+        /// <param name="certificateLocationsByRequirement">The series of certificate validation locations by their validation requirement.</param>
         /// <exception cref="ArgumentNullException">Thrown when the certificate validation locations are <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when any of the certificate validation locations are <c>null</c>.</exception>
-        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="certificateRequirementValidations"/> has an unknown validation location.</exception>
-        public CertificateAuthenticationValidator(IDictionary<X509ValidationRequirement, X509ValidationLocation> certificateRequirementValidations)
-            : this(certificateRequirementValidations.ToDictionary(
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="certificateLocationsByRequirement"/> has an unknown validation location.</exception>
+        public CertificateAuthenticationValidator(IDictionary<X509ValidationRequirement, X509ValidationLocation> certificateLocationsByRequirement)
+            : this(certificateLocationsByRequirement.ToDictionary(
                        requirement => requirement.Key, 
                        requirement => GetValidationLocationImplementation(requirement.Value))) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationValidator"/> class.
         /// </summary>
-        /// <param name="certificateRequirementValidations">The series of certificate validation locations by their validation requirement.</param>
+        /// <param name="certificateLocationsByRequirement">The series of certificate validation locations by their validation requirement.</param>
         /// <exception cref="ArgumentNullException">Thrown when the certificate validation locations are <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when any of the certificate validation locations are <c>null</c>.</exception>
-        public CertificateAuthenticationValidator(IDictionary<X509ValidationRequirement, IX509ValidationLocation> certificateRequirementValidations)
+        public CertificateAuthenticationValidator(IDictionary<X509ValidationRequirement, IX509ValidationLocation> certificateLocationsByRequirement)
         {
             Guard.NotNull(
-                certificateRequirementValidations, 
-                nameof(certificateRequirementValidations), 
+                certificateLocationsByRequirement, 
+                nameof(certificateLocationsByRequirement), 
                 "Certificate authentication validation requires a series of locations by requirement.");
 
             Guard.For<ArgumentException>(
-                () => certificateRequirementValidations.Any(requirement => requirement.Value is null), 
+                () => certificateLocationsByRequirement.Any(requirement => requirement.Value is null), 
                 "Certificate authentication requires all locations by requirement not to be 'null'");
 
-            _certificateRequirementValidations = certificateRequirementValidations;
+            _certificateLocationsByRequirement = certificateLocationsByRequirement;
         }
 
         /// <summary>
@@ -98,52 +98,52 @@ namespace Arcus.WebApi.Security.Authentication
         {
             Guard.NotNull(location, nameof(location), "Cannot add validation location that is 'null'");
 
-            if (_certificateRequirementValidations.ContainsKey(requirement))
+            if (_certificateLocationsByRequirement.ContainsKey(requirement))
             {
                 throw new InvalidOperationException(
                     $"Cannot add validation location for a requirement because there already exists a location for requirement: '{requirement}'");
             }
 
-            _certificateRequirementValidations.Add(requirement, location);
+            _certificateLocationsByRequirement.Add(requirement, location);
             return this;
         }
 
         /// <summary>
-        /// Validate the specified <paramref name="clientCertificate"/> based on the given <paramref name="requirements"/>
+        /// Validate the specified <paramref name="clientCertificate"/> based on the given <paramref name="configuredKeysByRequirement"/>
         /// using the <paramref name="services"/> to retrieve registered instances that will provide the expected certificate values.
         /// </summary>
         /// <param name="clientCertificate">The client certificate to validate.</param>
-        /// <param name="requirements">The requirements to identify which parts of the <paramref name="clientCertificate"/> should be validated.</param>
+        /// <param name="configuredKeysByRequirement">The requirements to identify which parts of the <paramref name="clientCertificate"/> should be validated.</param>
         /// <param name="services">The collection of registered services, (ex. from the request pipeline).</param>
         /// <returns>
         ///     <c>true</c> when the specified <paramref name="clientCertificate"/> is valid, <c>false</c> otherwise.
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="clientCertificate"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="requirements"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configuredKeysByRequirement"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="requirements"/> contains a configuration key that is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKeysByRequirement"/> contains a configuration key that is <c>null</c>.</exception>
         /// <exception cref="KeyNotFoundException">
-        ///     Thrown when the <paramref name="requirements"/> requires to validate a property of the <paramref name="clientCertificate"/>
+        ///     Thrown when the <paramref name="configuredKeysByRequirement"/> requires to validate a property of the <paramref name="clientCertificate"/>
         ///     for which there exists no registered <see cref="IX509ValidationLocation"/> implementation.
         /// </exception>
         internal async Task<bool> ValidateCertificate(
             X509Certificate2 clientCertificate,
-            IDictionary<X509ValidationRequirement, ConfiguredKey> requirements,
+            IDictionary<X509ValidationRequirement, ConfiguredKey> configuredKeysByRequirement,
             IServiceProvider services)
         {
             Guard.NotNull(clientCertificate, nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
-            Guard.NotNull(requirements, nameof(requirements), "Certificate authentication validation requires a series of requirements and their configured key");
+            Guard.NotNull(configuredKeysByRequirement, nameof(configuredKeysByRequirement), "Certificate authentication validation requires a series of requirements and their configured key");
             Guard.NotNull(services, nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
             Guard.For<ArgumentException>(
-                () => requirements.Any(requirement => requirement.Value is null),
+                () => configuredKeysByRequirement.Any(requirement => requirement.Value is null),
                 "Certificate authentication requires all configured keys in the series of requirements to be not 'null'");
 
             ILogger logger = GetLoggerOrDefault(services);
 
-            IDictionary<X509ValidationRequirement, ExpectedCertificateValue> requirementByExpected =
-                await GetExpectedCertificateValues(requirements, services, logger);
+            IDictionary<X509ValidationRequirement, ExpectedCertificateValue> expectedValuesByRequirement =
+                await GetExpectedCertificateValues(configuredKeysByRequirement, services, logger);
 
-            return requirementByExpected.All(keyValue =>
+            return expectedValuesByRequirement.All(keyValue =>
             {
                 switch (keyValue.Key)
                 {
@@ -167,14 +167,14 @@ namespace Arcus.WebApi.Security.Authentication
         }
 
         private async Task<IDictionary<X509ValidationRequirement, ExpectedCertificateValue>> GetExpectedCertificateValues(
-            IDictionary<X509ValidationRequirement, ConfiguredKey> requirements,
+            IDictionary<X509ValidationRequirement, ConfiguredKey> configuredKeysByRequirement,
             IServiceProvider services,
             ILogger logger)
         {
             var requirementsWithoutLocation = 
-                requirements.Where(
-                    requirement => !_certificateRequirementValidations.ContainsKey(requirement.Key)
-                                   || _certificateRequirementValidations[requirement.Key] is null);
+                configuredKeysByRequirement.Where(
+                    requirement => !_certificateLocationsByRequirement.ContainsKey(requirement.Key)
+                                   || _certificateLocationsByRequirement[requirement.Key] is null);
             
             if (requirementsWithoutLocation.Any())
             {
@@ -185,9 +185,9 @@ namespace Arcus.WebApi.Security.Authentication
                     + "as a service  (ex. in the Startup) of your application");
             }
 
-            var requirementResults = await Task.WhenAll(requirements.Select(async keyValue =>
+            var expectedValuesByRequirement = await Task.WhenAll(configuredKeysByRequirement.Select(async keyValue =>
             {
-                IX509ValidationLocation location = _certificateRequirementValidations[keyValue.Key];
+                IX509ValidationLocation location = _certificateLocationsByRequirement[keyValue.Key];
                 ConfiguredKey configuredKey = keyValue.Value;
 
                 Task<string> getExpectedAsync = location.GetCertificateValueForConfiguredKey(configuredKey.Value, services);
@@ -201,7 +201,7 @@ namespace Arcus.WebApi.Security.Authentication
                 return new KeyValuePair<X509ValidationRequirement, string>(keyValue.Key, expected);
             }));
 
-            return requirementResults
+            return expectedValuesByRequirement
                    .Where(result => result.Value != null)
                    .ToDictionary(result => result.Key, result => new ExpectedCertificateValue(result.Value));
         }

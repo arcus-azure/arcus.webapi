@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Unit.Security.Doubles
         /// </summary>
         /// <param name="configurationKey">The configured key for which the expected certificate value is registered.</param>
         /// <param name="services">The services collections of the HTTP request pipeline to retrieve registered instances.</param>
-        public Task<string> GetCertificateValueForConfiguredKey(string configurationKey, IServiceProvider services)
+        public Task<string> GetExpectedCertificateValueForConfiguredKey(string configurationKey, IServiceProvider services)
         {
             return Task.FromResult(_stubbedValue);
         }

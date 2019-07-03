@@ -29,7 +29,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// </summary>
         /// <param name="configurationKey">The configured key for which the expected certificate value is registered.</param>
         /// <param name="services">The services collections of the HTTP request pipeline to retrieve registered instances.</param>
-        public async Task<string> GetCertificateValueForConfiguredKey(string configurationKey, IServiceProvider services)
+        public async Task<string> GetExpectedCertificateValueForConfiguredKey(string configurationKey, IServiceProvider services)
         {
             ISecretProvider userDefinedSecretProvider = 
                 services.GetService<ICachedSecretProvider>() 
