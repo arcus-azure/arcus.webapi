@@ -67,9 +67,16 @@ namespace Arcus.WebApi.Security.Authentication
 
         private static ILogger GetLoggerOrDefault(IServiceProvider services)
         {
-            return services.GetService<ILoggerFactory>()
-                           ?.CreateLogger<CertificateAuthenticationValidator>()
-                   ?? (ILogger) NullLogger.Instance;
+            ILogger logger = 
+                services.GetService<ILoggerFactory>()
+                        ?.CreateLogger<CertificateAuthenticationFilter>();
+
+            if (logger != null)
+            {
+                return logger;
+            }
+
+            return NullLogger.Instance;
         }
 
         private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)

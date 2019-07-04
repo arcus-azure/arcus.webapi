@@ -60,9 +60,16 @@ namespace Arcus.WebApi.Security.Authentication
 
         private static ILogger GetLoggerOrDefault(IServiceProvider services)
         {
-            return services.GetService<ILoggerFactory>()
-                           ?.CreateLogger<CertificateAuthenticationFilter>()
-                   ?? (ILogger) NullLogger.Instance;
+            ILogger logger = 
+                services.GetService<ILoggerFactory>()
+                        ?.CreateLogger<CertificateAuthenticationFilter>();
+
+            if (logger != null)
+            {
+                return logger;
+            }
+
+            return NullLogger.Instance;
         }
     }
 }
