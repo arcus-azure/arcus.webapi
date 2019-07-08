@@ -41,10 +41,13 @@ public void ConfigureServices(IServiceCollections services)
 {
     services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
+    var certificateAuthenticationConfig = 
+        new CertificateAuthenticationConfigBuilder()
+            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+            .Build();
+    
     services.AddScoped<CertificateAuthenticationValidator>(
-        serviceProvider => new CertificateAuthenticationValidator(
-            new CertificateAuthenticationConfig()
-                .WithSubject(X509ValidationLocation.SecretProvider, "key-to-certificate-subject-name")));
+        serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
 
     services.AddMvc(
         options => options.Filters.Add(new CertificateAuthenticationFilter()));
@@ -72,10 +75,13 @@ public void ConfigureServices(IServiceCollections services)
 {
     services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
+    var certificateAuthenticationConfig = 
+        new CertificateAuthenticationConfigBuilder()
+            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+            .Build();
+
     services.AddScoped<CertificateAuthenticationValidator>(
-        serviceProvider => new CertificateAuthenticationValidator(
-            new CertificateAuthenticationConfig()
-                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")));
+        serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
  
     services.AddMvc();
 }

@@ -27,8 +27,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SubjectKey, "CN=subject")));
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                        new CertificateAuthenticationConfig()
-                            .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)));
+                        new CertificateAuthenticationConfigBuilder()
+                            .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
+                            .Build()));
 
             _testServer.SetClientCertificate(SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"));
             using (HttpClient client = _testServer.CreateClient())
@@ -70,10 +71,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
                 _testServer.AddService(
                     new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfig()
+                            new CertificateAuthenticationConfigBuilder()
                                 .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
                                 .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
-                                .WithThumbprint(X509ValidationLocation.SecretProvider, ThumbprintKey)));
+                                .WithThumbprint(X509ValidationLocation.SecretProvider, ThumbprintKey)
+                                .Build()));
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())
@@ -116,10 +118,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
                 _testServer.AddService(
                     new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfig()
+                            new CertificateAuthenticationConfigBuilder()
                                 .WithSubject(X509ValidationLocation.Configuration, SubjectKey)
                                 .WithIssuer(X509ValidationLocation.Configuration, IssuerKey)
-                                .WithThumbprint(X509ValidationLocation.Configuration, ThumbprintKey)));
+                                .WithThumbprint(X509ValidationLocation.Configuration, ThumbprintKey)
+                                .Build()));
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())
@@ -160,10 +163,11 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((IssuerKey, "CN=issuer")));
                 _testServer.AddService(
                     new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfig()
+                            new CertificateAuthenticationConfigBuilder()
                                 .WithSubject(X509ValidationLocation.Configuration, SubjectKey)
                                 .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
-                                .WithThumbprint(new StubX509ValidationLocation(clientCertificate.Thumbprint + thumbprintNoise), ThumbprintKey)));
+                                .WithThumbprint(new StubX509ValidationLocation(clientCertificate.Thumbprint + thumbprintNoise), ThumbprintKey)
+                                .Build()));
 
                 _testServer.SetClientCertificate(clientCertificate);
                 using (HttpClient client = _testServer.CreateClient())

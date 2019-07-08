@@ -23,8 +23,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((subjectKey, subjectValue)));
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                        new CertificateAuthenticationConfig()
-                            .WithSubject(X509ValidationLocation.SecretProvider, subjectKey)));
+                        new CertificateAuthenticationConfigBuilder()
+                            .WithSubject(X509ValidationLocation.SecretProvider, subjectKey)
+                            .Build()));
             
             _testServer.AddFilter(new CertificateAuthenticationFilter());
             
@@ -62,8 +63,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise)));
                 _testServer.AddService(
                     new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfig()
-                                .WithThumbprint(X509ValidationLocation.SecretProvider, thumbprintKey)));
+                            new CertificateAuthenticationConfigBuilder()
+                                .WithThumbprint(X509ValidationLocation.SecretProvider, thumbprintKey)
+                                .Build()));
                 
                 _testServer.AddFilter(new CertificateAuthenticationFilter());
 
@@ -105,9 +107,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                        new CertificateAuthenticationConfig()
+                        new CertificateAuthenticationConfigBuilder()
                             .WithSubject(X509ValidationLocation.SecretProvider, subjectKey)
-                            .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)));
+                            .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)
+                            .Build()));
 
             _testServer.AddFilter(new CertificateAuthenticationFilter());
 
@@ -149,9 +152,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                    new CertificateAuthenticationConfig()
+                    new CertificateAuthenticationConfigBuilder()
                         .WithSubject(X509ValidationLocation.Configuration, subjectKey)
-                        .WithIssuer(X509ValidationLocation.Configuration, issuerKey)));
+                        .WithIssuer(X509ValidationLocation.Configuration, issuerKey)
+                        .Build()));
 
             _testServer.AddFilter(new CertificateAuthenticationFilter());
 
@@ -192,9 +196,10 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((issuerKey, "CN=known-issuername")));
             _testServer.AddService(
                 new CertificateAuthenticationValidator(
-                    new CertificateAuthenticationConfig()
+                    new CertificateAuthenticationConfigBuilder()
                         .WithSubject(X509ValidationLocation.Configuration, subjectKey)
-                        .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)));
+                        .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)
+                        .Build()));
 
             _testServer.AddFilter(new CertificateAuthenticationFilter());
 
