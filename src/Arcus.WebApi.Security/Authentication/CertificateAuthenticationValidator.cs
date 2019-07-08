@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="clientCertificate"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
-        internal async Task<bool> ValidateCertificate(X509Certificate2 clientCertificate, IServiceProvider services)
+        internal async Task<bool> IsCertificateAllowed(X509Certificate2 clientCertificate, IServiceProvider services)
         {
             Guard.NotNull(clientCertificate, nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
             Guard.NotNull(services, nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
@@ -49,20 +49,8 @@ namespace Arcus.WebApi.Security.Authentication
             IDictionary<X509ValidationRequirement, ExpectedCertificateValue> expectedValuesByRequirement =
                 await _certificateAuthenticationConfig.GetAllExpectedCertificateValues(services, logger);
 
-            return expectedValuesByRequirement.All(keyValue =>
-            {
-                switch (keyValue.Key)
-                {
-                    case X509ValidationRequirement.SubjectName:
-                        return IsCertificateSubjectNameAllowed(clientCertificate, keyValue.Value, logger);
-                    case X509ValidationRequirement.IssuerName:
-                        return IsCertificateIssuerNameAllowed(clientCertificate, keyValue.Value, logger);
-                    case X509ValidationRequirement.Thumbprint:
-                        return IsCertificateThumbprintAllowed(clientCertificate, keyValue.Value, logger);
-                    default:
-                        throw new ArgumentOutOfRangeException(nameof(keyValue.Key), keyValue.Key, "Unknown validation type specified");
-                }
-            });
+            return expectedValuesByRequirement.All(
+                keyValue => ValidateCertificateRequirement(clientCertificate, keyValue, logger));
         }
 
         private static ILogger GetLoggerOrDefault(IServiceProvider services)
@@ -77,6 +65,24 @@ namespace Arcus.WebApi.Security.Authentication
             }
 
             return NullLogger.Instance;
+        }
+
+        private static bool ValidateCertificateRequirement(
+            X509Certificate2 clientCertificate, 
+            KeyValuePair<X509ValidationRequirement, ExpectedCertificateValue> keyValue, 
+            ILogger logger)
+        {
+            switch (keyValue.Key)
+            {
+                case X509ValidationRequirement.SubjectName:
+                    return IsCertificateSubjectNameAllowed(clientCertificate, keyValue.Value, logger);
+                case X509ValidationRequirement.IssuerName:
+                    return IsCertificateIssuerNameAllowed(clientCertificate, keyValue.Value, logger);
+                case X509ValidationRequirement.Thumbprint:
+                    return IsCertificateThumbprintAllowed(clientCertificate, keyValue.Value, logger);
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(keyValue.Key), keyValue.Key, "Unknown validation type specified");
+            }
         }
 
         private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
