@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authentication.Interfaces;
+using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -33,6 +34,9 @@ namespace Arcus.WebApi.Security.Authentication
         {
             try
             {
+                Guard.NotNullOrWhitespace(configurationKey, nameof(configurationKey), "Configured key cannot be blank");
+                Guard.NotNull(services, nameof(services), "Registered services cannot be 'null'");
+
                 var configuration = services.GetService<IConfiguration>();
                 if (configuration == null)
                 {

@@ -19,11 +19,18 @@ namespace Arcus.WebApi.Security.Authentication
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationConfig"/> class.
         /// </summary>
-        /// <param name="locationAndKeyByRequirement"></param>
+        /// <param name="locationAndKeyByRequirement">
+        ///     The series of validation locations and configured keys by certificate requirements that describes how which parts of the client certificate should be validated.
+        /// </param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="locationAndKeyByRequirement"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="locationAndKeyByRequirement"/> contains any validation location or configured key that is <c>null</c>.</exception>
         internal CertificateAuthenticationConfig(
             IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, ConfiguredKey configuredKey)> locationAndKeyByRequirement)
         {
             Guard.NotNull(locationAndKeyByRequirement, nameof(locationAndKeyByRequirement), "Location and key by certificate requirement dictionary cannot be 'null'");
+            Guard.For<ArgumentException>(
+                () => locationAndKeyByRequirement.Any(keyValue => keyValue.Value.location is null || keyValue.Value.configuredKey is null), 
+                "All locations and configured keys by certificate requirement cannot be 'null'");
 
             _locationAndKeyByRequirement = locationAndKeyByRequirement;
         }

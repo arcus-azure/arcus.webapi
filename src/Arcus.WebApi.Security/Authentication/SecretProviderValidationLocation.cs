@@ -4,6 +4,7 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
 using Arcus.WebApi.Security.Authentication.Interfaces;
+using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcus.WebApi.Security.Authentication 
@@ -31,6 +32,9 @@ namespace Arcus.WebApi.Security.Authentication
         /// <param name="services">The services collections of the HTTP request pipeline to retrieve registered instances.</param>
         public async Task<string> GetExpectedCertificateValueForConfiguredKey(string configurationKey, IServiceProvider services)
         {
+            Guard.NotNullOrWhitespace(configurationKey, nameof(configurationKey), "Configured key cannot be blank");
+            Guard.NotNull(services, nameof(services), "Registered services cannot be 'null'");
+
             ISecretProvider userDefinedSecretProvider = 
                 services.GetService<ICachedSecretProvider>() 
                 ?? services.GetService<ISecretProvider>();
