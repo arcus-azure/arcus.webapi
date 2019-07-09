@@ -30,7 +30,8 @@ PM > Install-Package Arcus.WebApi.Logging
 
 The `Arcus.WebApi.Security` package contains functionality to easily add security capabilities to an API.
 
-- [Shared access key authentication](features/shared-access-key.md)
+- [Shared access key authentication](features/auth/shared-access-key.md)
+- [Certificate authentication](features/auth/certificate.md)
 
 ## Arcus.WebApi.Logging
 
