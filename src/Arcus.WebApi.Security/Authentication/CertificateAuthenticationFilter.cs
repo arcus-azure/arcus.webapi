@@ -53,7 +53,7 @@ namespace Arcus.WebApi.Security.Authentication
                         + "Please configure such an instance (ex. in the Startup) of your application");
                 }
 
-                bool isCertificateAllowed = await validator.IsCertificateAllowed(clientCertificate, services);
+                bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
                 if (!isCertificateAllowed)
                 {
                     context.Result = new UnauthorizedResult();

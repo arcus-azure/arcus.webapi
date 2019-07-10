@@ -43,7 +43,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// <returns>The key/value pair of which certificate requirement to validate together with which value in the actual client certificate to expect.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="logger"/> is <c>null</c>.</exception>
-        internal async Task<IDictionary<X509ValidationRequirement, ExpectedCertificateValue>> GetAllExpectedCertificateValues(IServiceProvider services, ILogger logger)
+        internal async Task<IDictionary<X509ValidationRequirement, ExpectedCertificateValue>> GetAllExpectedCertificateValuesAsync(IServiceProvider services, ILogger logger)
         {
             Guard.NotNull(services, nameof(services), "Request services cannot be 'null'");
             Guard.NotNull(logger, nameof(logger), "Logger cannot be 'null'");
@@ -51,14 +51,14 @@ namespace Arcus.WebApi.Security.Authentication
             var expectedValuesByRequirement = 
                 await Task.WhenAll(
                     _locationAndKeyByRequirement.Select(
-                        keyValue => GetExpectedValueForCertificateRequirement(keyValue, services, logger)));
+                        keyValue => GetExpectedValueForCertificateRequirementAsync(keyValue, services, logger)));
 
             return expectedValuesByRequirement
                    .Where(result => result.Value != null)
                    .ToDictionary(result => result.Key, result => new ExpectedCertificateValue(result.Value));
         }
 
-        private static async Task<KeyValuePair<X509ValidationRequirement, string>> GetExpectedValueForCertificateRequirement(
+        private static async Task<KeyValuePair<X509ValidationRequirement, string>> GetExpectedValueForCertificateRequirementAsync(
             KeyValuePair<X509ValidationRequirement, (IX509ValidationLocation location, ConfiguredKey configuredKey)> keyValue, 
             IServiceProvider services, 
             ILogger logger)
@@ -66,7 +66,7 @@ namespace Arcus.WebApi.Security.Authentication
             IX509ValidationLocation location = keyValue.Value.location;
             ConfiguredKey configuredKey = keyValue.Value.configuredKey;
 
-            Task<string> getExpectedAsync = location.GetExpectedCertificateValueForConfiguredKey(configuredKey.Value, services);
+            Task<string> getExpectedAsync = location.GetExpectedCertificateValueForConfiguredKeyAsync(configuredKey.Value, services);
             string expected = getExpectedAsync != null ? await getExpectedAsync : null;
 
             if (expected == null)
