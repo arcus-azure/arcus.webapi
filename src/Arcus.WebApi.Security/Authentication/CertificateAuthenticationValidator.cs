@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="clientCertificate"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
-        internal async Task<bool> IsCertificateAllowed(X509Certificate2 clientCertificate, IServiceProvider services)
+        internal async Task<bool> IsCertificateAllowedAsync(X509Certificate2 clientCertificate, IServiceProvider services)
         {
             Guard.NotNull(clientCertificate, nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
             Guard.NotNull(services, nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
@@ -47,7 +47,7 @@ namespace Arcus.WebApi.Security.Authentication
             ILogger logger = GetLoggerOrDefault(services);
 
             IDictionary<X509ValidationRequirement, ExpectedCertificateValue> expectedValuesByRequirement =
-                await _certificateAuthenticationConfig.GetAllExpectedCertificateValues(services, logger);
+                await _certificateAuthenticationConfig.GetAllExpectedCertificateValuesAsync(services, logger);
 
             return expectedValuesByRequirement.All(
                 keyValue => ValidateCertificateRequirement(clientCertificate, keyValue, logger));
