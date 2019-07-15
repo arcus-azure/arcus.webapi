@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using Microsoft.AspNetCore.Authorization;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
+using GuardNet;
 
 namespace Arcus.WebApi.OpenApi.Extensions
 {
@@ -20,6 +22,8 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// <remarks>It is not possible right now to document the scopes on a fine grained operation-level.</remarks>
         public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes)
         {
+            Guard.NotNull(scopes, nameof(scopes));
+            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "The list of scopes cannot contain an empty scope");
             _scopes = scopes;
         }
 
