@@ -48,7 +48,7 @@ The `Arcus.WebApi.Logging` package contains functionality that can be incorporat
 
 The `Arcus.WebApi.OpenApi.Extensions` package contains functionality that can be used to easily improve the Open API documentation of an API when making using of Swashbuckle.
 
-- [Exposing security information in Swashbuckle documentation](features/openapi.securitydefinitions.md)
+- [Exposing security information in Swashbuckle documentation](features/openapi-securitydefinitions.md)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
