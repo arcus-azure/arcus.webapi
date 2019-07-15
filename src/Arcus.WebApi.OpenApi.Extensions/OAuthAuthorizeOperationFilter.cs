@@ -16,6 +16,8 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// <summary>
         /// Initializes a new instance of the <see cref="OAuthAuthorizeOperationFilter"/> class.
         /// </summary>
+        /// <param name="scopes">A list of API scopes that is defined for the API that must be documented.</param>
+        /// <remarks>It is not possible right now to document the scopes on a fine grained operation-level.</remarks>
         public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes)
         {
             _scopes = scopes;
