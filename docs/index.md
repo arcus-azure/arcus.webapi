@@ -44,7 +44,7 @@ The `Arcus.WebApi.Logging` package contains functionality that can be incorporat
 
 - [Logging unhandled exceptions](features/logging.md)
 
-## Arcus.WebApi.OpenApi.Extensions
+## OpenAPI Extensions
 
 The `Arcus.WebApi.OpenApi.Extensions` package contains functionality that can be used to easily improve the Open API documentation of an API when making using of Swashbuckle.
 
