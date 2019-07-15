@@ -1,10 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Arcus.WebApi.OpenApi.Extensions
 {
@@ -23,6 +21,11 @@ namespace Arcus.WebApi.OpenApi.Extensions
             _scopes = scopes;
         }
 
+        /// <summary>
+        /// Applies the OperationFilter to the API <paramref name="operation"/>.
+        /// </summary>
+        /// <param name="operation">The <see cref="Operation"/> instance on which the OperationFilter must be applied.</param>
+        /// <param name="context">Provides meta-information on the <paramref name="operation"/> instance.</param>
         public void Apply(Operation operation, OperationFilterContext context)
         {
             var hasAuthorize = context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() ||
