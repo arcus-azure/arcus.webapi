@@ -26,6 +26,6 @@ services.AddSwaggerGen(setupAction =>
       Scopes = scopes
    });
 
-   setupAction.OperationFilter<OAuthAuthorizeOperationFilter>("myApiScope1", "myApiScope2");
+   setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] {new [] {"myApiScope1", "myApiScope2"});
 });
 ```
