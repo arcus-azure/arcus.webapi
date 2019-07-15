@@ -12,7 +12,7 @@ The `OAuthAuthorizeOperationFilter` that is part of this package exposes this fu
 
 ### Usage
 
-To indicate that an API is protected by OAuth, and enable Swagger UI to retrieve a JWT token when invoking API operations via Swagger, add the following code to the `ConfigureServices` method of the `Startup` class:
+To indicate that an API is protected by OAuth, you need to add `AuthorizeCheckOperationFilter` as an `OperationFilter` when configuring Swashbuckles Swagger generation:
 
 ```csharp
 services.AddSwaggerGen(c =>
