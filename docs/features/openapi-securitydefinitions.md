@@ -15,17 +15,17 @@ The `OAuthAuthorizeOperationFilter` that is part of this package exposes this fu
 To indicate that an API is protected by OAuth, you need to add `AuthorizeCheckOperationFilter` as an `OperationFilter` when configuring Swashbuckles Swagger generation:
 
 ```csharp
-services.AddSwaggerGen(c =>
+services.AddSwaggerGen(setupAction =>
 {
-   c.SwaggerDoc("v1", new Info { Title = "My API v1", Version = "v1" });
+   setupAction.SwaggerDoc("v1", new Info { Title = "My API v1", Version = "v1" });
 
-   c.AddSecurityDefinition("oauth2", new OAuth2Scheme
+   setupAction.AddSecurityDefinition("oauth2", new OAuth2Scheme
    {
       Flow = "implicit",
       AuthorizationUrl = $"{authorityUrl}connect/authorize",
       Scopes = scopes
    });
 
-   c.OperationFilter<OAuthAuthorizeOperationFilter>("myApiScope1", "myApiScope2");
+   setupAction.OperationFilter<OAuthAuthorizeOperationFilter>("myApiScope1", "myApiScope2");
 });
 ```
