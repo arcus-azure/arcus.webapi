@@ -11,14 +11,14 @@ namespace Arcus.WebApi.Unit.Security.Configuration
         public void AddAzureKeyVault_WithSecretWithConfigurationKey_AccessesSecretProviderForSecretValuesFromConfigurationTokens_ResolvesConfigurationToken()
         {
             // Arrange
-            const string configurationKey = "ConnectionString";
+            const string configurationKey = "Connection_String";
             const string expected = "connection to somewhere";
 
             var stubProvider = new InMemorySecretProvider((configurationKey, expected));
 
             var configuration =
                 new ConfigurationBuilder()
-                    .AddInMemoryCollection(new [] { new KeyValuePair<string, string>(configurationKey, "#{ConnectionString}#") })
+                    .AddInMemoryCollection(new [] { new KeyValuePair<string, string>("ConnectionString", $"#{{{configurationKey}}}#") })
                     .AddAzureKeyVault(stubProvider)
                     .Build();
 
