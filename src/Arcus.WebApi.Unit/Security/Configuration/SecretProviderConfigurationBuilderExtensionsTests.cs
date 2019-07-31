@@ -8,7 +8,7 @@ namespace Arcus.WebApi.Unit.Security.Configuration
     public class SecretProviderConfigurationBuilderExtensionsTests
     {
         [Fact]
-        public void AddKeyVault_Accesses_SecretProvider_For_Secret_Values_From_Configuration_Tokens()
+        public void AddAzureKeyVault_WithSecretWithConfigurationKey_AccessesSecretProviderForSecretValuesFromConfigurationTokens_ResolvesConfigurationToken()
         {
             // Arrange
             const string configurationKey = "ConnectionString";
@@ -27,6 +27,28 @@ namespace Arcus.WebApi.Unit.Security.Configuration
 
             // Assert
             Assert.Equal(expected, section.Value);
+        }
+
+        [Fact]
+        public void AddAzureKeyVault_WithoutSecretWithConfigurationKey_AccessesSecretProviderForSecretValuesFromConfigurationTokens_ButDontResolveConfigurationToken()
+        {
+            // Arrange
+            const string configurationKey = "ConnectionString";
+            const string configurationToken = "#{ConnectionString}#";
+
+            var stubProvider = new InMemorySecretProvider(("Some other secret key name", "Some other secret value"));
+
+            var configuration =
+                new ConfigurationBuilder()
+                    .AddInMemoryCollection(new [] { new KeyValuePair<string, string>(configurationKey, configurationToken) })
+                    .AddAzureKeyVault(stubProvider)
+                    .Build();
+
+            // Act
+            IConfigurationSection section = configuration.GetSection(configurationKey);
+
+            // Assert
+            Assert.Equal(configurationToken, section.Value);
         }
     }
 }
