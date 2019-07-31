@@ -7,10 +7,12 @@ The `Arcus.WebApi.Security` package provides a mechanism to use your own `ISecre
 
 ### Usage
 
-When building your `IConfiguration`, you can call the extension `.AddAzureKeyVault` to pass in your version of the `ISecretProvider` instead on using a specific key vault store name of client.
+When building your `IConfiguration`, you can call the extension `.AddAzureKeyVault` to pass in your version of the `ISecretProvider` instead of on using a specific key vault store name of client.
 
 ```csharp
-ISecretProvider yourSecretProvider = ...
+var vaultAuthenticator = new ManagedServiceIdentityAuthenticator();
+var vaultConfiguration = new KeyVaultConfiguration(keyVaultUri);
+var yourSecretProvider = new KeyVaultSecretProvider(vaultAuthenticator, vaultConfiguration);
 
 var config = new ConfigurationBuilder()
     .AddAzureKeyVault(yourSecretProvider)
