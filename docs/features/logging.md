@@ -3,14 +3,20 @@ title: "Logging unhandled exceptions via ASP.NET Core middleware"
 layout: default
 ---
 
-## Logging unhandled exceptions
-
-### Introduction
+# Logging unhandled exceptions
 
 The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
 The unhandled exceptions are caught by this middleware component and are logged through the `ILogger` implementations that are configured inside the project.
 
-### Usage
+## Installation
+
+This feature requires to install our NuGet package
+
+```shell
+PM > Install-Package Arcus.WebApi.Logging
+```
+
+## Usage
 
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
