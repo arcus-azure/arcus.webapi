@@ -1,9 +1,9 @@
 ﻿using System.Threading.Tasks;
-using Microsoft.Extensions.Configuration;
-using GuardNet;
 using Arcus.Security.Secrets.Core.Interfaces;
+using GuardNet;
+using Microsoft.Extensions.Configuration;
 
-namespace Arcus.WebApi.Security.Configuration
+namespace Arcus.WebApi.Security.Extensions.Configuration
 {
     /// <summary>
     /// Provider to retrieve configuration tokens via an <see cref="ISecretProvider"/> implementation.

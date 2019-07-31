@@ -1,6 +1,6 @@
 ﻿using Microsoft.Extensions.Configuration;
 using Xunit;
-using Arcus.WebApi.Security.Configuration;
+using Arcus.WebApi.Security.Extensions.Configuration;
 using System.Collections.Generic;
 
 namespace Arcus.WebApi.Unit.Security.Configuration

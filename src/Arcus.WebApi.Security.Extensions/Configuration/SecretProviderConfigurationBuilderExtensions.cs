@@ -2,7 +2,7 @@
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 
-namespace Arcus.WebApi.Security.Configuration
+namespace Arcus.WebApi.Security.Extensions.Configuration
 {
     /// <summary>
     /// Provide extensions to use an <see cref="ISecretProvider"/> implementation to retrieve secret values from configuration tokens.

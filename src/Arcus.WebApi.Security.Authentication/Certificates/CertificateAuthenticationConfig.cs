@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Arcus.WebApi.Security.Authentication.Interfaces;
+using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Representation of the configurable validation requirements on a <see cref="X509Certificate2"/>.

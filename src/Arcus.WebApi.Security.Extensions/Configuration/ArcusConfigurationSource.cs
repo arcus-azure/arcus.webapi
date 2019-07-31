@@ -2,7 +2,7 @@
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 
-namespace Arcus.WebApi.Security.Configuration
+namespace Arcus.WebApi.Security.Extensions.Configuration
 {
     /// <summary>
     /// Represents the configuration source to provide configuration key/values for an application.
