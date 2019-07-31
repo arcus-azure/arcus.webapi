@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
-using Arcus.WebApi.Security.Authentication.Interfaces;
+using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 using GuardNet;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Builder to create <see cref="CertificateAuthenticationConfig"/> instances.

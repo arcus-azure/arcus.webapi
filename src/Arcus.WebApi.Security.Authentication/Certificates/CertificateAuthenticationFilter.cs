@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using GuardNet;
@@ -10,7 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Authentication filter to secure HTTP requests by allowing only certain values in the client certificate.

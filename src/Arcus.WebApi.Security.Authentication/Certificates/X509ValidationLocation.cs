@@ -2,7 +2,7 @@
 using Arcus.Security.Secrets.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Represents the possibilities to retrieve the expected <see cref="X509Certificate2"/> values

@@ -1,6 +1,6 @@
 ﻿using GuardNet;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Represents the configured key on the authentication mechanisms.

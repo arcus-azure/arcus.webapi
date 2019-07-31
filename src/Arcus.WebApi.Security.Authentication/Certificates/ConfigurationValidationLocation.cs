@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Arcus.WebApi.Security.Authentication.Interfaces;
+using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Arcus.WebApi.Security.Authentication 
+namespace Arcus.WebApi.Security.Authentication.Certificates 
 {
     /// <summary>
     /// Certificate location implementation to retrieve the expected <see cref="X509Certificate2"/> value from an <see cref="IConfiguration"/>

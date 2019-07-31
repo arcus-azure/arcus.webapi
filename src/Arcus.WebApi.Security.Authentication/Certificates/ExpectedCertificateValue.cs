@@ -1,6 +1,6 @@
 ﻿using GuardNet;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Represents a non-null expected certificate value to validate against the actual client certificate value.
