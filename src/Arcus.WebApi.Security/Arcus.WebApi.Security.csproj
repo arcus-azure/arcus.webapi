@@ -18,7 +18,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Arcus.WebApi.Security.Authentication\Arcus.WebApi.Security.Authentication.csproj" />
-    <ProjectReference Include="..\Arcus.WebApi.Security.Extensions\Arcus.WebApi.Security.Extensions.csproj" />
   </ItemGroup>
 
 </Project>

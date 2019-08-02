@@ -26,7 +26,6 @@
     <ItemGroup>
       <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
       <ProjectReference Include="..\Arcus.WebApi.Security.Authentication\Arcus.WebApi.Security.Authentication.csproj" />
-      <ProjectReference Include="..\Arcus.WebApi.Security.Extensions\Arcus.WebApi.Security.Extensions.csproj" />
       <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
     </ItemGroup>
 </Project>
