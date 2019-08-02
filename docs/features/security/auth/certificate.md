@@ -3,6 +3,8 @@ title: "Authentication with certificate via ASP.NET Core authentication filters"
 layout: default
 ---
 
+# Authentication with certificate
+
 The `Arcus.WebApi.Security` package provides a mechanism that uses the client certificate of the request to grant access to a web application.
 
 This authentication process consists of following parts:
@@ -14,6 +16,14 @@ This authentication process consists of following parts:
 The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
 - [Globally enforce certificate authentication](#Globally-enforce-certificate-authentication)
 - [Enforce certificate authentication per controller or operation](#Enforce-certificate-authentication-per-controller-or-operation)
+
+## Installation
+
+This feature requires to install our NuGet package
+
+```shell
+PM > Install-Package Arcus.WebApi.Security.Authentication
+```
 
 ## Globally enforce certificate authentication
 

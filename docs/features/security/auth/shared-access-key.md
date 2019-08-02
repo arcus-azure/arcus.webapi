@@ -3,6 +3,8 @@ title: "Authentication with shared access keys via ASP.NET Core authentication f
 layout: default
 ---
 
+# Authentication with shared access keys
+
 The `Arcus.WebApi.Security` package provides a mechanism that uses shared access keys to grant access to a web application.
 This authentication process consists of two parts:
 
@@ -12,6 +14,14 @@ This authentication process consists of two parts:
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
 - [Global Shared access key authentication](#globally-enforce-shared-access-key-authentication)
 - [Shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
+
+## Installation
+
+This feature requires to install our NuGet package
+
+```shell
+PM > Install-Package Arcus.WebApi.Security.Authentication
+```
  
 ## Globally enforce shared access key authentication
 
