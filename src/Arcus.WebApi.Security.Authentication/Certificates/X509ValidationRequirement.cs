@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography.X509Certificates;
 
-namespace Arcus.WebApi.Security.Authentication 
+namespace Arcus.WebApi.Security.Authentication.Certificates 
 {
     /// <summary>
     /// Represents which value of the client <see cref="X509Certificate2"/> should be validated in the <see cref="CertificateAuthenticationFilter"/>.

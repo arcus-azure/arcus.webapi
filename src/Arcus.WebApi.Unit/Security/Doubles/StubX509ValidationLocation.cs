@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Arcus.WebApi.Security.Authentication.Interfaces;
+using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 
 namespace Arcus.WebApi.Unit.Security.Doubles
 {

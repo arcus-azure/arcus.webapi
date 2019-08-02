@@ -1,15 +1,13 @@
 ﻿using System;
 using Arcus.Security.Secrets.Core.Interfaces;
 using GuardNet;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcus.WebApi.Security.Authentication
+namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
 {
     /// <summary>
     /// Authentication filter to secure HTTP requests with shared access keys.
     /// </summary>
-    [Obsolete("Feature is moved to our 'Arcus.WebApi.Security.Authentication' NuGet package, please use Arcus.WebApi.Security.Authentication.SharedAccessKey.SharedAccessKeyAuthenticationAttribute")]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)] 
     public class SharedAccessKeyAuthenticationAttribute : TypeFilterAttribute
     {

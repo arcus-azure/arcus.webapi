@@ -2,7 +2,7 @@
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
-namespace Arcus.WebApi.Security.Authentication.Interfaces 
+namespace Arcus.WebApi.Security.Authentication.Certificates.Interfaces 
 {
     /// <summary>
     /// Represents the function to retrieve expected values for a <see cref="X509Certificate2"/>.
