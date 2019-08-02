@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
-using Arcus.WebApi.Security.Authentication;
+using Arcus.WebApi.Security.Authentication.Certificates;
 using Arcus.WebApi.Unit.Hosting;
 using Arcus.WebApi.Unit.Security.Doubles;
 using Xunit;

@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
-namespace Arcus.WebApi.Security.Authentication 
+namespace Arcus.WebApi.Security.Authentication.SharedAccessKey 
 {
     /// <summary>
     /// Authentication filter to secure HTTP requests with shared access keys.
@@ -18,7 +18,6 @@ namespace Arcus.WebApi.Security.Authentication
     /// <remarks>
     ///     Please provide an <see cref="ISecretProvider"/> implementation in the configured services of the request.
     /// </remarks>
-    [Obsolete("Feature is moved to our 'Arcus.WebApi.Security.Authentication' NuGet package, please use Arcus.WebApi.Security.Authentication.SharedAccessKey.SharedAccessKeyAuthenticationFilter")]
     public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private readonly string _headerName, _secretName;
