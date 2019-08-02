@@ -35,3 +35,5 @@ services.AddSwaggerGen(setupAction =>
    setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] {new [] {"myApiScope1", "myApiScope2"});
 });
 ```
+
+[&larr; back](/)
