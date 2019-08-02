@@ -45,3 +45,5 @@ To be able to use the `AddApplicationInsights` extension method, the Microsoft.E
 
 
 If the parameter-less `AddApplicationInsights` method is used, the configurationsetting `ApplicationInsights:InstrumentationKey` must be specified and the value of the instrumentation-key of the Application Insights resource must be set.
+
+[&larr; back](/)
