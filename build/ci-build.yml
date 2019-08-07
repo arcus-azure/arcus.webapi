@@ -1,4 +1,4 @@
-name: Build Arcus.Security CI
+name: Build Arcus.WebApi CI
 
 trigger:
   - master
