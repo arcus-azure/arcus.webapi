@@ -15,6 +15,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// Initializes a new instance of the <see cref="TestStartup"/> class.
         /// </summary>
         /// <param name="configuration">The configuration properties of the current hosted test application.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="configuration"/> is <c>null</c>.</exception>
         public TestStartup(IConfiguration configuration)
         {
             if (configuration == null)

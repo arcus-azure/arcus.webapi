@@ -31,6 +31,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// Initializes a new instance of the <see cref="TestApiServer"/> class.
         /// </summary>
         /// <param name="configureServices">The action to populate the required services in the current hosted test server.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="configureServices"/> is <c>null</c>.</exception>
         public TestApiServer(Action<IServiceCollection> configureServices)
         {
             Guard.NotNull(configureServices, "Configure services cannot be 'null'");
@@ -121,6 +122,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// Adds a filter to the current MVC setup to run on every call in this hosted test server.
         /// </summary>
         /// <param name="filter">The filter to add.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="filter"/> is <c>null</c>.</exception>
         public void AddFilter(IFilterMetadata filter)
         {
             Guard.NotNull(filter, "Filter cannot be 'null'");

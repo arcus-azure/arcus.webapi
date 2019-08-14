@@ -3,9 +3,14 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using GuardNet;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Arcus.WebApi.Logging
 {
+    /// <summary>
+    /// Exception handling middleware that handles exceptions thrown further up the ASP.NET Core request pipeline.
+    /// </summary>
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;
@@ -14,31 +19,43 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionHandlingMiddleware"/> class.
         /// </summary>
+        /// <param name="next">The next <see cref="RequestDelegate"/> in the ASP.NET Core request pipeline.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="next"/> is <c>null</c>.</exception>
         public ExceptionHandlingMiddleware(RequestDelegate next)
-            : this(next, string.Empty)
+            : this(next, categoryName: String.Empty)
         { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionHandlingMiddleware"/> class.
         /// </summary>
-        /// <param name="next">The next <see cref="RequestDelegate"/> in the asp.net core request pipeline.</param>
+        /// <param name="next">The next <see cref="RequestDelegate"/> in the ASP.NET Core request pipeline.</param>
         /// <param name="categoryName">The category-name for messages produced by the logger.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="next"/> is <c>null</c>.</exception>
         public ExceptionHandlingMiddleware(RequestDelegate next, string categoryName)
-            : this(next, () => categoryName)
+            : this(next, getLoggingCategory: () => categoryName)
         { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ExceptionHandlingMiddleware"/> class.
         /// </summary>
-        /// <param name="next">The next <see cref="RequestDelegate"/> in the asp.net core request pipeline.</param>
-        /// <param name="getLoggingCategory">The function that returns the category-name that must be used by the logger
-        /// when writing log messages.</param>
+        /// <param name="next">The next <see cref="RequestDelegate"/> in the ASP.NET Core request pipeline.</param>
+        /// <param name="getLoggingCategory">The function that returns the category-name that must be used by the logger when writing log messages.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="next"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentNullException">When the <paramref name="getLoggingCategory"/> is <c>null</c>.</exception>
         public ExceptionHandlingMiddleware(RequestDelegate next, Func<string> getLoggingCategory)
         {
+            Guard.NotNull(next, nameof(next), "The next request delegate in the application request pipeline cannot be null");
+            Guard.NotNull(getLoggingCategory, nameof(getLoggingCategory), "The retrieval of the logging category function cannot be null");
+
             _next = next;
             _getLoggingCategory = getLoggingCategory;
         }
 
+        /// <summary>
+        /// Invoke the middleware to handle exceptions thrown further up the request pipeline.
+        /// </summary>
+        /// <param name="context">The context for the current HTTP request.</param>
+        /// <param name="loggerFactory">The factory instance to create <see cref="ILogger"/> instances.</param>
         public async Task Invoke(HttpContext context, ILoggerFactory loggerFactory)
         {
             try
@@ -53,12 +70,12 @@ namespace Arcus.WebApi.Logging
 
         private void HandleException(HttpContext context, Exception ex, ILoggerFactory loggerFactory)
         {
-            string categoryName = _getLoggingCategory() ?? string.Empty;
+            string categoryName = _getLoggingCategory() ?? String.Empty;
 
-            var logger = loggerFactory.CreateLogger(categoryName);
+            var logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
             logger.LogCritical(ex, ex.Message);
 
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
         }
     }
 }

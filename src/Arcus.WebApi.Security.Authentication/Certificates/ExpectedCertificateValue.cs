@@ -11,6 +11,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// Initializes a new instance of the <see cref="ExpectedCertificateValue"/> class.
         /// </summary>
         /// <param name="value">The expected value.</param>
+        /// <exception cref="System.ArgumentException">When the <paramref name="value"/> is <c>null</c> or blank.</exception>
         internal ExpectedCertificateValue(string value)
         {
             Guard.NotNull(value, nameof(value), "Expected certificate value cannot be 'null'");

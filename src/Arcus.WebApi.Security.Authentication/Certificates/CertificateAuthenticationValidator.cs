@@ -21,6 +21,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// Initializes a new instance of the <see cref="CertificateAuthenticationValidator"/> class.
         /// </summary>
         /// <param name="certificateAuthenticationConfig">The authentication configuration that describes the validation process.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="certificateAuthenticationConfig"/> is <c>null</c>.</exception>
         public CertificateAuthenticationValidator(CertificateAuthenticationConfig certificateAuthenticationConfig)
         {
             Guard.NotNull(certificateAuthenticationConfig, nameof(certificateAuthenticationConfig), "Certificate authentication configuration cannot be 'null'");

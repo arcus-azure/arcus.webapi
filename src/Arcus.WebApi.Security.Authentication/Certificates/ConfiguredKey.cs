@@ -11,6 +11,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// Initializes a new instance of the <see cref="ConfiguredKey"/> class.
         /// </summary>
         /// <param name="value">The key value.</param>
+        /// <exception cref="System.ArgumentException">When the <paramref name="value"/> is <c>null</c> or blank.</exception>
         internal ConfiguredKey(string value)
         {
             Guard.NotNullOrWhitespace(value, nameof(value), "Configured key value cannot be blank");

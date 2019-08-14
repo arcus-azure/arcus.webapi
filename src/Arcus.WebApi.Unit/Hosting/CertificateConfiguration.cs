@@ -17,6 +17,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// Initializes a new instance of the <see cref="CertificateConfiguration"/> class.
         /// </summary>
         /// <param name="clientCertificate">The client certificate.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="clientCertificate"/> is <c>null</c>.</exception>
         public CertificateConfiguration(X509Certificate2 clientCertificate)
         {
             Guard.NotNull(clientCertificate, nameof(clientCertificate));
