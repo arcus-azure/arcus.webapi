@@ -33,6 +33,7 @@ namespace Arcus.WebApi.Unit.Security.Doubles
         /// Generates a self-signed certificate with a specified <paramref name="subjectName"/>.
         /// </summary>
         /// <param name="subjectName">The subject name of the self-signed certificate.</param>
+        /// <exception cref="ArgumentException">When the <paramref name="subjectName"/> is <c>null</c>.</exception>
         public static X509Certificate2 CreateWithSubject(string subjectName)
         {
             Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");
@@ -45,6 +46,8 @@ namespace Arcus.WebApi.Unit.Security.Doubles
         /// </summary>
         /// <param name="subjectName">The subject name of the self-signed certificate.</param>
         /// <param name="issuerName">The issuer name of the self-signed certificate.</param>
+        /// <exception cref="ArgumentException">When the <paramref name="subjectName"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">When the <paramref name="issuerName"/> is <c>null</c>.</exception>
         public static X509Certificate2 CreateWithIssuerAndSubjectName(string issuerName, string subjectName)
         {
             Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");

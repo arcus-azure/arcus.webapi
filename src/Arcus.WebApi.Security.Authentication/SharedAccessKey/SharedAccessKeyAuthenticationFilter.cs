@@ -27,6 +27,8 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// </summary>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
+        /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
+        /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string secretName)
         {
             Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Header name cannot be blank");
@@ -41,7 +43,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// </summary>
         /// <param name="context">The <see cref="T:Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext" />.</param>
         /// <returns>
-        /// A <see cref="T:System.Threading.Tasks.Task" /> that on completion indicates the filter has executed.
+        ///     A <see cref="T:System.Threading.Tasks.Task" /> that on completion indicates the filter has executed.
         /// </returns>
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {

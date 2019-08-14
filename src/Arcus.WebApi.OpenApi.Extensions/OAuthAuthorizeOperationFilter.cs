@@ -20,10 +20,13 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// </summary>
         /// <param name="scopes">A list of API scopes that is defined for the API that must be documented.</param>
         /// <remarks>It is not possible right now to document the scopes on a fine grained operation-level.</remarks>
+        /// <exception cref="ArgumentNullException">When the <paramref name="scopes"/> are <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">When the <paramref name="scopes"/> has any elements that are <c>null</c> or blank.</exception>
         public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes)
         {
-            Guard.NotNull(scopes, nameof(scopes));
-            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "The list of scopes cannot contain an empty scope");
+            Guard.NotNull(scopes, nameof(scopes), "The sequence of scopes cannot be null");
+            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "The sequence of scopes cannot contain a scope that is null or blank");
+            
             _scopes = scopes;
         }
 
