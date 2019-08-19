@@ -1,4 +1,4 @@
-name: Build Arcus.WebApi CI
+name: $(date:yyyyMMdd)$(rev:.r)
 
 trigger:
   - master
@@ -43,6 +43,7 @@ stages:
               artifactName: Build
 
   - stage: UnitTests
+    displayName: Unit Tests
     dependsOn: Build
     condition: succeeded()
     jobs:
