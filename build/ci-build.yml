@@ -15,10 +15,6 @@ variables:
   - name: 'Project'
     value: 'Arcus.WebApi'
 
-# Building the project:
-# - Download correct .NET Core SDK
-# - .NET Core build
-# - Publish build artifacts
 stages:
   - stage: Build
     jobs:
@@ -46,10 +42,6 @@ stages:
               targetPath: '$(Pipeline.Workspace)/build'
               artifactName: Build
 
-  # Testing unit tests of the project:
-  # - Download build artifacts
-  # - Download correct .NET Core SDK
-  # - .NET Core test
   - stage: UnitTests
     dependsOn: Build
     condition: succeeded()
