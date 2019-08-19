@@ -8,7 +8,6 @@ pr:
 variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
-
   # Always use fixed version for .NET Core SDK
   - name: 'DotNet.Sdk.Version'
     value: '2.2.105'
