@@ -1,4 +1,4 @@
-name: Build Arcus.WebApi CI
+name: $(date:yyyyMMdd)$(rev:.r)
 
 trigger:
   - master
