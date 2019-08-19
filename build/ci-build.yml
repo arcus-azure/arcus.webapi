@@ -51,6 +51,7 @@ stages:
   # - Download correct .NET Core SDK
   # - .NET Core test
   - stage: UnitTests
+    displayName: Unit Tests
     dependsOn: Build
     condition: succeeded()
     jobs:
