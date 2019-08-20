@@ -68,9 +68,7 @@ stages:
 
   - stage: ReleaseToMyget
     displayName: 'Release to MyGet'
-    dependsOn:
-      - UnitTests
-      - IntegrationTests
+    dependsOn: UnitTests
     condition: succeeded()
     jobs:
       - job: PushToMyGet
