@@ -1,18 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-      <TargetFramework>netstandard2.0</TargetFramework>
-      <Authors>Arcus</Authors>
-      <Company>Arcus</Company>
-      <RepositoryType>Git</RepositoryType>
-      <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
-      <Description>Provides capabilities to easily build Web APIs running in Azure.</Description>
-      <Copyright>Copyright (c) Arcus</Copyright>
-      <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
-      <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
-      <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
-      <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
-      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+      <TargetFgeOnBuild>
       <GenerateDocumentationFile>true</GenerateDocumentationFile>
   </PropertyGroup>
 
