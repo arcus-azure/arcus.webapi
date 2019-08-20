@@ -1,7 +1,6 @@
 name: $(date:yyyyMMdd)$(rev:.r)
 
-trigger:
-  - master
+trigger: none
 
 variables:
   - group: 'Arcus - GitHub Package Registry'
