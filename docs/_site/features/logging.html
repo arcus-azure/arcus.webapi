@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en-US">
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width,maximum-scale=2">
+    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=3016ea2f5aefba823d09a85e63a40a580b27eb67">
+
+<!-- Begin Jekyll SEO tag v2.5.0 -->
+<title>Logging unhandled exceptions via ASP.NET Core middleware | Arcus Web API</title>
+<meta name="generator" content="Jekyll v3.8.5" />
+<meta property="og:title" content="Logging unhandled exceptions via ASP.NET Core middleware" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="Web API development with Microsoft Azure in a breeze" />
+<meta property="og:description" content="Web API development with Microsoft Azure in a breeze" />
+<link rel="canonical" href="http://localhost:4000/features/logging.html" />
+<meta property="og:url" content="http://localhost:4000/features/logging.html" />
+<meta property="og:site_name" content="Arcus Web API" />
+<script type="application/ld+json">
+{"headline":"Logging unhandled exceptions via ASP.NET Core middleware","url":"http://localhost:4000/features/logging.html","description":"Web API development with Microsoft Azure in a breeze","@type":"WebPage","publisher":{"@type":"Organization","logo":{"@type":"ImageObject","url":"https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png"}},"@context":"http://schema.org"}</script>
+<!-- End Jekyll SEO tag -->
+
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/arcus-azure/arcus.webapi">View on GitHub</a>
+
+          <h1 id="project_title">Arcus Web API</h1>
+          <h2 id="project_tagline">Web API development with Microsoft Azure in a breeze</h2>
+
+          
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h1 id="logging-unhandled-exceptions">Logging unhandled exceptions</h1>
+
+<p>The <code class="highlighter-rouge">ExceptionHandlingMiddleware</code> class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
+The unhandled exceptions are caught by this middleware component and are logged through the <code class="highlighter-rouge">ILogger</code> implementations that are configured inside the project.</p>
+
+<h2 id="installation">Installation</h2>
+
+<p>This feature requires to install our NuGet package</p>
+
+<div class="language-shell highlighter-rouge"><div class="highlight"><pre class="highlight"><code>PM <span class="o">&gt;</span> Install-Package Arcus.WebApi.Logging
+</code></pre></div></div>
+
+<h2 id="usage">Usage</h2>
+
+<p>To use this middleware, add the following line of code in the <code class="highlighter-rouge">Startup.Configure</code> method:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">Configure</span><span class="p">(</span><span class="n">IApplicationBuilder</span> <span class="n">app</span><span class="p">,</span> <span class="n">IHostingEnvironment</span> <span class="n">env</span><span class="p">)</span>
+<span class="p">{</span>
+   <span class="n">app</span><span class="p">.</span><span class="n">UseMiddleware</span><span class="p">&lt;</span><span class="n">Arcus</span><span class="p">.</span><span class="n">WebApi</span><span class="p">.</span><span class="n">Logging</span><span class="p">.</span><span class="n">ExceptionHandlingMiddleware</span><span class="p">&gt;();</span>
+
+   <span class="p">...</span>
+   <span class="n">app</span><span class="p">.</span><span class="nf">UseMvc</span><span class="p">();</span>
+<span class="p">}</span>
+</code></pre></div></div>
+
+<p>If you have multiple middleware components configured, it is advised to put the <code class="highlighter-rouge">ExceptionHandlingMiddleware</code> as the first one.  By doing so, unhandled exceptions that might occur in other middleware components will also be logged by the <code class="highlighter-rouge">ExceptionHandlingMiddleware</code> component.</p>
+
+<p>To get the exceptions logged in Azure Application Insights, configure logging like this when building the <code class="highlighter-rouge">IWebHost</code> in <code class="highlighter-rouge">Program.cs</code>:</p>
+
+<div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="n">WebHost</span><span class="p">.</span><span class="nf">CreateDefaultBuilder</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+       <span class="p">.</span><span class="nf">UseApplicationInsights</span><span class="p">()</span>
+       <span class="p">.</span><span class="nf">ConfigureLogging</span><span class="p">(</span><span class="n">loggers</span> <span class="p">=&gt;</span> <span class="n">loggers</span><span class="p">.</span><span class="nf">AddApplicationInsights</span><span class="p">())</span>
+       <span class="p">.</span><span class="n">UseStartup</span><span class="p">&lt;</span><span class="n">Startup</span><span class="p">&gt;();</span>
+</code></pre></div></div>
+
+<p>To be able to use the <code class="highlighter-rouge">AddApplicationInsights</code> extension method, the Microsoft.Extensions.Logging.ApplicationInsights package must be installed.</p>
+
+<p>If the parameter-less <code class="highlighter-rouge">AddApplicationInsights</code> method is used, the configurationsetting <code class="highlighter-rouge">ApplicationInsights:InstrumentationKey</code> must be specified and the value of the instrumentation-key of the Application Insights resource must be set.</p>
+
+<p><a href="/">← back</a></p>
+
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        
+        <p class="copyright">Arcus Web API maintained by <a href="https://github.com/arcus-azure">arcus-azure</a></p>
+        
+        <p>Published with <a href="https://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+  </body>
+</html>
