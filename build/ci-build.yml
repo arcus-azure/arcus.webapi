@@ -11,7 +11,6 @@ variables:
   - name: 'Project'
     value: 'Arcus.WebApi'
   # 'Package.Version.ManualTrigger' is added as queue-time variable on build in Azure DevOps
-
 stages:
   - stage: Build
     jobs:
