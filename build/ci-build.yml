@@ -2,6 +2,13 @@ name: $(date:yyyyMMdd)$(rev:.r)
 
 trigger: none
 
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: arcus-azure/azure-devops-templates
+      endpoint: arcus-azure
+
 variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
