@@ -3,6 +3,13 @@ name: $(date:yyyyMMdd)$(rev:.r)
 trigger: none
 pr: none
 
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: arcus-azure/azure-devops-templates
+      endpoint: arcus-azure
+
 variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
@@ -115,10 +122,4 @@ stages:
               isPreRelease: true
               compareWith: 'lastRelease'
             condition: contains(variables['Build.BuildNumber'], '-')
-          - task: NuGetCommand@2
-            displayName: 'Push to NuGet.org'
-            inputs:
-              command: push
-              packagesToPush: '**/*.nupkg'
-              nuGetFeedType: external
-              publishFeedCredentials: 'NuGet.org'
+          - template: 'nuget/publish-official-package/yml@templates'
