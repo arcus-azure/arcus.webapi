@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using GuardNet;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
 {
@@ -31,14 +33,15 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
             IServiceProvider services = context.HttpContext.RequestServices;
+            ILogger logger = GetLoggerOrDefault(services);
 
-            X509Certificate2 clientCertificate = context.HttpContext.Connection.ClientCertificate;
+            X509Certificate2 clientCertificate = GetOrLoadClientCertificateFromRequest(context.HttpContext, logger);
             if (clientCertificate == null)
             {
-                ILogger logger = GetLoggerOrDefault(services);
+                
                 logger.LogWarning(
                     "No client certificate was specified in the HTTP request while this authentication filter "
-                    + $"requires a certificate to validate on the configured validation requirements");
+                    + "requires a certificate to validate on the configured validation requirements");
 
                 context.Result = new UnauthorizedResult();
             }
@@ -58,6 +61,29 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                     context.Result = new UnauthorizedResult();
                 }
             }
+        }
+
+        private static X509Certificate2 GetOrLoadClientCertificateFromRequest(HttpContext context, ILogger logger)
+        {
+            if (context.Connection.ClientCertificate is null)
+            {
+                const string headerName = "X-ARR-ClientCert";
+
+                try
+                {
+                    if (context.Request.Headers.TryGetValue(headerName, out StringValues headerValue))
+                    {
+                        byte[] rawData = Convert.FromBase64String(headerValue);
+                        return new X509Certificate2(rawData);
+                    }
+                }
+                catch (Exception exception)
+                {
+                    logger.LogError(exception, "Cannot load client certificate from {headerName} header", headerName);
+                }
+            }
+
+            return context.Connection.ClientCertificate;
         }
 
         private static ILogger GetLoggerOrDefault(IServiceProvider services)
