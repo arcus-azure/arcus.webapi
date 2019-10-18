@@ -20,6 +20,38 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
         private readonly TestApiServer _testServer = new TestApiServer();
 
+        [Theory]
+        [InlineData("known-subject")]
+        [InlineData("unknown-subject")]
+        public async Task AuthorizedRoute_WithCertificateAuthenticationOnAppServiceHeader_ShouldSucceeds_WhenClientCertificateSubjectNameMatches(string actualSubject)
+        {
+            // Arrange
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SubjectKey, $"CN={actualSubject}")));
+            _testServer.AddService(
+                new CertificateAuthenticationValidator(
+                    new CertificateAuthenticationConfigBuilder()
+                        .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
+                        .Build()));
+
+            const string expectedSubject = "known-subject";
+            using (HttpClient client = _testServer.CreateClient())
+            using (var cert = SelfSignedCertificate.CreateWithSubject(expectedSubject))
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute);
+                string clientCertificate = Convert.ToBase64String(cert.RawData);
+                request.Headers.Add("X-ARR-ClientCert", clientCertificate);
+
+                // Act
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Arrange
+                    bool equalSubject = expectedSubject == actualSubject;
+                    bool isUnauthorized = response.StatusCode == HttpStatusCode.Unauthorized;
+                    Assert.True(equalSubject != isUnauthorized, "Client certificate with the same subject name should result in an OK HTTP status code");
+                }
+            }
+        }
+
         [Fact]
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
