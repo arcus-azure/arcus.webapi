@@ -62,18 +62,10 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
-            inputs:
-              version: '$(DotNet.Sdk.Version)'
-          - task: DotNetCoreCLI@2
-            displayName: 'Run unit tests'
-            inputs:
-              command: test
-              projects: 'src/**/$(Project).Unit.csproj'
-              arguments: '--configuration $(Build.Configuration)'
-              nobuild: true
-              publishTestResults: true
+          - template: test/run-unit-tests.yaml@templates
+            parameters:
+              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+              projectName: '$(Project).Tests.Unit'
 
   - stage: Release
     displayName: 'Release to NuGet.org'
@@ -90,36 +82,26 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - task: GitHubRelease@0
-            displayName: 'Create GitHub Release (Conditional Step)'
-            inputs:
-              gitHubConnection: 'GitHub (arcus-automation - OAuth)'
-              repositoryName: 'arcus-azure/arcus.webapi'
-              tagSource: manual
+          - template: github/create-release.yml@templates
+            parameters:
+              repositoryName: 'azure-arcus/arcus.webapi'
               tag: 'v$(Build.BuildNumber)'
-              title: 'v$(Build.BuildNumber)'
-              releaseNotesSource: input
+              releaseTitle: 'v$(Build.BuildNumber)'
               releaseNotes: |
                 Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
                 ```shell
                 PM > Install-Package Arcus.WebApi.All --Version $(Build.BuildNumber)
                 ```
             condition: not(contains(variables['Build.BuildNumber'], '-'))
-          - task: GitHubRelease@0
-            displayName: 'Create GitHub Pre-Release (Conditional Step)'
-            inputs:
-              gitHubConnection: 'GitHub (arcus-automation - OAuth)'
+          - template: create-pre-release.yml@templates
+            parameters:
               repositoryName: 'azure-arcus/arcus.webapi'
-              tagSource: manual
               tag: 'v$(Build.BuildNumber)'
-              title: 'v$(Build.BuildNumber)'
-              releaseNotesSource: input
+              releaseTitle: 'v$(Build.BuildNumber)'
               releaseNotes: |
                 Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
                 ```shell
                 PM > Install-Package Arcus.WebApi.All --Version $(Build.BuildNumber)
                 ```
-              isPreRelease: true
-              compareWith: 'lastRelease'
             condition: contains(variables['Build.BuildNumber'], '-')
           - template: 'nuget/publish-official-package/yml@templates'
