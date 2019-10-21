@@ -57,7 +57,7 @@ The authentication requires an `ICachedSecretProvider` or `ISecretProvider` depe
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
     services.AddMvc();
 }
 ```
