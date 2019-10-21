@@ -4,7 +4,7 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
-using Arcus.WebApi.Security.Authentication;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Arcus.WebApi.Unit.Hosting;
 using Xunit;
 

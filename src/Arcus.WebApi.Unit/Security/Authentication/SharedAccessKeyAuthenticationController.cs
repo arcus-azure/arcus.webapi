@@ -1,6 +1,6 @@
 ﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Arcus.WebApi.Security.Authentication;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Unit.Security.Authentication 
