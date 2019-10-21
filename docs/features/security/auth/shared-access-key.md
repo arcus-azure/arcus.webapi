@@ -38,7 +38,7 @@ Once this is done, the `SharedAccessKeyAuthenticationFilter` can be added to the
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
     services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
 }
 ```
@@ -57,7 +57,7 @@ The authentication requires an `ICachedSecretProvider` or `ISecretProvider` depe
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
     services.AddMvc();
 }
 ```
