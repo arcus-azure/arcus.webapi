@@ -85,8 +85,6 @@ stages:
           - template: github/create-release.yml@templates
             parameters:
               repositoryName: 'azure-arcus/arcus.webapi'
-              tag: 'v$(Build.BuildNumber)'
-              releaseTitle: 'v$(Build.BuildNumber)'
               releaseNotes: |
                 Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
                 ```shell
@@ -96,8 +94,6 @@ stages:
           - template: create-pre-release.yml@templates
             parameters:
               repositoryName: 'azure-arcus/arcus.webapi'
-              tag: 'v$(Build.BuildNumber)'
-              releaseTitle: 'v$(Build.BuildNumber)'
               releaseNotes: |
                 Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
                 ```shell
