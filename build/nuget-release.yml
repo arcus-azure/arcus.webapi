@@ -100,4 +100,4 @@ stages:
                     ```shell
                     PM > Install-Package Arcus.WebApi.All --Version $(Build.BuildNumber)
                     ```
-          - template: 'nuget/publish-official-package/yml@templates'
+          - template: 'nuget/publish-official-package.yml@templates'
