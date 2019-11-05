@@ -36,6 +36,13 @@ namespace Arcus.WebApi.Unit.Hosting
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseMvc();
+
+            app.UseSwagger();
+            app.UseSwaggerUI(swaggerUiOptions =>
+            {
+                swaggerUiOptions.SwaggerEndpoint("v1/swagger.json", typeof(TestStartup).Assembly.GetName().Name);
+                swaggerUiOptions.DocumentTitle = typeof(TestStartup).Assembly.GetName().Name;
+            });
         }
     }
 }

@@ -11,7 +11,8 @@
         <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
         <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
         <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <DocumentationFile>Arcus.WebApi.Unit.Open-Api.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
       <PackageReference Include="BouncyCastle" Version="1.8.5" />
@@ -20,6 +21,8 @@
       <PackageReference Include="Microsoft.AspNetCore.App" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
+      <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />
       <PackageReference Include="xunit" Version="2.4.1" />
       <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     </ItemGroup>
