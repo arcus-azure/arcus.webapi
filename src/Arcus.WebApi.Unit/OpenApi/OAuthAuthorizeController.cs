@@ -1,5 +1,4 @@
 ﻿using System.Net.Http;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,14 +15,14 @@ namespace Arcus.WebApi.Unit.OpenApi
         [Authorize]
         public IActionResult GetAuthorized(HttpRequestMessage request)
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
         }
 
         [HttpGet]
         [Route(NoneAuthorizedRoute)]
-        public Task<IActionResult> GetNoneAuthorized(HttpRequestMessage request)
+        public IActionResult GetNoneAuthorized(HttpRequestMessage request)
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
         }
     }
 }
