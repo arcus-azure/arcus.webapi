@@ -14,7 +14,7 @@ namespace Arcus.WebApi.Unit.OpenApi
         [HttpGet]
         [Route(AuthorizedRoute)]
         [Authorize]
-        public Task<IActionResult> GetAuthorized(HttpRequestMessage request)
+        public IActionResult GetAuthorized(HttpRequestMessage request)
         {
             return Task.FromResult<IActionResult>(Ok());
         }
