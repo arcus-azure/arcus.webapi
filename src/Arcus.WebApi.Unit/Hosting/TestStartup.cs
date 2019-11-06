@@ -40,8 +40,10 @@ namespace Arcus.WebApi.Unit.Hosting
             app.UseSwagger();
             app.UseSwaggerUI(swaggerUiOptions =>
             {
-                swaggerUiOptions.SwaggerEndpoint("v1/swagger.json", typeof(TestStartup).Assembly.GetName().Name);
-                swaggerUiOptions.DocumentTitle = typeof(TestStartup).Assembly.GetName().Name;
+                string assemblyName = typeof(TestStartup).Assembly.GetName().Name;
+
+                swaggerUiOptions.SwaggerEndpoint("v1/swagger.json", assemblyName);
+                swaggerUiOptions.DocumentTitle = assemblyName;
             });
         }
     }

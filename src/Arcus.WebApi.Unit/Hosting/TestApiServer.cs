@@ -54,7 +54,7 @@ namespace Arcus.WebApi.Unit.Hosting
             {
                 if (_clientCertificate != null)
                 {
-                    services.AddSingleton<IStartupFilter>(new CertificateConfiguration(_clientCertificate));
+                    services.AddSingleton((IStartupFilter)new CertificateConfiguration(_clientCertificate));
                 }
 
                 foreach (Action<IServiceCollection> configureServices in _configureServices)
@@ -70,16 +70,17 @@ namespace Arcus.WebApi.Unit.Hosting
                     }
                 });
 
+                string assemblyName = typeof(TestApiServer).Assembly.GetName().Name;
                 var openApiInformation = new Info
                 {
-                    Title = typeof(TestApiServer).Assembly.GetName().Name,
+                    Title = assemblyName,
                     Version = "v1"
                 };
 
                 services.AddSwaggerGen(swaggerGenerationOptions =>
                 {
                     swaggerGenerationOptions.SwaggerDoc("v1", openApiInformation);
-                    swaggerGenerationOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, typeof(TestApiServer).Assembly.GetName().Name + ".Open-Api.xml"));
+                    swaggerGenerationOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, assemblyName + ".Open-Api.xml"));
                     swaggerGenerationOptions.OperationFilter<OAuthAuthorizeOperationFilter>(new object [] { new[] { "myApiScope" } });
                 });
             });
