@@ -1,18 +1,30 @@
 ﻿using Arcus.WebApi.OpenApi.Extensions;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.WebApi.Unit.Hosting;
-using Newtonsoft.Json.Linq;
+using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi.Readers;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Unit.OpenApi
 {
     public class OAuthAuthorizeOperationFilterTests : IDisposable
     {
+        private readonly ITestOutputHelper _outputWriter;
         private readonly TestApiServer _testServer = new TestApiServer();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="OAuthAuthorizeOperationFilterTests"/> class.
+        /// </summary>
+        public OAuthAuthorizeOperationFilterTests(ITestOutputHelper outputWriter)
+        {
+            _outputWriter = outputWriter;
+        }
 
         [Theory]
         [InlineData(new object[] { new[] { "valid scope", "" } })]
@@ -33,17 +45,24 @@ namespace Arcus.WebApi.Unit.OpenApi
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                /* TODO:
-                    use 'OpenApiStreamReader' to load response content into a 'OpenApiDocument'
-                    this will require a change in the 'OAuthAuthorizeOperationFilter' since now the generated JSON document is invalid according to the Open API specs:
-                    -> Invalid Reference identifier 'oauth2'., The key 'KeyValuePair[String,IEnumerable[String]]' in 'schemas' of components MUST match the regular expression '^[a-zA-Z0-9\.\-_]+$'. */
+                var reader = new OpenApiStreamReader();
+                using (var responseStream = await response.Content.ReadAsStreamAsync())
+                {
+                    OpenApiDocument swagger = reader.Read(responseStream, out OpenApiDiagnostic diagnostic);
+                    _outputWriter.WriteLine(diagnostic.Errors.Count == 0 ? String.Empty : String.Join(", ", diagnostic.Errors.Select(e => e.Message + ": " + e.Pointer)));
 
-                string swaggerJson = await response.Content.ReadAsStringAsync();
-                JObject swagger = JObject.Parse(swaggerJson);
-                var responses = swagger["paths"]["/oauth/authorize"]["get"]["responses"].Children<JProperty>();
-                
-                Assert.Contains(responses, r => r.Name == "401");
-                Assert.Contains(responses, r => r.Name == "403");
+                    Assert.True(
+                        swagger.Paths.TryGetValue("/oauth/authorize", out OpenApiPathItem oauthPath), 
+                        "Cannot find OAuth authorized path in Open API spec file");
+
+                    Assert.True(
+                        oauthPath.Operations.TryGetValue(OperationType.Get, out OpenApiOperation oauthOperation),
+                        "Cannot find OAuth GET operation in Open API spec file");
+
+                    OpenApiResponses oauthResponses = oauthOperation.Responses;
+                    Assert.Contains(oauthResponses, r => r.Key == "401");
+                    Assert.Contains(oauthResponses, r => r.Key == "403");
+                }
             }
         }
 
@@ -58,17 +77,24 @@ namespace Arcus.WebApi.Unit.OpenApi
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                /* TODO:
-                    use 'OpenApiStreamReader' to load response content into a 'OpenApiDocument'
-                    this will require a change in the 'OAuthAuthorizeOperationFilter' since now the generated JSON document is invalid according to the Open API specs:
-                    -> Invalid Reference identifier 'oauth2'., The key 'KeyValuePair[String,IEnumerable[String]]' in 'schemas' of components MUST match the regular expression '^[a-zA-Z0-9\.\-_]+$'. */
+                var reader = new OpenApiStreamReader();
+                using (var responseStream = await response.Content.ReadAsStreamAsync())
+                {
+                    OpenApiDocument swagger = reader.Read(responseStream, out OpenApiDiagnostic diagnostic);
+                    _outputWriter.WriteLine(diagnostic.Errors.Count == 0 ? String.Empty : String.Join(", ", diagnostic.Errors.Select(e => e.Message + ": " + e.Pointer)));
 
-                string swaggerJson = await response.Content.ReadAsStringAsync();
-                JObject swagger = JObject.Parse(swaggerJson);
-                var responses = swagger["paths"]["/oauth/none"]["get"]["responses"].Children<JProperty>();
-                
-                Assert.DoesNotContain(responses, r => r.Name == "401");
-                Assert.DoesNotContain(responses, r => r.Name == "403");
+                    Assert.True(
+                        swagger.Paths.TryGetValue("/oauth/none", out OpenApiPathItem oauthPath), 
+                        "Cannot find OAuth none authorized path in Open API spec file");
+
+                    Assert.True(
+                        oauthPath.Operations.TryGetValue(OperationType.Get, out OpenApiOperation oauthOperation),
+                        "Cannot find OAuth GET operation in Open API spec file");
+
+                    OpenApiResponses oauthResponses = oauthOperation.Responses;
+                    Assert.DoesNotContain(oauthResponses, r => r.Key == "401");
+                    Assert.DoesNotContain(oauthResponses, r => r.Key == "403");
+                }
             }
         }
 
