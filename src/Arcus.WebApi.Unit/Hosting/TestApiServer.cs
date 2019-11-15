@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Arcus.WebApi.OpenApi.Extensions;
 using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Swashbuckle.AspNetCore.Swagger;
 
 namespace Arcus.WebApi.Unit.Hosting
 {
@@ -17,7 +20,7 @@ namespace Arcus.WebApi.Unit.Hosting
     public class TestApiServer : WebApplicationFactory<TestStartup>
     {
         private readonly IDictionary<string, string> _configurationCollection;
-        private readonly ICollection<Action<IServiceCollection>> _addServices;
+        private readonly ICollection<Action<IServiceCollection>> _configureServices;
         private readonly ICollection<IFilterMetadata> _filters;
 
         private X509Certificate2 _clientCertificate;
@@ -36,7 +39,7 @@ namespace Arcus.WebApi.Unit.Hosting
         {
             Guard.NotNull(configureServices, "Configure services cannot be 'null'");
 
-            _addServices = new Collection<Action<IServiceCollection>> { configureServices };
+            _configureServices = new Collection<Action<IServiceCollection>> { configureServices };
             _filters = new Collection<IFilterMetadata>();
             _configurationCollection = new Dictionary<string, string>();
         }
@@ -51,10 +54,10 @@ namespace Arcus.WebApi.Unit.Hosting
             {
                 if (_clientCertificate != null)
                 {
-                    services.AddSingleton<IStartupFilter>(new CertificateConfiguration(_clientCertificate));
+                    services.AddSingleton((IStartupFilter)new CertificateConfiguration(_clientCertificate));
                 }
 
-                foreach (Action<IServiceCollection> configureServices in _addServices)
+                foreach (Action<IServiceCollection> configureServices in _configureServices)
                 {
                     configureServices(services);
                 }
@@ -65,6 +68,20 @@ namespace Arcus.WebApi.Unit.Hosting
                     {
                         options.Filters.Add(filter);
                     }
+                });
+
+                string assemblyName = typeof(TestApiServer).Assembly.GetName().Name;
+                var openApiInformation = new Info
+                {
+                    Title = assemblyName,
+                    Version = "v1"
+                };
+
+                services.AddSwaggerGen(swaggerGenerationOptions =>
+                {
+                    swaggerGenerationOptions.SwaggerDoc("v1", openApiInformation);
+                    swaggerGenerationOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, assemblyName + ".Open-Api.xml"));
+                    swaggerGenerationOptions.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] { new[] { "myApiScope" } });
                 });
             });
         }
@@ -115,7 +132,7 @@ namespace Arcus.WebApi.Unit.Hosting
         {
             Guard.NotNull(service, "Service cannot be 'null'");
 
-            _addServices.Add(services => services.AddScoped(_ => service));
+            _configureServices.Add(services => services.AddScoped(_ => service));
         }
 
         /// <summary>
