@@ -98,8 +98,6 @@ namespace Arcus.WebApi.Unit.OpenApi
             }
         }
 
-        // TODO: should we add a test to check if we also include the security definitions when we add one of our authentication filters?
-
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
