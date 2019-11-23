@@ -14,7 +14,9 @@ namespace Arcus.WebApi.Unit.Security.Authentication
     {
         private const string HeaderName = "x-shared-access-key",
                              SecretName = "custom-access-key-name",
-                             AuthorizedRoute = "/authz/shared-access-key";
+                             AuthorizedRoute = "/authz/shared-access-key",
+                             AuthorizedRouteQueryString = "/authz/shared-access-key-querystring",
+                             ParameterName = "api-key";
 
         private readonly TestApiServer _testServer = new TestApiServer();
 
@@ -45,7 +47,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             string secretName)
         {
             Assert.Throws<ArgumentException>(
-                () => new SharedAccessKeyAuthenticationFilter(headerName, secretName));
+                () => new HeaderSharedAccessKeyAuthenticationFilter(headerName, secretName));
         }
 
         [Fact]
@@ -135,6 +137,67 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             }
         }
 
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey__RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenQuerystringValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithQuerystring(ParameterName, secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenQuerystringValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithQuerystring(ParameterName, secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQuerystringValueNotMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithQuerystring(ParameterName, $"something else then {nameof(secretValue)}"))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQuerystringParameterIsNotPresent()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequestWithQuerystring($"something-else-then-{nameof(ParameterName)}", "some parameter value"))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+
         private Task<HttpResponseMessage> SendAuthorizedHttpRequestWithHeader(string headerName, string headerValue)
         {
             return SendAuthorizedHttpRequestWithHeader(headerName, new[] { headerValue });
@@ -148,6 +211,15 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 {
                     Headers = { { headerName, headerValues } }
                 };
+
+                return await client.SendAsync(request);
+            }
+        }
+        private async Task<HttpResponseMessage> SendAuthorizedHttpRequestWithQuerystring(string parameterName, string parameterValue)
+        {
+            using (HttpClient client = _testServer.CreateClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRouteQueryString + $"?{parameterName}={parameterValue}");
 
                 return await client.SendAsync(request);
             }

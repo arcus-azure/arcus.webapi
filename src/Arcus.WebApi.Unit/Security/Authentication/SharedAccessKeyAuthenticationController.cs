@@ -15,5 +15,13 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         {
             return Task.FromResult<IActionResult>(Ok());
         }
+
+        [HttpGet]
+        [Route("authz/shared-access-key-querystring")]
+        [QueryStringSharedAccessKeyAuthentication(parameterName: "api-key", secretName: "custom-access-key-name")]
+        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKeyQuerystring(HttpRequestMessage message)
+        {
+            return Task.FromResult<IActionResult>(Ok());
+        }
     }
 }
