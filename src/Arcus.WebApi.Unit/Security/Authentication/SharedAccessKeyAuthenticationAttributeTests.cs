@@ -15,39 +15,40 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         private const string HeaderName = "x-shared-access-key",
                              SecretName = "custom-access-key-name",
                              AuthorizedRoute = "/authz/shared-access-key",
-                             AuthorizedRouteQueryString = "/authz/shared-access-key-querystring",
                              ParameterName = "api-key";
 
         private readonly TestApiServer _testServer = new TestApiServer();
 
         [Theory]
-        [InlineData(null, "not empty or whitespace")]
-        [InlineData("", "not empty or whitespace")]
-        [InlineData(" ", "not empty or whitespace")]
-        [InlineData("not empty or whitespace", null)]
-        [InlineData("not empty or whitespace", "")]
-        [InlineData("not empty or whitespace", " ")]
+        [InlineData(null, null, "not empty or whitespace")]
+        [InlineData("", "", "not empty or whitespace")]
+        [InlineData(" ", " ", "not empty or whitespace")]
+        [InlineData("not empty or whitespace", "not empty or whitespace", null)]
+        [InlineData("not empty or whitespace", "not empty or whitespace", "")]
+        [InlineData("not empty or whitespace", "not empty or whitespace", " ")]
         public void SharedAccessKeyAttribute_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
             string headerName,
+            string queryParameterName,
             string secretName)
         {
             Assert.Throws<ArgumentException>(
-                () => new SharedAccessKeyAuthenticationAttribute(headerName, secretName));
+                () => new SharedAccessKeyAuthenticationAttribute(headerName, queryParameterName, secretName));
         }
 
         [Theory]
-        [InlineData(null, "not empty or whitespace")]
-        [InlineData("", "not empty or whitespace")]
-        [InlineData(" ", "not empty or whitespace")]
-        [InlineData("not empty or whitespace", null)]
-        [InlineData("not empty or whitespace", "")]
-        [InlineData("not empty or whitespace", " ")]
+        [InlineData(null, null, "not empty or whitespace")]
+        [InlineData("", "", "not empty or whitespace")]
+        [InlineData(" ", " ", "not empty or whitespace")]
+        [InlineData("not empty or whitespace", "not empty or whitespace", null)]
+        [InlineData("not empty or whitespace", "not empty or whitespace", "")]
+        [InlineData("not empty or whitespace", "not empty or whitespace", " ")]
         public void SharedAccessKeyFilter_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
             string headerName,
+            string queryParameterName,
             string secretName)
         {
             Assert.Throws<ArgumentException>(
-                () => new HeaderSharedAccessKeyAuthenticationFilter(headerName, secretName));
+                () => new SharedAccessKeyAuthenticationFilter(headerName, queryParameterName, secretName));
         }
 
         [Fact]
@@ -94,8 +95,8 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         [Fact]
         public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenHeaderValueNotMatchesSecretValue()
         {
-           // Arrange
-           string secretValue = $"secret-{Guid.NewGuid()}";
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
 
             // Act
@@ -129,8 +130,8 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
 
             // Act
-            using (HttpResponseMessage response = 
-                await SendAuthorizedHttpRequestWithHeader(HeaderName, new [] { secretValue, $"second header value other then {nameof(secretValue)}" }))
+            using (HttpResponseMessage response =
+                await SendAuthorizedHttpRequestWithHeader(HeaderName, new[] { secretValue, $"second header value other then {nameof(secretValue)}" }))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -196,8 +197,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         }
-
-
+        
         private Task<HttpResponseMessage> SendAuthorizedHttpRequestWithHeader(string headerName, string headerValue)
         {
             return SendAuthorizedHttpRequestWithHeader(headerName, new[] { headerValue });
@@ -219,7 +219,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         {
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRouteQueryString + $"?{parameterName}={parameterValue}");
+                var request = new HttpRequestMessage(HttpMethod.Get, AuthorizedRoute + $"?{parameterName}={parameterValue}");
 
                 return await client.SendAsync(request);
             }

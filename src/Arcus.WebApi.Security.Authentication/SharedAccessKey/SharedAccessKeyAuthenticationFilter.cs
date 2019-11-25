@@ -18,19 +18,25 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     /// <remarks>
     ///     Please provide an <see cref="ISecretProvider"/> implementation in the configured services of the request.
     /// </remarks>
-    public abstract class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
+    public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
-        private readonly string _secretName;
+        private readonly string _headerName, _queryParameterName, _secretName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
         /// </summary>
+        /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
+        /// <param name="queryParameterName"></param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
+        /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
-        protected SharedAccessKeyAuthenticationFilter(string secretName)
+        public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName)
         {
+            Guard.For<ArgumentException>(() => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), "Either Header name or Queryparameter name must be supplied.");
             Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
 
+            _headerName = headerName;
+            _queryParameterName = queryParameterName;
             _secretName = secretName;
         }
 
@@ -49,9 +55,35 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers == null, "Invalid action context given without any HTTP request headers");
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices == null, "Invalid action context given without any HTTP request services");
 
+            string foundSecret = await GetAuthorizationSecret(context);
+
+            if (context.HttpContext.Request.Headers
+                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
+            {
+
+                if (requestSecretHeaders.Any(headerValue => !String.Equals(headerValue, foundSecret)))
+                {
+                    context.Result = new UnauthorizedResult();
+                }
+            }
+            else if (context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+            {
+                if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
+                {
+                    context.Result = new UnauthorizedResult();
+                }
+            }
+            else
+            {
+                context.Result = new UnauthorizedResult();
+            }
+        }
+
+        private async Task<string> GetAuthorizationSecret(AuthorizationFilterContext context)
+        {
             ISecretProvider userDefinedSecretProvider =
-                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
-                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
+                                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
+                                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
 
             if (userDefinedSecretProvider == null)
             {
@@ -65,16 +97,8 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             {
                 throw new SecretNotFoundException(_secretName);
             }
-            
-            await Authorize(context, foundSecret);
-        }
 
-        /// <summary>
-        /// Provides an implementation specific authorization
-        /// </summary>
-        /// <param name="context"></param>
-        /// <param name="secretName"></param>
-        /// <returns></returns>
-        public abstract Task Authorize(AuthorizationFilterContext context, string secretName);
+            return foundSecret;
+        }
     }
 }

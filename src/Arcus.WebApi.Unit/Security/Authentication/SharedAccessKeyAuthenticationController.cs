@@ -10,16 +10,8 @@ namespace Arcus.WebApi.Unit.Security.Authentication
     {
         [HttpGet]
         [Route("authz/shared-access-key")]
-        [SharedAccessKeyAuthentication(headerName: "x-shared-access-key", secretName: "custom-access-key-name")]
-        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKeyHeaderName(HttpRequestMessage message)
-        {
-            return Task.FromResult<IActionResult>(Ok());
-        }
-
-        [HttpGet]
-        [Route("authz/shared-access-key-querystring")]
-        [QueryStringSharedAccessKeyAuthentication(parameterName: "api-key", secretName: "custom-access-key-name")]
-        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKeyQuerystring(HttpRequestMessage message)
+        [SharedAccessKeyAuthentication(headerName: "x-shared-access-key", queryParameterName: "api-key", secretName: "custom-access-key-name")]
+        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKey(HttpRequestMessage message)
         {
             return Task.FromResult<IActionResult>(Ok());
         }
