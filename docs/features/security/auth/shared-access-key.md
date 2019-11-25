@@ -8,7 +8,7 @@ layout: default
 The `Arcus.WebApi.Security` package provides a mechanism that uses shared access keys to grant access to a web application.
 This authentication process consists of two parts:
 
-1. Find the configured HTTP request header that contains the shared access key
+1. Find the configured HTTP request header or the configured Query parameter that contains the shared access key
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
@@ -39,7 +39,7 @@ Once this is done, the `SharedAccessKeyAuthenticationFilter` can be added to the
 public void ConfigureServices(IServiceCollections services)
 {
     services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
 }
 ```
 
@@ -66,7 +66,7 @@ After that, the `SharedAccessKeyAuthenticationAttribute` attribute can be applie
 
 ```csharp
 [ApiController]
-[SharedAccessKeyAuthentication(headerName: "http-request-header-name", secretName: "shared-access-key-name")]
+[SharedAccessKeyAuthentication(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")]
 public class MyApiController : ControllerBase
 {
     [HttpGet]
