@@ -85,7 +85,7 @@ stages:
           - ${{ if not(contains(variables['Build.BuildNumber'], '-')) }}:
               - template: github/create-release.yml@templates
                 parameters:
-                  repositoryName: 'azure-arcus/arcus.webapi'
+                  repositoryName: 'arcus-azure/arcus.webapi'
                   releaseNotes: |
                     Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
                     ```shell
@@ -94,7 +94,7 @@ stages:
           - ${{ if contains(variables['Build.BuildNumber'], '-') }}:
               - template: create-pre-release.yml@templates
                 parameters:
-                  repositoryName: 'azure-arcus/arcus.webapi'
+                  repositoryName: 'arcus-azure/arcus.webapi'
                   releaseNotes: |
                     Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
                     ```shell
