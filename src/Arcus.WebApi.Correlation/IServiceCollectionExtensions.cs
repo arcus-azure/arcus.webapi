@@ -1,4 +1,5 @@
-﻿using Correlate;
+﻿using System;
+using Correlate;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -11,6 +12,21 @@ namespace Arcus.WebApi.Correlation
     // ReSharper disable once InconsistentNaming
     public static class IServiceCollectionExtensions
     {
+        /// <summary>
+        /// Adds the correlation related services to the dependency injection system of the application.
+        /// Get the <see cref="ICorrelationAccessor"/> to retrieve the correlation information.
+        /// </summary>
+        public static IServiceCollection AddCorrelation(this IServiceCollection services, Action<CorrelateOptions> configureOptions)
+        {
+            Guard.NotNull(services, nameof(services));
+
+            AddCorrelation(services);
+
+            services.Configure(configureOptions);
+
+            return services;
+        }
+
         /// <summary>
         /// Adds the correlation related services to the dependency injection system of the application.
         /// Get the <see cref="ICorrelationAccessor"/> to retrieve the correlation information.

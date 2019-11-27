@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Unit.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 using static Arcus.WebApi.Unit.Correlation.CorrelationController;
@@ -15,6 +16,23 @@ namespace Arcus.WebApi.Unit.Correlation
     public class CorrelationTests
     {
         private readonly TestApiServer _testServer = new TestApiServer();
+
+        [Fact]
+        public async Task SendRequest_WithCorrelateOptionsNonIncludeInResponse_ResponseWithoutCorrelationHeaders()
+        {
+            // Arrange
+            _testServer.AddServicesConfig(services => services.Configure<CorrelateOptions>(options => options.IncludeInResponse = false));
+            using (HttpClient client = _testServer.CreateClient())
+            // Act
+            using (HttpResponseMessage response = await client.GetAsync(Route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                Assert.DoesNotContain(response.Headers, header => header.Key == CorrelationId);
+                Assert.DoesNotContain(response.Headers, header => header.Key == RequestId);
+            }
+        }
 
         [Fact]
         public async Task SendRequest_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess()
@@ -86,7 +104,7 @@ namespace Arcus.WebApi.Unit.Correlation
 
         private static string GetResponseHeader(HttpResponseMessage response, string headerName)
         {
-            (string _, IEnumerable<string> values) = Assert.Single(response.Headers, kv => kv.Key == headerName);
+            (string _, IEnumerable<string> values) = Assert.Single(response.Headers, header => header.Key == headerName);
             
             Assert.NotNull(values);
             string value = Assert.Single(values);

@@ -17,7 +17,7 @@ namespace Arcus.WebApi.Correlation
             Guard.NotNull(applicationBuilder, nameof(applicationBuilder));
 
             applicationBuilder.UseMiddleware<CorrelationMiddleware>();
-            
+
             return applicationBuilder;
         }
     }
