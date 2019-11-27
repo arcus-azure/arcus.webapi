@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         [InlineData("not empty or whitespace", "not empty or whitespace", null)]
         [InlineData("not empty or whitespace", "not empty or whitespace", "")]
         [InlineData("not empty or whitespace", "not empty or whitespace", " ")]
-        public void SharedAccessKeyAttribute_WithNotPresentHeaderNameAndOrSecretName_ShouldFailWithArgumentException(
+        public void SharedAccessKeyAttribute_WithNotPresentHeaderNameQueryParameterNameAndOrSecretName_ShouldFailWithArgumentException(
             string headerName,
             string queryParameterName,
             string secretName)
