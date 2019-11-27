@@ -139,7 +139,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey__RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenQuerystringValueMatchesSecretValue()
+        public async Task AuthorizedRoute_WithSharedAccessKey__RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenQueryStringValueMatchesSecretValue()
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
