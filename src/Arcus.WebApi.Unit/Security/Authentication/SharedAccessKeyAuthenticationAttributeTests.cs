@@ -184,7 +184,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQuerystringParameterIsNotPresent()
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQueryStringParameterIsNotPresent()
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
