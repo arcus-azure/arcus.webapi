@@ -17,6 +17,7 @@
     <ItemGroup>
       <PackageReference Include="BouncyCastle" Version="1.8.5" />
       <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
+      <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.4" />
       <PackageReference Include="System.Web.Http" Version="4.0.0" />
       <PackageReference Include="Microsoft.AspNetCore.App" />
       <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
@@ -27,6 +28,7 @@
       <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
     </ItemGroup>
     <ItemGroup>
+      <ProjectReference Include="..\Arcus.WebApi.Correlation\Arcus.WebApi.Correlation.csproj" />
       <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
       <ProjectReference Include="..\Arcus.WebApi.Security.Authentication\Arcus.WebApi.Security.Authentication.csproj" />
       <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using Arcus.WebApi.Correlation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -31,10 +32,13 @@ namespace Arcus.WebApi.Unit.Hosting
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddMvc();
+            services.AddCorrelation();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseCorrelation();
+
             app.UseMvc();
 
             app.UseSwagger();
