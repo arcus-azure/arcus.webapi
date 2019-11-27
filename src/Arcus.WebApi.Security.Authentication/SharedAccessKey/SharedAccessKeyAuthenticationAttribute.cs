@@ -28,7 +28,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         public SharedAccessKeyAuthenticationAttribute(string headerName, string queryParameterName, string secretName) : base(typeof(SharedAccessKeyAuthenticationFilter))
         {
-            Guard.For<ArgumentException>(() => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), "Either Header name or Queryparameter name must be supplied.");
+            Guard.For<ArgumentException>(() => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), "Either header name or query parameter name must be supplied.");
             Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
 
             Arguments = new object[] { headerName, queryParameterName, secretName };
