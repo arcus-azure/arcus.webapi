@@ -18,9 +18,9 @@ jobs:
             displayName: 'Copy build artifacts'
             inputs:
               contents: '**/?(bin|obj)/**'
-              targetFolder: '$(Pipeline.Workspace)/build'
+              targetFolder: '$(Pipeline.Workspace)/build-${{ version }}'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
             inputs:
-              targetPath: '$(Pipeline.Workspace)/build'
-              artifactName: Build
+              targetPath: '$(Pipeline.Workspace)/build-${{ version }}'
+              artifactName: 'Build-${{ version }}'

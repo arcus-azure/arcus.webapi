@@ -43,28 +43,9 @@ stages:
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - job: UnitTests
-        displayName: 'Run unit tests'
-        pool:
-          vmImage: 'ubuntu-16.04'
-        steps:
-          - task: DownloadPipelineArtifact@2
-            displayName: 'Download build artifacts'
-            inputs:
-              artifact: 'Build'
-              path: '$(Build.SourcesDirectory)'
-          - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
-            inputs:
-              version: '$(DotNet.Sdk.Version)'
-          - task: DotNetCoreCLI@2
-            displayName: 'Run unit tests'
-            inputs:
-              command: test
-              projects: 'src/**/$(Project).Unit.csproj'
-              arguments: '--configuration $(Build.Configuration)'
-              nobuild: true
-              publishTestResults: true
+      - template: templates/ci-unit.yml
+        parameters:
+          dotnetSdkVersions: ['2.2.105', '3.0.101']
 
   - stage: ReleaseToMyget
     displayName: 'Release to MyGet'
