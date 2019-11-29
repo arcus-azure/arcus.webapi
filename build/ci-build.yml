@@ -32,34 +32,6 @@ variables:
   # 'Package.Version.ManualTrigger' is added as queue-time variable on build in Azure DevOps
 
 stages:
-  - stage: Build
-    jobs:
-      - template: templates/ci-compile.yml
-        parameters:
-          dotnetSdkVersions: ['2.2.105', '3.0.101']
-
-  - stage: UnitTests
-    displayName: Unit Tests
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-      - template: templates/ci-unit.yml
-        parameters:
-          dotnetSdkVersions: ['2.2.105', '3.0.101']
-
-  - stage: ReleaseToMyget
-    displayName: 'Release to MyGet'
-    dependsOn: UnitTests
-    condition: succeeded()
-    jobs:
-      - job: PushToMyGet
-        displayName: 'Push to MyGet'
-        pool:
-          vmImage: 'ubuntu-16.04'
-        steps:
-          - task: DownloadPipelineArtifact@2
-            displayName: 'Download build artifacts'
-            inputs:
-              artifact: 'Build'
-              path: '$(Build.SourcesDirectory)'
-          - template: nuget/publish-preview-package.yml@templates
+  - template: templates/ci-stage.yml
+    parameters:
+      dotnetSdkVersions: ['2.2.105', '3.0.101']
