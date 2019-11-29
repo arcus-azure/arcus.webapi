@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Exceptions;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
+using Arcus.Security.Core.Caching;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                         + "Please configure such an implementation (ex. in the Startup) of your application");
                 }
 
-                string foundSecret = await userDefinedSecretProvider.Get(_secretName);
+                string foundSecret = await userDefinedSecretProvider.GetRawSecretAsync(_secretName);
                 if (foundSecret == null)
                 {
                     throw new SecretNotFoundException(_secretName);

@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Exceptions;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
+using Arcus.Security.Core.Caching;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -27,7 +27,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
         /// </summary>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
-        /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
+        /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string secretName)
@@ -68,7 +68,7 @@ namespace Arcus.WebApi.Security.Authentication
                         + "Please configure such an implementation (ex. in the Startup) of your application");
                 }
 
-                string foundSecret = await userDefinedSecretProvider.Get(_secretName);
+                string foundSecret = await userDefinedSecretProvider.GetRawSecretAsync(_secretName);
                 if (foundSecret == null)
                 {
                     throw new SecretNotFoundException(_secretName);

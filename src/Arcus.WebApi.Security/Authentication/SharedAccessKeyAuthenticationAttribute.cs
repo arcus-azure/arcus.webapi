@@ -1,7 +1,6 @@
 ﻿using System;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
 using GuardNet;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Security.Authentication
@@ -24,7 +23,7 @@ namespace Arcus.WebApi.Security.Authentication
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttribute"/> class.
         /// </summary>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
-        /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
+        /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         public SharedAccessKeyAuthenticationAttribute(string headerName, string secretName) : base(typeof(SharedAccessKeyAuthenticationFilter))
