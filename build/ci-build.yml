@@ -38,7 +38,7 @@ stages:
         pool:
           vmImage: 'ubuntu-16.04'
         steps:
-          - ${{ each version in DotNet.Sdk.Versions }}:
+          - ${{ each version in variables['DotNet.Sdk.Versions'] }}:
               - template: 'nuget/determine-pr-version.yml@templates'
                 parameters:
                   manualTriggerVersion: $(Package.Version.ManualTrigger)
@@ -72,7 +72,7 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - ${{ each version in DotNet.Sdk.Versions }}:
+          - ${{ each version in variables['DotNet.Sdk.Versions'] }}:
               - task: DotNetCoreInstaller@0
                 displayName: 'Import .NET Core SDK (${{ version }})'
                 inputs:
