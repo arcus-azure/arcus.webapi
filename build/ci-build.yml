@@ -36,10 +36,7 @@ stages:
     jobs:
       - template: templates/ci-compile.yml
         parameters:
-          dotnetSdkVersion: '2.2.105'
-      - template: templates/ci-compile.yml
-        parameters:
-          dotnetSdkVersion: '3.0.101'
+          dotnetSdkVersions: ['2.2.105', '3.0.101']
 
   - stage: UnitTests
     displayName: Unit Tests
