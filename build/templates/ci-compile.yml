@@ -13,7 +13,7 @@ jobs:
     pool:
       vmImage: 'ubuntu-16.04'
     steps:
-      - ${{ each version in parameters.dotnetSdkVersion }}:
+      - ${{ each version in parameters.dotnetSdkVersions }}:
           - template: 'nuget/determine-pr-version.yml@templates'
             parameters:
               manualTriggerVersion: $(Package.Version.ManualTrigger)
