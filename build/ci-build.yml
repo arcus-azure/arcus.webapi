@@ -39,23 +39,23 @@ stages:
           vmImage: 'ubuntu-16.04'
         steps:
           - ${{ each version in $(DotNet.Sdk.Versions) }}:
-          - template: 'nuget/determine-pr-version.yml@templates'
-            parameters:
-              manualTriggerVersion: $(Package.Version.ManualTrigger)
-          - template: 'build/build-solution.yml@templates'
-            parameters:
-              dotnetSdkVersion: '${{ version }}'
-              versionSuffix: '$(packageVersion)'
-          - task: CopyFiles@2
-            displayName: 'Copy build artifacts'
-            inputs:
-              contents: '**/?(bin|obj)/**'
-              targetFolder: '$(Pipeline.Workspace)/build'
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish build artifacts'
-            inputs:
-              targetPath: '$(Pipeline.Workspace)/build'
-              artifactName: Build
+              - template: 'nuget/determine-pr-version.yml@templates'
+                parameters:
+                  manualTriggerVersion: $(Package.Version.ManualTrigger)
+              - template: 'build/build-solution.yml@templates'
+                parameters:
+                  dotnetSdkVersion: '${{ version }}'
+                  versionSuffix: '$(packageVersion)'
+              - task: CopyFiles@2
+                displayName: 'Copy build artifacts'
+                inputs:
+                  contents: '**/?(bin|obj)/**'
+                  targetFolder: '$(Pipeline.Workspace)/build'
+              - task: PublishPipelineArtifact@0
+                displayName: 'Publish build artifacts'
+                inputs:
+                  targetPath: '$(Pipeline.Workspace)/build'
+                  artifactName: Build
 
   - stage: UnitTests
     displayName: Unit Tests
@@ -73,18 +73,18 @@ stages:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
           - ${{ each version in $(DotNet.Sdk.Versions) }}:
-          - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK (${{ version }})'
-            inputs:
-              version: '${{ version }}'
-          - task: DotNetCoreCLI@2
-            displayName: 'Run unit tests'
-            inputs:
-              command: test
-              projects: 'src/**/$(Project).Unit.csproj'
-              arguments: '--configuration $(Build.Configuration)'
-              nobuild: true
-              publishTestResults: true
+              - task: DotNetCoreInstaller@0
+                displayName: 'Import .NET Core SDK (${{ version }})'
+                inputs:
+                  version: '${{ version }}'
+              - task: DotNetCoreCLI@2
+                displayName: 'Run unit tests'
+                inputs:
+                  command: test
+                  projects: 'src/**/$(Project).Unit.csproj'
+                  arguments: '--configuration $(Build.Configuration)'
+                  nobuild: true
+                  publishTestResults: true
 
   - stage: ReleaseToMyget
     displayName: 'Release to MyGet'
