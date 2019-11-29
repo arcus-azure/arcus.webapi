@@ -1,6 +1,13 @@
 parameters:
   dotnetSdkVersions: []
 
+resources:
+  repositories:
+    - repository: templates
+      type: github
+      name: arcus-azure/azure-devops-templates
+      endpoint: arcus-azure
+
 jobs:
   - job: Compile
     pool:
