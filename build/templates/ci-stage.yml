@@ -1,0 +1,76 @@
+parameters:
+  dotnetSdkVersions: []
+
+stages:
+  - stage: Build
+    jobs:
+      - job: Compile
+        pool:
+          vmImage: 'ubuntu-16.04'
+        steps:
+          - ${{ each version in parameters.dotnetSdkVersions }}:
+              - template: 'nuget/determine-pr-version.yml@templates'
+                parameters:
+                  manualTriggerVersion: $(Package.Version.ManualTrigger)
+              - template: 'build/build-solution.yml@templates'
+                parameters:
+                  dotnetSdkVersion: '${{ version }}'
+                  versionSuffix: '$(packageVersion)'
+              - task: CopyFiles@2
+                displayName: 'Copy build artifacts'
+                inputs:
+                  contents: '**/?(bin|obj)/**'
+                  targetFolder: '$(Pipeline.Workspace)/build-${{ version }}'
+              - task: PublishPipelineArtifact@0
+                displayName: 'Publish build artifacts'
+                inputs:
+                  targetPath: '$(Pipeline.Workspace)/build-${{ version }}'
+                  artifactName: 'Build-${{ version }}'
+
+  - stage: UnitTests
+    displayName: Unit Tests
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: UnitTests
+        displayName: 'Run unit tests'
+        pool:
+          vmImage: 'ubuntu-16.04'
+        variables:
+          version: ${{ parameters[0] }}
+        steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download build artifacts'
+            inputs:
+              artifact: 'Build-$(version)'
+              path: '$(Build.SourcesDirectory)'
+          - task: DotNetCoreInstaller@0
+            displayName: 'Import .NET Core SDK ($(version))'
+            inputs:
+              version: '$(version)'
+          - task: DotNetCoreCLI@2
+            displayName: 'Run unit tests'
+            inputs:
+              command: test
+              projects: 'src/**/$(Project).Unit.csproj'
+              arguments: '--configuration $(Build.Configuration)'
+              nobuild: true
+              publishTestResults: true
+
+  - stage: ReleaseToMyget
+    displayName: 'Release to MyGet'
+    dependsOn: UnitTests
+    condition: succeeded()
+    jobs:
+      - job: PushToMyGet
+        displayName: 'Push to MyGet'
+        pool:
+          vmImage: 'ubuntu-16.04'
+        steps:
+          - ${{ each version in parameters.dotnetSdkVersions }}:
+              - task: DownloadPipelineArtifact@2
+                displayName: 'Download build artifacts'
+                inputs:
+                  artifact: 'Build-${{ version }}'
+                  path: '$(Build.SourcesDirectory)'
+              - template: nuget/publish-preview-package.yml@templates
