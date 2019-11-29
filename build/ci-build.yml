@@ -72,10 +72,11 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
+          - ${{ each version in $(DotNet.Sdk.Versions) }}:
           - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
+            displayName: 'Import .NET Core SDK (${{ version }})'
             inputs:
-              version: '$(DotNet.Sdk.Version)'
+              version: '${{ version }}'
           - task: DotNetCoreCLI@2
             displayName: 'Run unit tests'
             inputs:
