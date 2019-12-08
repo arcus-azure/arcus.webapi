@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
         /// </summary>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
-        /// <param name="queryParameterName"></param>
+        /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
         /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
@@ -57,25 +57,31 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
 
             string foundSecret = await GetAuthorizationSecret(context);
 
-            if (context.HttpContext.Request.Headers
-                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
+            if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
-
-                if (requestSecretHeaders.Any(headerValue => !String.Equals(headerValue, foundSecret)))
-                {
-                    context.Result = new UnauthorizedResult();
-                }
-            }
-            else if (context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
-            {
-                if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
-                {
-                    context.Result = new UnauthorizedResult();
-                }
+                context.Result = new UnauthorizedResult();
             }
             else
             {
-                context.Result = new UnauthorizedResult();
+
+                if (!String.IsNullOrWhiteSpace(_headerName) && context.HttpContext.Request.Headers
+                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
+                {
+
+                    if (requestSecretHeaders.Any(headerValue => !String.Equals(headerValue, foundSecret)))
+                    {
+                        context.Result = new UnauthorizedResult();
+                    }
+                }
+
+                if (!String.IsNullOrWhiteSpace(_queryParameterName) && context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+                {
+                    if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
+                    {
+                        context.Result = new UnauthorizedResult();
+                    }
+                }
+
             }
         }
 

@@ -22,7 +22,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttribute"/> class.
         /// </summary>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
-        /// <param name="queryParameterName"></param>
+        /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
         /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
@@ -31,7 +31,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             Guard.For<ArgumentException>(() => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), "Either header name or query parameter name must be supplied.");
             Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
 
-            Arguments = new object[] { headerName, queryParameterName, secretName };
+            Arguments = new object[] { headerName?? "", queryParameterName?? "", secretName };
         }
     }
 }
