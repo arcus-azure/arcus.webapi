@@ -28,7 +28,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
-        /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
+        /// <exception cref="ArgumentException">When the both <paramref name="headerName"/> and <paramref name="queryParameterName"/> are <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName)
         {
@@ -63,7 +63,6 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
             else
             {
-
                 if (!String.IsNullOrWhiteSpace(_headerName) && context.HttpContext.Request.Headers
                        .TryGetValue(_headerName, out StringValues requestSecretHeaders))
                 {

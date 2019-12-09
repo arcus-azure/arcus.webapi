@@ -34,7 +34,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             string secretName)
         {
             Assert.Throws<ArgumentException>(
-                () => new SharedAccessKeyAuthenticationAttribute(headerName, queryParameterName, secretName));
+                () => new SharedAccessKeyAuthenticationAttribute(headerName: headerName, queryParameterName: queryParameterName, secretName: secretName));
         }
 
         [Theory]
@@ -50,7 +50,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             string secretName)
         {
             Assert.Throws<ArgumentException>(
-                () => new SharedAccessKeyAuthenticationFilter(headerName, queryParameterName, secretName));
+                () => new SharedAccessKeyAuthenticationFilter(headerName: headerName, queryParameterName: queryParameterName, secretName: secretName));
         }
 
         [Fact]
@@ -295,28 +295,17 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         private async Task<HttpResponseMessage> SendAuthorizedHttpRequest(string route, string headerName = null, IEnumerable<string> headerValues = null, string parameterName = null, string parameterValue = null)
         {
             string requestUri = parameterName == null ? route : route + $"?{parameterName}={parameterValue}";
-            HttpRequestMessage request;
 
-            if (headerName == null)
-            {
-                request = new HttpRequestMessage(HttpMethod.Get, requestUri);
-            }
-            else
-            {
-                request = new HttpRequestMessage(HttpMethod.Get, requestUri)
-                {
-                    Headers = { { headerName, headerValues } }
-                };
-            }
-
-            return await SendAuthorizedHttpRequest(request);
-        }
-
-        private async Task<HttpResponseMessage> SendAuthorizedHttpRequest(HttpRequestMessage httpRequestMessage)
-        {
             using (HttpClient client = _testServer.CreateClient())
             {
-                return await client.SendAsync(httpRequestMessage);
+                var request = new HttpRequestMessage(HttpMethod.Get, requestUri);
+
+                if (headerName != null)
+                {
+                    request.Headers.Add(headerName, headerValues);
+                }
+
+                return await client.SendAsync(request);
             }
         }
 
