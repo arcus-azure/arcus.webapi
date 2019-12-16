@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly CorrelateOptions _options;
+        private readonly CorrelationOptions _options;
         private readonly ILogger<CorrelationMiddleware> _logger;
         private readonly ICorrelationAccessor _correlationContextAccessor;
         private readonly IAsyncCorrelationManager _asyncCorrelationManager;
@@ -33,7 +33,7 @@ namespace Arcus.WebApi.Correlation
         /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
         public CorrelationMiddleware(
             RequestDelegate next,
-            IOptions<CorrelateOptions> options,
+            IOptions<CorrelationOptions> options,
             ILogger<CorrelationMiddleware> logger,
             ICorrelationAccessor correlationAccessor,
             IAsyncCorrelationManager asyncCorrelationManager)
@@ -73,16 +73,23 @@ namespace Arcus.WebApi.Correlation
 
         private Task CorrelateRequest(HttpContext httpContext)
         {
-            if (_options.IncludeInResponse)
+            if (_options.Transaction.IncludeInResponse)
             {
-                string correlationId = _correlationContextAccessor.CorrelationId;
-                string requestId = _correlationContextAccessor.RequestId;
+                string transactionId = _correlationContextAccessor.CorrelationId;
+                httpContext.Response.OnStarting(() =>
+                {
+                    TryAddResponseHeader(httpContext, CorrelationId, transactionId);
+                    return Task.CompletedTask;
+                });
+            }
+
+            if (_options.Operation.IncludeInResponse)
+            {
+                string operationId = _correlationContextAccessor.RequestId;
 
                 httpContext.Response.OnStarting(() =>
                 {
-                    TryAddResponseHeader(httpContext, CorrelationId, correlationId);
-                    TryAddResponseHeader(httpContext, RequestId, requestId);
-
+                    TryAddResponseHeader(httpContext, RequestId, operationId);
                     return Task.CompletedTask;
                 });
             }

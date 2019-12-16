@@ -10,7 +10,7 @@ namespace Arcus.WebApi.Correlation
     public static class IApplicationBuilderExtensions
     {
         /// <summary>
-        /// Adds the <see cref="CorrelationMiddleware"/> to the application pipeline.
+        /// Adds operation & transaction correlation to the application by using the <see cref="CorrelationMiddleware"/> in the request pipeline.
         /// </summary>
         public static IApplicationBuilder UseCorrelation(this IApplicationBuilder applicationBuilder)
         {

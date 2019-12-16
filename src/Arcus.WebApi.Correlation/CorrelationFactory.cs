@@ -1,6 +1,6 @@
-﻿using System;
-using Correlate;
+﻿using Correlate;
 using GuardNet;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace Arcus.WebApi.Correlation 
 {
@@ -9,6 +9,8 @@ namespace Arcus.WebApi.Correlation
     /// </summary>
     internal class CorrelationFactory : CorrelationContextFactory
     {
+        private readonly IHttpRequestIdentifierFeature _httpRequestIdentifierFeature;
+
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationFactory"/> class.
         /// </summary>
@@ -16,6 +18,8 @@ namespace Arcus.WebApi.Correlation
         public CorrelationFactory(ICorrelationContextAccessor accessor) : base(accessor)
         {
             Guard.NotNull(accessor, nameof(accessor));
+
+            _httpRequestIdentifierFeature = new HttpRequestIdentifierFeature();
         }
 
         /// <summary>
@@ -27,7 +31,14 @@ namespace Arcus.WebApi.Correlation
         {
             Guard.NotNullOrWhitespace(correlationId, nameof(correlationId), "Cannot create correlation ID from blank text value");
 
-            return new Correlation { CorrelationId = correlationId };
+            // Set to null, so the next 'get' will produce a new id.
+            _httpRequestIdentifierFeature.TraceIdentifier = null;
+            
+            return new Correlation
+            {
+                OperationId = _httpRequestIdentifierFeature.TraceIdentifier,
+                CorrelationId = correlationId
+            };
         }
     }
 }

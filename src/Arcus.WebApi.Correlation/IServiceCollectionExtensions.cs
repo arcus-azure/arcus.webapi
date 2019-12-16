@@ -7,7 +7,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 namespace Arcus.WebApi.Correlation 
 {
     /// <summary>
-    /// Adds the correlation related services to the <see cref="IServiceCollection"/> of the application.
+    /// Adds operation & transaction correlation to the application.
     /// </summary>
     // ReSharper disable once InconsistentNaming
     public static class IServiceCollectionExtensions
@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Correlation
         /// Adds the correlation related services to the dependency injection system of the application.
         /// Get the <see cref="ICorrelationAccessor"/> to retrieve the correlation information.
         /// </summary>
-        public static IServiceCollection AddCorrelation(this IServiceCollection services, Action<CorrelateOptions> configureOptions)
+        public static IServiceCollection AddCorrelation(this IServiceCollection services, Action<CorrelationOptions> configureOptions)
         {
             Guard.NotNull(services, nameof(services));
 
@@ -28,8 +28,7 @@ namespace Arcus.WebApi.Correlation
         }
 
         /// <summary>
-        /// Adds the correlation related services to the dependency injection system of the application.
-        /// Get the <see cref="ICorrelationAccessor"/> to retrieve the correlation information.
+        /// Adds operation & transaction correlation to the application.
         /// </summary>
         public static IServiceCollection AddCorrelation(this IServiceCollection services)
         {

@@ -13,13 +13,12 @@ namespace Arcus.WebApi.Correlation
         /// </summary>
         internal Correlation()
         {
-            // TODO: control how the 'Request-ID' gets generated.
-            RequestId = Guid.NewGuid().ToString();
+            OperationId = Guid.NewGuid().ToString();
         }
 
         /// <summary>
         /// Gets the unique ID information of the request.
         /// </summary>
-        internal string RequestId { get; }
+        internal string OperationId { get; set;  }
     }
 }

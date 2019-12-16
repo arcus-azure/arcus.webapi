@@ -30,7 +30,7 @@ namespace Arcus.WebApi.Correlation
         /// <summary>
         /// Gets the unique operation ID of the request.
         /// </summary>
-        public string RequestId => Correlation.RequestId;
+        public string RequestId => Correlation.OperationId;
 
         /// <summary>
         /// Gets or sets <see cref="ICorrelationContextAccessor.CorrelationContext" />.

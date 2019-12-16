@@ -5,7 +5,7 @@ namespace Arcus.WebApi.Correlation
     /// <summary>
     /// Options for handling correlation id on incoming requests.
     /// </summary>
-    public class CorrelateOptions
+    public class CorrelationOptions
     {
         /// <summary>
         /// Gets or sets the request headers to retrieve the correlation id from.
@@ -16,11 +16,13 @@ namespace Arcus.WebApi.Correlation
         public string[] RequestHeaders { get; set; } = { CorrelationHttpHeaders.CorrelationId, CorrelationHttpHeaders.RequestId };
 
         /// <summary>
-        /// Gets or sets whether to include the correlation id in the response.
+        /// Gets the correlation options specific for the transaction ID.
         /// </summary>
-        /// <remarks>
-        ///     A common use case is to disable tracing info in edge services, so that such details are not exposed to the outside world.
-        /// </remarks>
-        public bool IncludeInResponse { get; set; } = true;
+        public CorrelationOptionsTransaction Transaction { get; } = new CorrelationOptionsTransaction();
+
+        /// <summary>
+        /// Gets the correlation options specific for the operation ID.
+        /// </summary>
+        public CorrelationOptionsOperation Operation { get; } = new CorrelationOptionsOperation();
     }
 }
