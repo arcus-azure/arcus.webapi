@@ -35,11 +35,11 @@ stages:
         pool:
           vmImage: 'ubuntu-16.04'
         strategy:
-        matrix:
-          NETCORE22:
-            'DotNet.Sdk.Version': '2.2.105'
-          NETCORE30:
-            'DotNet.Sdk.Version': '3.0.101'
+          matrix:
+            NETCORE22:
+              'DotNet.Sdk.Version': '2.2.105'
+            NETCORE30:
+              'DotNet.Sdk.Version': '3.0.101'
         steps:
           - template: 'nuget/determine-pr-version.yml@templates'
             parameters:
