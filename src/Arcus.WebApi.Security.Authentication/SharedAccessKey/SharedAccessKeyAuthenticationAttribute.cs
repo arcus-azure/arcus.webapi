@@ -17,7 +17,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <param name="secretName">The name of the request header which value must match the stored secret with the same name as the header.</param>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         [Obsolete("We now support multiple ways to specify the authentication key, we recommend using our overload instead")]
-        public SharedAccessKeyAuthenticationAttribute(string secretName) : this(secretName, queryParameterName: null, secretName: secretName) { }
+        public SharedAccessKeyAuthenticationAttribute(string secretName) : this(headerName: secretName, queryParameterName: null, secretName: secretName) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttribute"/> class.

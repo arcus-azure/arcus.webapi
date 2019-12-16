@@ -64,8 +64,6 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 () => SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue));
         }
 
-        #region HeaderValidation
-
         [Fact]
         public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedAndHeaderValueMatchesSecretValue()
         {
@@ -82,6 +80,22 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedInUpperCaseAndHeaderValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName.ToUpper(), headerValue: secretValue, parameterName: null, parameterValue: null))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+
+        [Fact]
         public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedAndHeaderValueMatchesSecretValue()
         {
             // Arrange
@@ -90,6 +104,21 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
             // Act
             using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName, headerValue: secretValue, parameterName: null, parameterValue: null))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedInUpperCaseAndHeaderValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName.ToUpper(), headerValue: secretValue, parameterName: null, parameterValue: null))
             {
                 // Assert
                 Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -142,10 +171,6 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             }
         }
 
-        #endregion HeaderValidation
-
-        #region QueryStringValidation
-
         [Fact]
         public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedAndQueryStringValueMatchesSecretValue()
         {
@@ -162,6 +187,21 @@ namespace Arcus.WebApi.Unit.Security.Authentication
         }
 
         [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedInUppercaseAndQueryStringValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName.ToUpper(), parameterValue: secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
         public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedAndQueryStringValueMatchesSecretValue()
         {
             // Arrange
@@ -170,6 +210,21 @@ namespace Arcus.WebApi.Unit.Security.Authentication
 
             // Act
             using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName, parameterValue: secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedInUpperCaseAndQueryStringValueMatchesSecretValue()
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName.ToUpper(), parameterValue: secretValue))
             {
                 // Assert
                 Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -205,10 +260,6 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         }
-
-        #endregion QueryStringValidation
-
-        #region HeaderAndQueryStringValidation
 
         [Fact]
         public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenBothHeaderAndQueryStringValueMatchesSecretValue()
@@ -284,8 +335,6 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         }
-
-        #endregion HeaderAndQueryStringValidation
 
         private async Task<HttpResponseMessage> SendAuthorizedHttpRequest(string route, string headerName = null, string headerValue = null, string parameterName = null, string parameterValue = null)
         {

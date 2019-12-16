@@ -55,7 +55,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers == null, "Invalid action context given without any HTTP request headers");
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices == null, "Invalid action context given without any HTTP request services");
 
-            string foundSecret = await GetAuthorizationSecret(context);
+            string foundSecret = await GetAuthorizationSecretAsync(context);
 
             if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                        .TryGetValue(_headerName, out StringValues requestSecretHeaders))
                 {
 
-                    if (requestSecretHeaders.Any(headerValue => !String.Equals(headerValue, foundSecret)))
+                    if (requestSecretHeaders.Any(headerValue => String.Equals(headerValue, foundSecret) == false))
                     {
                         context.Result = new UnauthorizedResult();
                     }
@@ -84,7 +84,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
         }
 
-        private async Task<string> GetAuthorizationSecret(AuthorizationFilterContext context)
+        private async Task<string> GetAuthorizationSecretAsync(AuthorizationFilterContext context)
         {
             ISecretProvider userDefinedSecretProvider =
                                 context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
