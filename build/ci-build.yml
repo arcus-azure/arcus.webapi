@@ -52,7 +52,7 @@ stages:
             displayName: 'Copy build artifacts'
             inputs:
               contents: '**/?(bin|obj)/**'
-              targetFolder: '$(Pipeline.Workspace)/build'
+              targetFolder: '$(Pipeline.Workspace)/build-$(DotNet.Sdk.Version)'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
             inputs:
@@ -72,8 +72,10 @@ stages:
           matrix:
             NETCORE22:
               'DotNet.Sdk.Version': '2.2.105'
+              'DotNet.Sdk.Framework': 'netcoreapp2.2'
             NETCORE30:
               'DotNet.Sdk.Version': '3.0.101'
+              'DotNet.Sdk.Framework': 'netcoreapp3.0'
         steps:
           - task: DownloadPipelineArtifact@2
             displayName: 'Download build artifacts'
@@ -89,7 +91,7 @@ stages:
             inputs:
               command: test
               projects: 'src/**/$(Project).Unit.csproj'
-              arguments: '--configuration $(Build.Configuration)'
+              arguments: '--configuration $(Build.Configuration) --framework $(DotNet.Sdk.Framework)'
               nobuild: true
               publishTestResults: true
 
