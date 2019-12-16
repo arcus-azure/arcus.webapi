@@ -56,7 +56,7 @@ stages:
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
             inputs:
-              targetPath: '$(Pipeline.Workspace)/build'
+              targetPath: '$(Pipeline.Workspace)/build-$(DotNet.Sdk.Version)'
               artifactName: 'Build-$(DotNet.Sdk.Version)'
 
   - stage: UnitTests
