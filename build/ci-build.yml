@@ -52,7 +52,7 @@ stages:
             displayName: 'Copy build artifacts'
             inputs:
               contents: '**/?(bin|obj)/**'
-              targetFolder: '$(Pipeline.Workspace)/build'
+              targetFolder: '$(Pipeline.Workspace)/build-$(DotNet.Sdk.Version)'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
             inputs:
