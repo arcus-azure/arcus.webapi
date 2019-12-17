@@ -49,12 +49,12 @@ stages:
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
             inputs:
-              contents: '**/?(bin|obj)/netcoreapp2.2/**'
+              contents: '**/?(bin|obj)/**/netstandard2.0/**'
               targetFolder: '$(Pipeline.Workspace)/build-2.2.105'
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
             inputs:
-              contents: '**/?(bin|obj)/netcoreapp3.0/**'
+              contents: '**/?(bin|obj)/**/netcoreapp3.0/**'
               targetFolder: '$(Pipeline.Workspace)/build-3.0.101'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
