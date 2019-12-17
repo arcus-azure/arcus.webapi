@@ -49,23 +49,13 @@ stages:
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
             inputs:
-              contents: '**/?(bin|obj)/**/netstandard2.0/**'
-              targetFolder: '$(Pipeline.Workspace)/build-2.2.105'
-          - task: CopyFiles@2
-            displayName: 'Copy build artifacts'
-            inputs:
-              contents: '**/?(bin|obj)/**/netcoreapp3.0/**'
-              targetFolder: '$(Pipeline.Workspace)/build-3.0.101'
+              contents: '**/?(bin|obj)/**'
+              targetFolder: '$(Pipeline.Workspace)/build'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
             inputs:
-              targetPath: '$(Pipeline.Workspace)/build-2.2.105'
-              artifactName: 'Build-2.2.105'
-          - task: PublishPipelineArtifact@0
-            displayName: 'Publish build artifacts'
-            inputs:
-              targetPath: '$(Pipeline.Workspace)/build-3.0.101'
-              artifactName: 'Build-3.0.101'
+              targetPath: '$(Pipeline.Workspace)/build'
+              artifactName: 'Build'
 
   - stage: UnitTests
     displayName: Unit Tests
@@ -105,16 +95,10 @@ stages:
         displayName: 'Push to MyGet'
         pool:
           vmImage: 'ubuntu-16.04'
-        strategy:
-          matrix:
-            NETCORE22:
-              'DotNet.Sdk.Version': '2.2.105'
-            NETCORE30:
-              'DotNet.Sdk.Version': '3.0.101'
         steps:
           - task: DownloadPipelineArtifact@2
             displayName: 'Download build artifacts'
             inputs:
-              artifact: 'Build-$(DotNet.Sdk.Version)'
+              artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
           - template: nuget/publish-preview-package.yml@templates
