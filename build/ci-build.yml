@@ -38,27 +38,16 @@ stages:
           matrix:
             NETCORE22:
               'DotNet.Sdk.Version': '2.2.105'
-              'DotNet.Sdk.Framework': 'netcoreapp2.2'
             NETCORE30:
               'DotNet.Sdk.Version': '3.0.101'
-              'DotNet.Sdk.Framework': 'netcoreapp3.0'
         steps:
           - template: 'nuget/determine-pr-version.yml@templates'
             parameters:
               manualTriggerVersion: $(Package.Version.ManualTrigger)
-          - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK (2.2.105)'
-            inputs:
-              version: '2.2.105'
-          - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK (3.0.101)'
-            inputs:
-              version: '3.0.101'
-          - task: DotNetCoreCLI@2
-            displayName: 'Compile'
-            inputs:
-              projects: 'src/*.sln'
-              arguments: '--configuration $(Build.Configuration) --framework $(DotNet.Sdk.Framework) --version-suffix $(packageVersion)'
+          - template: 'build/build-solution.yml@templates'
+            parameters:
+              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+              versionSuffix: '$(packageVersion)'
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
             inputs:
