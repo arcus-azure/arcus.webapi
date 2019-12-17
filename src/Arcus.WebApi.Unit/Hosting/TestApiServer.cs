@@ -75,12 +75,20 @@ namespace Arcus.WebApi.Unit.Hosting
 
                 string assemblyName = typeof(TestApiServer).Assembly.GetName().Name;
 
-
+#if NETCOREAPP2_2
+                var openApiInformation = new Info
+                {
+                    Title = assemblyName,
+                    Version = "v1"
+                };
+#endif
+#if NETCOREAPP3_0
                 var openApiInformation = new OpenApiInfo
                 {
                     Title = assemblyName,
                     Version = "v1"
                 };
+#endif
 
                 services.AddSwaggerGen(swaggerGenerationOptions =>
                 {
@@ -107,20 +115,7 @@ namespace Arcus.WebApi.Unit.Hosting
         }
 
 #if NETCOREAPP3_0
-        /// <summary>
-        /// Creates a <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> used to set up <see cref="T:Microsoft.AspNetCore.TestHost.TestServer" />.
-        /// </summary>
-        /// <remarks>
-        /// The default implementation of this method looks for a <c>public static IHostBuilder CreateHostBuilder(string[] args)</c>
-        /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
-        /// array as arguments.
-        /// </remarks>
-        /// <returns>A <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> instance.</returns>
-        protected override IHostBuilder CreateHostBuilder()
-        {
-            return new HostBuilder()
-                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
-        }
+        
 #endif
 
         /// <summary>
