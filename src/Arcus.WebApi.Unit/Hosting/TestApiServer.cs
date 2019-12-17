@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Arcus.WebApi.Unit.Hosting
@@ -50,6 +52,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// <param name="builder">The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> for the application.</param>
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseStartup<TestStartup>();
             builder.ConfigureServices(services =>
             {
                 if (_clientCertificate != null)
@@ -71,7 +74,9 @@ namespace Arcus.WebApi.Unit.Hosting
                 });
 
                 string assemblyName = typeof(TestApiServer).Assembly.GetName().Name;
-                var openApiInformation = new Info
+
+
+                var openApiInformation = new OpenApiInfo
                 {
                     Title = assemblyName,
                     Version = "v1"
@@ -98,9 +103,25 @@ namespace Arcus.WebApi.Unit.Hosting
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
             return new WebHostBuilder()
-                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
-                .UseStartup<TestStartup>();
+                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
         }
+
+#if NETCOREAPP3_0
+        /// <summary>
+        /// Creates a <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> used to set up <see cref="T:Microsoft.AspNetCore.TestHost.TestServer" />.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation of this method looks for a <c>public static IHostBuilder CreateHostBuilder(string[] args)</c>
+        /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
+        /// array as arguments.
+        /// </remarks>
+        /// <returns>A <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> instance.</returns>
+        protected override IHostBuilder CreateHostBuilder()
+        {
+            return new HostBuilder()
+                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
+        }
+#endif
 
         /// <summary>
         /// Adds a configuration pair (key/value) to the <see cref="IConfiguration"/> registration of the test server.
