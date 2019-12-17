@@ -44,7 +44,7 @@ stages:
               version: '3.0.101'
           - template: 'build/build-solution.yml@templates'
             parameters:
-              dotnetSdkVersion: '2.2.105'
+              dotnetSdkVersion: '3.0.101'
               versionSuffix: '$(packageVersion)'
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
