@@ -47,9 +47,13 @@ stages:
             parameters:
               manualTriggerVersion: $(Package.Version.ManualTrigger)
           - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
+            displayName: 'Import .NET Core SDK (2.2.105)'
             inputs:
-              version: '$(DotNet.Sdk.Version)'
+              version: '2.2.105'
+          - task: DotNetCoreInstaller@0
+            displayName: 'Import .NET Core SDK (3.0.101)'
+            inputs:
+              version: '3.0.101'
           - task: DotNetCoreCLI@2
             displayName: 'Compile'
             inputs:
