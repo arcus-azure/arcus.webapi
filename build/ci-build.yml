@@ -34,25 +34,28 @@ stages:
       - job: Compile
         pool:
           vmImage: 'ubuntu-16.04'
-        strategy:
-          matrix:
-            NETCORE22:
-              'DotNet.Sdk.Version': '2.2.105'
-            NETCORE30:
-              'DotNet.Sdk.Version': '3.0.101'
         steps:
           - template: 'nuget/determine-pr-version.yml@templates'
             parameters:
               manualTriggerVersion: $(Package.Version.ManualTrigger)
+          - task: DotNetCoreInstaller@0
+            displayName: 'Import .NET Core SDK (3.0.101)'
+            inputs:
+              version: '3.0.101'
           - template: 'build/build-solution.yml@templates'
             parameters:
-              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+              dotnetSdkVersion: '2.2.105'
               versionSuffix: '$(packageVersion)'
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
             inputs:
-              contents: '**/?(bin|obj)/**'
-              targetFolder: '$(Pipeline.Workspace)/build-$(DotNet.Sdk.Version)'
+              contents: '**/?(bin|obj)/netcoreapp2.2/**'
+              targetFolder: '$(Pipeline.Workspace)/build-2.2.105'
+          - task: CopyFiles@2
+            displayName: 'Copy build artifacts'
+            inputs:
+              contents: '**/?(bin|obj)/netcoreapp3.0/**'
+              targetFolder: '$(Pipeline.Workspace)/build-3.0.101'
           - task: PublishPipelineArtifact@0
             displayName: 'Publish build artifacts'
             inputs:
