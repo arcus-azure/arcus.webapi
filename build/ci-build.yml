@@ -76,30 +76,21 @@ stages:
         displayName: 'Run unit tests'
         pool:
           vmImage: 'ubuntu-16.04'
-        strategy:
-          matrix:
-            NETCORE22:
-              'DotNet.Sdk.Version': '2.2.105'
-              'DotNet.Sdk.Framework': 'netcoreapp2.2'
-            NETCORE30:
-              'DotNet.Sdk.Version': '3.0.101'
-              'DotNet.Sdk.Framework': 'netcoreapp3.0'
         steps:
-          - task: DownloadPipelineArtifact@2
-            displayName: 'Download build artifacts'
-            inputs:
-              artifact: 'Build-$(DotNet.Sdk.Version)'
-              path: '$(Build.SourcesDirectory)'
           - task: DotNetCoreInstaller@0
-            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
+            displayName: 'Import .NET Core SDK (2.2.105)'
             inputs:
-              version: '$(DotNet.Sdk.Version)'
+              version: '2.2.105'
+          - task: DotNetCoreInstaller@0
+            displayName: 'Import .NET Core SDK (3.0.101)'
+            inputs:
+              version: '3.0.101'
           - task: DotNetCoreCLI@2
             displayName: 'Run unit tests'
             inputs:
               command: test
               projects: 'src/**/$(Project).Unit.csproj'
-              arguments: '--configuration $(Build.Configuration) --framework $(DotNet.Sdk.Framework)'
+              arguments: '--configuration $(Build.Configuration)'
               nobuild: true
               publishTestResults: true
 
