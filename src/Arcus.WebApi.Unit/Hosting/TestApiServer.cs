@@ -114,10 +114,6 @@ namespace Arcus.WebApi.Unit.Hosting
                 .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
         }
 
-#if NETCOREAPP3_0
-        
-#endif
-
         /// <summary>
         /// Adds a configuration pair (key/value) to the <see cref="IConfiguration"/> registration of the test server.
         /// </summary>
