@@ -6,12 +6,12 @@ namespace Arcus.WebApi.Correlation
     /// <summary>
     /// Represents the correlation ID information on the incoming requests and outgoing responses.
     /// </summary>
-    internal class Correlation
+    internal class CorrelationFeature
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationInfo"/> class.
         /// </summary>
-        internal Correlation(string operationId, string transactionId)
+        internal CorrelationFeature(string operationId, string transactionId)
         {
             Guard.NotNullOrEmpty(operationId, nameof(operationId), "Cannot create a correlation instance with a blank operation ID");
             Guard.For<ArgumentException>(
