@@ -9,13 +9,56 @@ using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
 using static Arcus.WebApi.Unit.Correlation.CorrelationController;
-using static Correlate.Http.CorrelationHttpHeaders;
 
 namespace Arcus.WebApi.Unit.Correlation
 {
     public class CorrelationTests
     {
+        private const string DefaultOperationId = "X-Operation-ID",
+                             DefaultTransactionId = "X-Transaction-ID";
+
         private readonly TestApiServer _testServer = new TestApiServer();
+
+        [Fact]
+        public async Task SendRequest_WithCorrelateOptionsNotAllowTransactionInRequest_ResponseWithBadRequest()
+        {
+            // Arrange
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.AllowInRequest = false));
+            
+            using (HttpClient client = _testServer.CreateClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Get, Route))
+            {
+                request.Headers.Add(DefaultTransactionId, Guid.NewGuid().ToString());
+
+                // Act
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+                    Assert.DoesNotContain(response.Headers, header => header.Key == DefaultOperationId);
+                    Assert.DoesNotContain(response.Headers, header => header.Key == DefaultTransactionId);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SendRequest_WithCorrelationOptionsNotGenerateTransactionId_ResponseWithoutTransactionId()
+        {
+            // Arrange
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.GenerateWhenNotSpecified = false));
+
+            using (HttpClient client = _testServer.CreateClient())
+            // Act
+            using (HttpResponseMessage response = await client.GetAsync(Route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Contains(response.Headers, header => header.Key == DefaultOperationId);
+                (string transactionIdHeaderName, IEnumerable<string> transactionIds) = 
+                    Assert.Single(response.Headers, header => header.Key == DefaultTransactionId);
+                Assert.Empty(transactionIds);
+            }
+        }
 
         [Fact]
         public async Task SendRequest_WithCorrelateOptionsNonTransactionIncludeInResponse_ResponseWithoutCorrelationHeaders()
@@ -29,8 +72,8 @@ namespace Arcus.WebApi.Unit.Correlation
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.DoesNotContain(response.Headers, header => header.Key == CorrelationId);
-                Assert.Contains(response.Headers, header => header.Key == RequestId);
+                Assert.Contains(response.Headers, header => header.Key == DefaultOperationId);
+                Assert.DoesNotContain(response.Headers, header => header.Key == DefaultTransactionId);
             }
         }
 
@@ -46,8 +89,8 @@ namespace Arcus.WebApi.Unit.Correlation
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Contains(response.Headers, header => header.Key == RequestId);
-                Assert.DoesNotContain(response.Headers, header => header.Key == CorrelationId);
+                Assert.DoesNotContain(response.Headers, header => header.Key == DefaultOperationId);
+                Assert.Contains(response.Headers, header => header.Key == DefaultTransactionId);
             }
         }
 
@@ -62,16 +105,16 @@ namespace Arcus.WebApi.Unit.Correlation
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 
-                string correlationId = GetResponseHeader(response, CorrelationId);
-                string requestId = GetResponseHeader(response, RequestId);
+                string correlationId = GetResponseHeader(response, DefaultTransactionId);
+                string requestId = GetResponseHeader(response, DefaultOperationId);
 
                 string json = await response.Content.ReadAsStringAsync();
-                var content = JsonConvert.DeserializeAnonymousType(json, new { CorrelationId = "", RequestId = "" });
-                Assert.False(String.IsNullOrWhiteSpace(content.CorrelationId), "Accessed 'CorrelationId' cannot be blank");
-                Assert.False(String.IsNullOrWhiteSpace(content.RequestId), "Accessed 'RequestId' cannot be blank");
+                var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "" });
+                Assert.False(String.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
+                Assert.False(String.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
                 
-                Assert.Equal(correlationId, content.CorrelationId);
-                Assert.Equal(requestId, content.RequestId);
+                Assert.Equal(correlationId, content.TransactionId);
+                Assert.Equal(requestId, content.OperationId);
             }
         }
 
@@ -83,7 +126,7 @@ namespace Arcus.WebApi.Unit.Correlation
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, Route);
-                request.Headers.Add(CorrelationId, expected);
+                request.Headers.Add(DefaultTransactionId, expected);
 
                 // Act
                 using (HttpResponseMessage response = await client.SendAsync(request))
@@ -91,7 +134,7 @@ namespace Arcus.WebApi.Unit.Correlation
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     
-                    string actual = GetResponseHeader(response, CorrelationId);
+                    string actual = GetResponseHeader(response, DefaultTransactionId);
                     Assert.Equal(expected, actual);
                 }
             }
@@ -105,7 +148,7 @@ namespace Arcus.WebApi.Unit.Correlation
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, Route);
-                request.Headers.Add(RequestId, expected);
+                request.Headers.Add(DefaultOperationId, expected);
 
                 // Act
                 using (HttpResponseMessage response = await client.SendAsync(request))
@@ -113,7 +156,7 @@ namespace Arcus.WebApi.Unit.Correlation
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     
-                    string actual = GetResponseHeader(response, RequestId);
+                    string actual = GetResponseHeader(response, DefaultOperationId);
                     Assert.NotEqual(expected, actual);
                 }
             }

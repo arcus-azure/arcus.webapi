@@ -9,21 +9,21 @@ namespace Arcus.WebApi.Unit.Correlation
     {
         public const string Route = "correlation";
 
-        private readonly ICorrelationAccessor _accessor;
+        private readonly CorrelationInfo _correlationInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationController"/> class.
         /// </summary>
-        public CorrelationController(ICorrelationAccessor accessor)
+        public CorrelationController(CorrelationInfo correlationInfo)
         {
-            _accessor = accessor;
+            _correlationInfo = correlationInfo;
         }
 
         [HttpGet]
         [Route(Route)]
         public IActionResult Get()
         {
-            string json = JsonConvert.SerializeObject(new { _accessor.CorrelationId, _accessor.RequestId });
+            string json = JsonConvert.SerializeObject(new { _correlationInfo.TransactionId, _correlationInfo.OperationId });
             return Ok(json);
         }
     }
