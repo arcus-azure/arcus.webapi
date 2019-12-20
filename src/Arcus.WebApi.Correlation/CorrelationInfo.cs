@@ -1,33 +1,35 @@
-﻿using GuardNet;
-using Microsoft.AspNetCore.Http;
+﻿using System;
+using GuardNet;
 
 namespace Arcus.WebApi.Correlation
 {
     /// <summary>
-    /// Represents the correlation information on the current HTTP request, accessible throughout the application.
+    /// Represents the correlation ID information on the incoming requests and outgoing responses.
     /// </summary>
     public class CorrelationInfo
     {
-        private readonly CorrelationFeature _correlationFeature;
-
         /// <summary>
-        /// Initializes a new instance of the <see cref="CorrelationInfo"/> class.
+        /// Initializes a new instance of the <see cref="HttpCorrelationInfo"/> class.
         /// </summary>
-        public CorrelationInfo(IHttpContextAccessor contextAccessor)
+        public CorrelationInfo(string operationId, string transactionId)
         {
-            Guard.NotNull(contextAccessor, nameof(contextAccessor));
+            Guard.NotNullOrEmpty(operationId, nameof(operationId), "Cannot create a correlation instance with a blank operation ID");
+            Guard.For<ArgumentException>(
+                () => transactionId == String.Empty, 
+                "Cannot create correlation instance with a blank transaction ID, only 'null' or non-blank ID's are allowed");
 
-            _correlationFeature = contextAccessor.HttpContext.Features.Get<CorrelationFeature>();
+            OperationId = operationId;
+            TransactionId = transactionId;
         }
-
-        /// <summary>
-        /// Gets the unique ID identifier for this request.
-        /// </summary>
-        public string OperationId => _correlationFeature.OperationId;
 
         /// <summary>
         /// Gets the ID that relates different requests together.
         /// </summary>
-        public string TransactionId => _correlationFeature.TransactionId;
+        public string TransactionId { get; }
+
+        /// <summary>
+        /// Gets the unique ID information of the request.
+        /// </summary>
+        public string OperationId { get; }
     }
 }

@@ -25,7 +25,7 @@ namespace Arcus.WebApi.Correlation
         }
 
         /// <summary>
-        /// Adds operation & transaction correlation to the application.
+        /// Adds operation and transaction correlation to the application.
         /// </summary>
         public static IServiceCollection AddCorrelation(this IServiceCollection services)
         {

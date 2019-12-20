@@ -9,12 +9,12 @@ namespace Arcus.WebApi.Unit.Correlation
     {
         public const string Route = "correlation";
 
-        private readonly CorrelationInfo _correlationInfo;
+        private readonly HttpCorrelationInfo _correlationInfo;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationController"/> class.
         /// </summary>
-        public CorrelationController(CorrelationInfo correlationInfo)
+        public CorrelationController(HttpCorrelationInfo correlationInfo)
         {
             _correlationInfo = correlationInfo;
         }

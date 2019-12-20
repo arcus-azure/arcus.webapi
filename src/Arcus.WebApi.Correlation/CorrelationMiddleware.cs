@@ -63,7 +63,8 @@ namespace Arcus.WebApi.Correlation
                 _logger.LogTrace("Correlation request header '{HeaderName}' found with transaction ID '{TransactionId}'", _options.Transaction.HeaderName, transactionIds);
             }
 
-            (string operationId, string transactionId) = DetermineCorrelationIds(httpContext, transactionIds);
+            string operationId = DetermineOperationId(httpContext);
+            string transactionId = DetermineTransactionId(httpContext, transactionIds);
             var correlation = new CorrelationFeature(operationId, transactionId);
             httpContext.Features.Set(correlation);
 
@@ -73,29 +74,30 @@ namespace Arcus.WebApi.Correlation
             await _next(httpContext);
         }
 
-        private (string operationId, string transactionId) DetermineCorrelationIds(HttpContext httpContext, StringValues transactionIds)
+        private static string DetermineOperationId(HttpContext httpContext)
         {
             // TODO: make ID generation configurable for the consumer.
-            string operationId = httpContext.TraceIdentifier ?? Guid.NewGuid().ToString();
-            
-            string transactionId;
+            return httpContext.TraceIdentifier ?? Guid.NewGuid().ToString();
+        }
+
+        private string DetermineTransactionId(HttpContext httpContext, StringValues transactionIds)
+        {
+            // TODO: make ID generation configurable for the consumer.
             if (String.IsNullOrWhiteSpace(transactionIds.ToString()))
             {
                 if (_options.Transaction.GenerateWhenNotSpecified)
                 {
-                    transactionId = Guid.NewGuid().ToString();
+                    return Guid.NewGuid().ToString();
                 }
                 else
                 {
-                    transactionId = null;
+                    return null;
                 }
             }
             else
             {
-                transactionId = transactionIds.ToString();
+                return transactionIds.ToString();
             }
-
-            return (operationId, transactionId);
         }
 
         private void AddCorrelationResponseHeaders(HttpContext httpContext, string operationId, string transactionId)
