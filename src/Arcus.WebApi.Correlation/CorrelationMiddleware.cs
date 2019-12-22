@@ -65,7 +65,7 @@ namespace Arcus.WebApi.Correlation
 
             string operationId = DetermineOperationId(httpContext);
             string transactionId = DetermineTransactionId(httpContext, transactionIds);
-            var correlation = new CorrelationFeature(operationId, transactionId);
+            var correlation = new CorrelationInfo(operationId, transactionId);
             httpContext.Features.Set(correlation);
 
             AddCorrelationResponseHeaders(httpContext, operationId, transactionId);
