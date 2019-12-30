@@ -11,7 +11,7 @@ namespace Arcus.WebApi.Correlation
     public static class IServiceCollectionExtensions
     {
         /// <summary>
-        /// Adds the correlation related services to the dependency injection system of the application.
+        /// Adds operation and transaction correlation to the application.
         /// </summary>
         public static IServiceCollection AddCorrelation(this IServiceCollection services, Action<CorrelationOptions> configureOptions)
         {
