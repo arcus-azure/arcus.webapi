@@ -32,7 +32,7 @@ namespace Arcus.WebApi.Correlation
             Guard.NotNull(services, nameof(services));
 
             services.AddHttpContextAccessor();
-            services.AddSingleton<CorrelationInfo>();
+            services.AddSingleton<HttpCorrelationInfo>();
 
             return services;
         }
