@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Primitives;
 
-namespace Arcus.WebApi.Security.Authentication.SharedAccessKey 
+namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
 {
     /// <summary>
     /// Authentication filter to secure HTTP requests with shared access keys.
@@ -20,21 +20,23 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     /// </remarks>
     public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
-        private readonly string _headerName, _secretName;
+        private readonly string _headerName, _queryParameterName, _secretName;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
         /// </summary>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
+        /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.Get"/> call.</param>
-        /// <exception cref="ArgumentException">When the <paramref name="headerName"/> is <c>null</c> or blank.</exception>
+        /// <exception cref="ArgumentException">When the both <paramref name="headerName"/> and <paramref name="queryParameterName"/> are <c>null</c> or blank.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
-        public SharedAccessKeyAuthenticationFilter(string headerName, string secretName)
+        public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName)
         {
-            Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Header name cannot be blank");
+            Guard.For<ArgumentException>(() => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), "Either header name or query parameter name must be supplied.");
             Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
 
             _headerName = headerName;
+            _queryParameterName = queryParameterName;
             _secretName = secretName;
         }
 
@@ -53,35 +55,55 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers == null, "Invalid action context given without any HTTP request headers");
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices == null, "Invalid action context given without any HTTP request services");
 
-            if (context.HttpContext.Request.Headers
-                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
-            {
-                ISecretProvider userDefinedSecretProvider = 
-                    context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
-                    ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
-                
-                if (userDefinedSecretProvider == null)
-                {
-                    throw new KeyNotFoundException(
-                        $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
-                        + "Please configure such an implementation (ex. in the Startup) of your application");
-                }
+            string foundSecret = await GetAuthorizationSecretAsync(context);
 
-                string foundSecret = await userDefinedSecretProvider.Get(_secretName);
-                if (foundSecret == null)
-                {
-                    throw new SecretNotFoundException(_secretName);
-                }
-
-                if (requestSecretHeaders.Any(headerValue => !String.Equals(headerValue, foundSecret)))
-                {
-                    context.Result = new UnauthorizedResult();
-                }
-            }
-            else
+            if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
                 context.Result = new UnauthorizedResult();
             }
+            else
+            {
+                if (!String.IsNullOrWhiteSpace(_headerName) && context.HttpContext.Request.Headers
+                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
+                {
+
+                    if (requestSecretHeaders.Any(headerValue => String.Equals(headerValue, foundSecret) == false))
+                    {
+                        context.Result = new UnauthorizedResult();
+                    }
+                }
+
+                if (!String.IsNullOrWhiteSpace(_queryParameterName) && context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+                {
+                    if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
+                    {
+                        context.Result = new UnauthorizedResult();
+                    }
+                }
+
+            }
+        }
+
+        private async Task<string> GetAuthorizationSecretAsync(AuthorizationFilterContext context)
+        {
+            ISecretProvider userDefinedSecretProvider =
+                                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
+                                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
+
+            if (userDefinedSecretProvider == null)
+            {
+                throw new KeyNotFoundException(
+                    $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
+                    + "Please configure such an implementation (ex. in the Startup) of your application");
+            }
+
+            string foundSecret = await userDefinedSecretProvider.Get(_secretName);
+            if (foundSecret == null)
+            {
+                throw new SecretNotFoundException(_secretName);
+            }
+
+            return foundSecret;
         }
     }
 }
