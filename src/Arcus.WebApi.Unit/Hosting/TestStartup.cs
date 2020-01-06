@@ -31,7 +31,11 @@ namespace Arcus.WebApi.Unit.Hosting
 
         public void ConfigureServices(IServiceCollection services)
         {
+#if NETCOREAPP2_2
             services.AddMvc();
+#else
+            services.AddMvc(options => options.EnableEndpointRouting = false);
+#endif
             services.AddCorrelation();
         }
 
