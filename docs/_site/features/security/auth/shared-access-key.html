@@ -5,7 +5,7 @@
     <meta charset='utf-8'>
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width,maximum-scale=2">
-    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=3016ea2f5aefba823d09a85e63a40a580b27eb67">
+    <link rel="stylesheet" type="text/css" media="screen" href="/assets/css/style.css?v=75da8be995063dff3090cca6c473057ba87580ae">
 
 <!-- Begin Jekyll SEO tag v2.5.0 -->
 <title>Authentication with shared access keys via ASP.NET Core authentication filters | Arcus Web API</title>
@@ -46,7 +46,7 @@
 This authentication process consists of two parts:</p>
 
 <ol>
-  <li>Find the configured HTTP request header that contains the shared access key</li>
+  <li>Find the configured parameter that holds the shared access key, this can be a request header, a query parameter or both.</li>
   <li>Shared access key matches the value with the secret stored, determined via configured secret provider</li>
 </ol>
 
@@ -77,8 +77,8 @@ Once this is done, the <code class="highlighter-rouge">SharedAccessKeyAuthentica
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollections</span> <span class="n">services</span><span class="p">)</span>
 <span class="p">{</span>
-    <span class="n">services</span><span class="p">.</span><span class="n">AddScoped</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">MyCachedSecretProvider</span><span class="p">());</span>
-    <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span> <span class="n">options</span><span class="p">.</span><span class="n">Filters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="nf">SharedAccessKeyAuthenticationFilter</span><span class="p">(</span><span class="n">headerName</span><span class="p">:</span> <span class="s">"http-request-header-name"</span><span class="p">,</span> <span class="n">secretName</span><span class="p">:</span> <span class="s">"shared-access-key-name"</span><span class="p">)));</span>
+    <span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">MyCachedSecretProvider</span><span class="p">());</span>
+    <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span> <span class="n">options</span><span class="p">.</span><span class="n">Filters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="nf">SharedAccessKeyAuthenticationFilter</span><span class="p">(</span><span class="n">headerName</span><span class="p">:</span> <span class="s">"http-request-header-name"</span><span class="p">,</span> <span class="n">queryParameterName</span><span class="p">:</span> <span class="s">"api-key"</span><span class="p">,</span> <span class="n">secretName</span><span class="p">:</span> <span class="s">"shared-access-key-name"</span><span class="p">)));</span>
 <span class="p">}</span>
 </code></pre></div></div>
 
@@ -95,7 +95,7 @@ The shared access key authentication will then be applied to the endpoint(s) tha
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollections</span> <span class="n">services</span><span class="p">)</span>
 <span class="p">{</span>
-    <span class="n">services</span><span class="p">.</span><span class="n">AddScoped</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">CachedSecretProvider</span><span class="p">(</span><span class="k">new</span> <span class="nf">MySecretProvider</span><span class="p">()));</span>
+    <span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">CachedSecretProvider</span><span class="p">(</span><span class="k">new</span> <span class="nf">MySecretProvider</span><span class="p">()));</span>
     <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">();</span>
 <span class="p">}</span>
 </code></pre></div></div>
@@ -103,7 +103,7 @@ The shared access key authentication will then be applied to the endpoint(s) tha
 <p>After that, the <code class="highlighter-rouge">SharedAccessKeyAuthenticationAttribute</code> attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:</p>
 
 <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="na">[ApiController]</span>
-<span class="na">[SharedAccessKeyAuthentication(headerName: "http-request-header-name", secretName: "shared-access-key-name")]</span>
+<span class="na">[SharedAccessKeyAuthentication(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")]</span>
 <span class="k">public</span> <span class="k">class</span> <span class="nc">MyApiController</span> <span class="p">:</span> <span class="n">ControllerBase</span>
 <span class="p">{</span>
     <span class="p">[</span><span class="n">HttpGet</span><span class="p">]</span>
@@ -114,6 +114,40 @@ The shared access key authentication will then be applied to the endpoint(s) tha
     <span class="p">}</span>
 <span class="p">}</span>
 </code></pre></div></div>
+
+<h2 id="behavior-in-validating-shared-access-key-parameter">Behavior in validating shared access key parameter</h2>
+<p>The package supports different scenarios for specifying the shared access key parameter and is supported for global or per controller/operation use cases.</p>
+
+<ul>
+  <li><strong>Use header only</strong> - Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
+    <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollections</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">MyCachedSecretProvider</span><span class="p">());</span>
+  <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span> <span class="n">options</span><span class="p">.</span><span class="n">Filters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="nf">SharedAccessKeyAuthenticationFilter</span><span class="p">(</span><span class="n">headerName</span><span class="p">:</span> <span class="s">"http-request-header-name"</span><span class="p">,</span> <span class="n">secretName</span><span class="p">:</span> <span class="s">"shared-access-key-name"</span><span class="p">)));</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+    <p><br /></p>
+  </li>
+  <li><strong>Use query parameter only</strong> - Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
+    <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollections</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">MyCachedSecretProvider</span><span class="p">());</span>
+  <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span> <span class="n">options</span><span class="p">.</span><span class="n">Filters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="nf">SharedAccessKeyAuthenticationFilter</span><span class="p">(</span><span class="n">queryParameterName</span><span class="p">:</span> <span class="s">"api-key"</span><span class="p">,</span> <span class="n">secretName</span><span class="p">:</span> <span class="s">"shared-access-key-name"</span><span class="p">)));</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+    <p><br /></p>
+  </li>
+  <li><strong>Support both header &amp; query parameter</strong> - Both the specified request header and query parameter  will be validated for the shared access key.
+    <div class="language-csharp highlighter-rouge"><div class="highlight"><pre class="highlight"><code><span class="k">public</span> <span class="k">void</span> <span class="nf">ConfigureServices</span><span class="p">(</span><span class="n">IServiceCollections</span> <span class="n">services</span><span class="p">)</span>
+<span class="p">{</span>
+  <span class="n">services</span><span class="p">.</span><span class="n">AddSingleton</span><span class="p">&lt;</span><span class="n">ICachedSecretProvider</span><span class="p">&gt;(</span><span class="n">serviceProvider</span> <span class="p">=&gt;</span> <span class="k">new</span> <span class="nf">MyCachedSecretProvider</span><span class="p">());</span>
+  <span class="n">services</span><span class="p">.</span><span class="nf">AddMvc</span><span class="p">(</span><span class="n">options</span> <span class="p">=&gt;</span> <span class="n">options</span><span class="p">.</span><span class="n">Filters</span><span class="p">.</span><span class="nf">Add</span><span class="p">(</span><span class="k">new</span> <span class="nf">SharedAccessKeyAuthenticationFilter</span><span class="p">(</span><span class="n">headerName</span><span class="p">:</span> <span class="s">"http-request-header-name"</span><span class="p">,</span> <span class="n">queryParameterName</span><span class="p">:</span> <span class="s">"api-key"</span><span class="p">,</span> <span class="n">secretName</span><span class="p">:</span> <span class="s">"shared-access-key-name"</span><span class="p">)));</span>
+<span class="p">}</span>
+</code></pre></div>    </div>
+    <p>If both header and query parameter are specified, they must both be valid or an <code class="highlighter-rouge">Unauthorized</code> will be returned.
+<br /></p>
+  </li>
+</ul>
 
 <p><a href="/">← back</a></p>
 
