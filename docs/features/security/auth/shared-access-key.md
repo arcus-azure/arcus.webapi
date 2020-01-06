@@ -8,7 +8,7 @@ layout: default
 The `Arcus.WebApi.Security` package provides a mechanism that uses shared access keys to grant access to a web application.
 This authentication process consists of two parts:
 
-1. Find the configured HTTP request header that contains the shared access key
+1. Find the configured parameter that holds the shared access key, this can be a request header, a query parameter or both.
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
@@ -39,7 +39,7 @@ Once this is done, the `SharedAccessKeyAuthenticationFilter` can be added to the
 public void ConfigureServices(IServiceCollections services)
 {
     services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
 }
 ```
 
@@ -66,7 +66,7 @@ After that, the `SharedAccessKeyAuthenticationAttribute` attribute can be applie
 
 ```csharp
 [ApiController]
-[SharedAccessKeyAuthentication(headerName: "http-request-header-name", secretName: "shared-access-key-name")]
+[SharedAccessKeyAuthentication(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")]
 public class MyApiController : ControllerBase
 {
     [HttpGet]
@@ -74,8 +74,47 @@ public class MyApiController : ControllerBase
     public Task<IActionResult> AuthorizedGet()
     {
         return Task.FromResult<IActionResult>(Ok());
-    }
 }
+```
+
+## Behavior in validating shared access key parameter
+The package supports different scenarios for specifying the shared access key parameter:
+1. Use header only<br/>Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
+
+```csharp
+public void ConfigureServices(IServiceCollections services)
+{
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+}
+```
+```csharp
+[ApiController]
+[SharedAccessKeyAuthentication(headerName: "http-request-header-name", secretName: "shared-access-key-name")]
+```
+2. Use query parameter only<br/>Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
+```csharp
+public void ConfigureServices(IServiceCollections services)
+{
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
+}
+```
+```csharp
+[ApiController]
+[SharedAccessKeyAuthentication(queryParameterName: "api-key", secretName: "shared-access-key-name")]
+```
+3. Support both<br/>Both the specified request header and query parameter  will be validated for the shared access key. It will fail with `Unauthorized` if only one is correct, although both are specified.
+```csharp
+public void ConfigureServices(IServiceCollections services)
+{
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+}
+```
+```csharp
+[ApiController]
+[SharedAccessKeyAuthentication(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")]
 ```
 
 [&larr; back](/)
