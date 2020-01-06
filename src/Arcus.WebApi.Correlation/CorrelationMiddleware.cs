@@ -106,7 +106,7 @@ namespace Arcus.WebApi.Correlation
             {
                 httpContext.Response.OnStarting(() =>
                 {
-                    TryAddResponseHeader(httpContext, _options.Operation.HeaderName, operationId);
+                    AddResponseHeader(httpContext, _options.Operation.HeaderName, operationId);
                     return Task.CompletedTask;
                 });
             }
@@ -115,19 +115,16 @@ namespace Arcus.WebApi.Correlation
             {
                 httpContext.Response.OnStarting(() =>
                 {
-                    TryAddResponseHeader(httpContext, _options.Transaction.HeaderName, transactionId);
+                    AddResponseHeader(httpContext, _options.Transaction.HeaderName, transactionId);
                     return Task.CompletedTask;
                 });
             }
         }
 
-        private void TryAddResponseHeader(HttpContext httpContext, string headerName, string headerValue)
+        private void AddResponseHeader(HttpContext httpContext, string headerName, string headerValue)
         {
-            if (!httpContext.Response.Headers.ContainsKey(headerName))
-            {
-                _logger.LogTrace("Setting correlation response header '{HeaderName}' to '{CorrelationId}'", headerName, headerValue);
-                httpContext.Response.Headers.Add(headerName, headerValue);
-            }
+            _logger.LogTrace("Setting correlation response header '{HeaderName}' to '{CorrelationId}'", headerName, headerValue);
+            httpContext.Response.Headers[headerName] = headerValue;
         }
     }
 }
