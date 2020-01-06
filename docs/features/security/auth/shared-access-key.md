@@ -74,13 +74,14 @@ public class MyApiController : ControllerBase
     public Task<IActionResult> AuthorizedGet()
     {
         return Task.FromResult<IActionResult>(Ok());
+    }
 }
 ```
 
 ## Behavior in validating shared access key parameter
-The package supports different scenarios for specifying the shared access key parameter:
-1. Use header only<br/>Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
+The package supports different scenarios for specifying the shared access key parameter and is supported for global or per controller/operation use cases.
 
+- **Use header only** - Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
@@ -88,11 +89,9 @@ public void ConfigureServices(IServiceCollections services)
     services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
 }
 ```
-```csharp
-[ApiController]
-[SharedAccessKeyAuthentication(headerName: "http-request-header-name", secretName: "shared-access-key-name")]
-```
-2. Use query parameter only<br/>Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
+<br/>
+
+- **Use query parameter only** - Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
@@ -100,11 +99,9 @@ public void ConfigureServices(IServiceCollections services)
     services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
 }
 ```
-```csharp
-[ApiController]
-[SharedAccessKeyAuthentication(queryParameterName: "api-key", secretName: "shared-access-key-name")]
-```
-3. Support both<br/>Both the specified request header and query parameter  will be validated for the shared access key. It will fail with `Unauthorized` if only one is correct, although both are specified.
+<br/>
+
+- **Support both header & query parameter** - Both the specified request header and query parameter  will be validated for the shared access key.
 ```csharp
 public void ConfigureServices(IServiceCollections services)
 {
@@ -112,9 +109,7 @@ public void ConfigureServices(IServiceCollections services)
     services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
 }
 ```
-```csharp
-[ApiController]
-[SharedAccessKeyAuthentication(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")]
-```
+If both header and query parameter are specified, they must both be valid or an `Unauthorized` will be returned.
+<br/>
 
 [&larr; back](/)
