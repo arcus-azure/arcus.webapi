@@ -53,6 +53,7 @@ namespace Arcus.WebApi.Jobs.KeyVault
             }
 
             await secretProvider.InvalidateSecretAsync(secretNewVersionCreated.ObjectName);
+            Logger.LogInformation($"Invalidated Azure KeyVault secret in '{secretProvider.GetType().Name}'");
         }
 
         /// <summary>
