@@ -33,8 +33,10 @@ namespace Arcus.WebApi.Jobs.KeyVault
             var settings = serviceProvider.GetService<AzureServiceBusMessagePumpSettings>();
             _subscriptionName = settings.SubscriptionName;
             
-            _topicPath = Configuration["Arcus:ServiceBus:TopicName"];
-            string connectionString = Configuration["Arcus:ServiceBus:ConnectionString"];
+            var serviceBusConnection = new ServiceBusConnectionStringBuilder(Configuration["Arcus:ServiceBus:ConnectionStringWithTopic"]);
+            _topicPath = serviceBusConnection.EntityPath;
+
+            string connectionString = serviceBusConnection.GetNamespaceConnectionString();
             _managementClient = new ManagementClient(connectionString);
         }
 

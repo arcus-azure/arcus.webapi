@@ -22,6 +22,7 @@ resources:
       endpoint: arcus-azure
 
 variables:
+  - group: 'Arcus Web API - Integration Testing'
   - group: 'Arcus Security - Integration Testing'
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
@@ -32,6 +33,8 @@ variables:
   # Backwards compatible .NET SDK version
   - name: 'DotNet.Sdk.VersionBC'
     value: '2.2.105'
+  - name: 'Arcus_ServiceBus_ConnectionStringWithTopic'
+    value: '$(ServiceBus.Topics.KeyVaultEvents.ConnectionString)'
   # 'Package.Version.ManualTrigger' is added as queue-time variable on build in Azure DevOps
 
 stages:
