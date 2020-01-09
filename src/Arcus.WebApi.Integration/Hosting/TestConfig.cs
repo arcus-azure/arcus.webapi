@@ -25,8 +25,8 @@ namespace Arcus.WebApi.Integration.Hosting
         public static TestConfig Create()
         {
             var config = new ConfigurationBuilder()
-                .AddJsonFile("appsettings.json")
-                .AddJsonFile("appsettings.local.json")
+                .AddJsonFile("appsettings.json", optional: false)
+                .AddJsonFile("appsettings.local.json", optional: true)
                 .Build();
 
             return new TestConfig(config);
