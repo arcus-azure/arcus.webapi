@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Arcus.Messaging.Abstractions;
@@ -11,7 +10,6 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json.Linq;
 
 namespace Arcus.WebApi.Jobs.KeyVault
 {
@@ -20,8 +18,8 @@ namespace Arcus.WebApi.Jobs.KeyVault
     /// </summary>
     public abstract class AzureServiceBusTopicCloudEventSubscriptionMessagePump : AzureServiceBusMessagePump<CloudEvent>
     {
-        private readonly string _topicPath, _subscriptionName;
-        private readonly ManagementClient _managementClient;
+        private readonly string _subscriptionName;
+        private readonly AzureServiceBusMessagePumpSettings _messagePumpSettings;
 
         private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
 
@@ -36,14 +34,8 @@ namespace Arcus.WebApi.Jobs.KeyVault
             IServiceProvider serviceProvider,
             ILogger logger) : base(configuration, serviceProvider, logger)
         {
-            var settings = serviceProvider.GetService<AzureServiceBusMessagePumpSettings>();
-            _subscriptionName = settings.SubscriptionName;
-            
-            var serviceBusConnection = new ServiceBusConnectionStringBuilder(Configuration["Arcus:ServiceBus:ConnectionStringWithTopic"]);
-            _topicPath = serviceBusConnection.EntityPath;
-
-            string connectionString = serviceBusConnection.GetNamespaceConnectionString();
-            _managementClient = new ManagementClient(connectionString);
+            _messagePumpSettings = serviceProvider.GetRequiredService<AzureServiceBusMessagePumpSettings>();
+            _subscriptionName = _messagePumpSettings.SubscriptionName;
         }
 
         /// <summary>
@@ -74,9 +66,12 @@ namespace Arcus.WebApi.Jobs.KeyVault
         /// <param name="cancellationToken">Indicates that the start process has been aborted.</param>
         public override async Task StartAsync(CancellationToken cancellationToken)
         {
-            Logger.LogTrace("Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, _topicPath);
-            var subscriptionDescription = new SubscriptionDescription(_topicPath, _subscriptionName)
+            ServiceBusConnectionStringBuilder serviceBusConnectionString = await GetServiceBusConnectionStringAsync();
+
+            Logger.LogTrace("Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, serviceBusConnectionString.EntityPath);
+            var subscriptionDescription = new SubscriptionDescription(serviceBusConnectionString.EntityPath, _subscriptionName)
             {
+                // TODO: configurable for user?
                 AutoDeleteOnIdle = TimeSpan.FromHours(1),
                 MaxDeliveryCount = 3,
                 UserMetadata = "Subscription created by Arcus in order to run integration tests"
@@ -84,10 +79,12 @@ namespace Arcus.WebApi.Jobs.KeyVault
             
             var ruleDescription = new RuleDescription("Accept-All", new TrueFilter());
 
-            await _managementClient.CreateSubscriptionAsync(subscriptionDescription, ruleDescription, cancellationToken)
-                                   .ConfigureAwait(continueOnCapturedContext: false);
+            var serviceBusClient = new ManagementClient(serviceBusConnectionString);
+            await serviceBusClient.CreateSubscriptionAsync(subscriptionDescription, ruleDescription, cancellationToken)
+                                  .ConfigureAwait(continueOnCapturedContext: false);
 
-            Logger.LogTrace("Subscription '{SubscriptionName}' created on topic '{TopicPath}'", _subscriptionName, _topicPath);
+            Logger.LogTrace("Subscription '{SubscriptionName}' created on topic '{TopicPath}'", _subscriptionName, serviceBusConnectionString.EntityPath);
+            await serviceBusClient.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             await base.StartAsync(cancellationToken);
         }
@@ -98,11 +95,25 @@ namespace Arcus.WebApi.Jobs.KeyVault
         /// <param name="cancellationToken">Indicates that the shutdown process should no longer be graceful.</param>
         public override async Task StopAsync(CancellationToken cancellationToken)
         {
-            Logger.LogTrace("Deleting subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, _topicPath);
-            await _managementClient.DeleteSubscriptionAsync(_topicPath, _subscriptionName, cancellationToken);
-            Logger.LogTrace("Subscription '{SubscriptionName}' deleted on topic '{TopicPath}'", _subscriptionName, _topicPath);
+            ServiceBusConnectionStringBuilder serviceBusConnectionString = await GetServiceBusConnectionStringAsync();
+
+            Logger.LogTrace("Deleting subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, serviceBusConnectionString.EntityPath);
+            var serviceBusClient = new ManagementClient(serviceBusConnectionString);
+            await serviceBusClient.DeleteSubscriptionAsync(serviceBusConnectionString.EntityPath, _subscriptionName, cancellationToken);
+            Logger.LogTrace("Subscription '{SubscriptionName}' deleted on topic '{TopicPath}'", _subscriptionName, serviceBusConnectionString.EntityPath);
+            await serviceBusClient.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             await base.StopAsync(cancellationToken);
+        }
+
+        private async Task<ServiceBusConnectionStringBuilder> GetServiceBusConnectionStringAsync()
+        {
+            Logger.LogTrace("Getting ServiceBus Topic connection string on topic '{TopicPath}'...", _messagePumpSettings.EntityName);
+            string connectionString = await _messagePumpSettings.GetConnectionStringAsync();
+            var serviceBusConnectionBuilder = new ServiceBusConnectionStringBuilder(connectionString);
+            Logger.LogTrace("Got ServiceBus Topic connection string on topic '{TopicPath}'", _messagePumpSettings.EntityName);
+
+            return serviceBusConnectionBuilder;
         }
     }
 }

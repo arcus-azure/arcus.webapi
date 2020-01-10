@@ -6,7 +6,6 @@ using Arcus.Messaging.Abstractions;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Security.Core.Caching;
 using CloudNative.CloudEvents;
-using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -51,6 +50,8 @@ namespace Arcus.WebApi.Jobs.KeyVault
             }
 
             await secretProvider.InvalidateSecretAsync(secretNewVersionCreated.ObjectName);
+
+            // TODO: what else can we log that would make this log entry distinguishable?
             Logger.LogInformation($"Invalidated Azure KeyVault secret in '{secretProvider.GetType().Name}'");
         }
     }
