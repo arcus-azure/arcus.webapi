@@ -17,10 +17,8 @@ namespace Arcus.WebApi.Jobs.KeyVault
     /// <summary>
     /// Message pump implementation to automatically invalidate Azure Key Vault secrets based on the <see cref="SecretNewVersionCreated"/> emitted event.
     /// </summary>
-    public class AutoInvalidateKeyVaultSecretJob : TempSubscriptionAzureServiceBusMessagePump<CloudEvent>
+    public class AutoInvalidateKeyVaultSecretJob : AzureServiceBusTopicCloudEventSubscriptionMessagePump
     {
-        private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
-
         /// <summary>Constructor</summary>
         /// <param name="configuration">Configuration of the application</param>
         /// <param name="serviceProvider">Collection of services that are configured</param>
@@ -54,21 +52,6 @@ namespace Arcus.WebApi.Jobs.KeyVault
 
             await secretProvider.InvalidateSecretAsync(secretNewVersionCreated.ObjectName);
             Logger.LogInformation($"Invalidated Azure KeyVault secret in '{secretProvider.GetType().Name}'");
-        }
-
-        /// <summary>
-        /// Deserializes a raw JSON message body.
-        /// </summary>
-        /// <param name="rawMessageBody">Raw message body to deserialize</param>
-        /// <param name="messageContext">Context concerning the message</param>
-        /// <returns>Deserialized message</returns>
-        protected override CloudEvent DeserializeJsonMessageBody(byte[] rawMessageBody, MessageContext messageContext)
-        {
-            Guard.NotNull(rawMessageBody, nameof(rawMessageBody), "Cannot deserialize raw JSON body from 'null' input");
-            Guard.NotAny(rawMessageBody, nameof(rawMessageBody), "Cannot deserialize raw JSON body from empty input");
-
-            CloudEvent cloudEvent = JsonEventFormatter.DecodeStructuredEvent(rawMessageBody);
-            return cloudEvent;
         }
     }
 }
