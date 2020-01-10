@@ -52,8 +52,8 @@ namespace Arcus.WebApi.Integration.Jobs
             {
                 // Assert
                 RetryAssertion(
+                    // ReSharper disable once AccessToDisposedClosure - disposal happens after retry.
                     () => Mock.Get(cachedSecretProvider)
-                              // ReSharper disable once AccessToDisposedClosure
                               .Verify(p => p.InvalidateSecretAsync(It.Is<string>(n => n == tempSecret.Name)), Times.Once), 
                     timeout: TimeSpan.FromSeconds(30),
                     interval: TimeSpan.FromMilliseconds(500));

@@ -11,7 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
-namespace Arcus.WebApi.Jobs.KeyVault
+namespace Arcus.WebApi.Jobs
 {
     /// <summary>
     /// Representing a Azure ServiceBus Topic message pump that will create and delete a ServiceBus Topic subscription during the lifetime of the pump.
