@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Jobs.KeyVault
     /// <summary>
     /// Message pump implementation to automatically invalidate Azure Key Vault secrets based on the <see cref="SecretNewVersionCreated"/> emitted event.
     /// </summary>
-    public class AutoInvalidateKeyVaultSecretJob : AzureServiceBusTopicCloudEventSubscriptionMessagePump
+    public class AutoInvalidateKeyVaultSecretJob : AzureServiceBusCloudEventSubscriptionMessagePump
     {
         private readonly ICachedSecretProvider _cachedSecretProvider;
 
