@@ -15,6 +15,10 @@ namespace Arcus.WebApi.Integration.Jobs
 
         private TempSecret(IKeyVaultClient client, string keyVaultUri, string secretName)
         {
+            Guard.NotNull(client, nameof(client));
+            Guard.NotNullOrWhitespace(keyVaultUri, nameof(keyVaultUri));
+            Guard.NotNullOrWhitespace(secretName, nameof(secretName));
+
             _client = client;
             _keyVaultUri = keyVaultUri;
             

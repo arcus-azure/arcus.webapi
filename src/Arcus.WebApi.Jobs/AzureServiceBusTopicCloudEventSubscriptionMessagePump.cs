@@ -24,17 +24,29 @@ namespace Arcus.WebApi.Jobs
         private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
 
         /// <summary>
-        /// Constructor
+        /// Initializes a new instance of the <see cref="AzureServiceBusTopicCloudEventSubscriptionMessagePump"/> class.
         /// </summary>
         /// <param name="configuration">Configuration of the application</param>
         /// <param name="serviceProvider">Collection of services that are configured</param>
         /// <param name="logger">Logger to write telemetry to</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="serviceProvider"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">When the <paramref name="serviceProvider"/> doesn't have a registered <see cref="AzureServiceBusMessagePumpSettings"/> instance.</exception>
         protected AzureServiceBusTopicCloudEventSubscriptionMessagePump(
             IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger logger) : base(configuration, serviceProvider, logger)
         {
-            _messagePumpSettings = serviceProvider.GetRequiredService<AzureServiceBusMessagePumpSettings>();
+            Guard.NotNull(
+                serviceProvider,
+                nameof(serviceProvider),
+                $"Requires a '{nameof(IServiceProvider)}' implementation to retrieve the '{nameof(AzureServiceBusMessagePumpSettings)}'");
+
+            var messagePumpSettings = serviceProvider.GetRequiredService<AzureServiceBusMessagePumpSettings>();
+            Guard.NotNull<AzureServiceBusMessagePumpSettings, ArgumentException>(
+                messagePumpSettings, 
+                $"The '{nameof(serviceProvider)}:{serviceProvider.GetType().Name}' requires to have a non-null '{nameof(AzureServiceBusMessagePumpSettings)}' instance registered");
+            
+            _messagePumpSettings = messagePumpSettings;
             _subscriptionName = _messagePumpSettings.SubscriptionName;
         }
 

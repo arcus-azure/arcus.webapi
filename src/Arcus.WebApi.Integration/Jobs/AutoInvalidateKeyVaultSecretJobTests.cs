@@ -72,7 +72,7 @@ namespace Arcus.WebApi.Integration.Jobs
         /// Called when an object is no longer needed. Called just before <see cref="M:System.IDisposable.Dispose" />
         /// if the class also implements that.
         /// </summary>
-        async Task IAsyncLifetime.DisposeAsync()
+        public async Task DisposeAsync()
         {
             var host = _host.Services.GetService<IHost>();
             await host.StopAsync();
