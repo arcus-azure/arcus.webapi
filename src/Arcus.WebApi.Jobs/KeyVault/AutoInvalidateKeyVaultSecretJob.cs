@@ -59,7 +59,7 @@ namespace Arcus.WebApi.Jobs.KeyVault
             if (secretNewVersionCreated is null)
             {
                 throw new CloudException(
-                    "Azure KeyVault job cannot map EventGrid event to CloudEvent because the event data isn't recognized as a 'SecretNewVersionCreated' schema");
+                    "Azure Key Vault job cannot map Event Grid event to CloudEvent because the event data isn't recognized as a 'SecretNewVersionCreated' schema");
             }
 
             await _cachedSecretProvider.InvalidateSecretAsync(secretNewVersionCreated.ObjectName);
