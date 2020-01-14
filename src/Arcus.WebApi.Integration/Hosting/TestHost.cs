@@ -53,7 +53,7 @@ namespace Arcus.WebApi.Integration.Hosting
 
                            services.AddSingleton(_outputWriter);
                            services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                               secretProvider: cachedSecretProvider.Object,
+                               cachedSecretProvider: cachedSecretProvider.Object,
                                subscriptionName: $"Test-{Guid.NewGuid():N}",
                                serviceBusTopicConnectionStringConfigKey: "Arcus:ServiceBus:ConnectionStringWithTopic");
                        });
