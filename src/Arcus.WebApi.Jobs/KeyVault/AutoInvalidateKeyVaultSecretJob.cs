@@ -63,7 +63,7 @@ namespace Arcus.WebApi.Jobs.KeyVault
             }
 
             await _cachedSecretProvider.InvalidateSecretAsync(secretNewVersionCreated.ObjectName);
-            Logger.LogInformation("Invalidated Azure KeyVault secret in '{CachedSecretProvider}'", _cachedSecretProvider.GetType().Name);
+            Logger.LogInformation("Invalidated Azure Key Vault '{SecretName}' secret in vault '{VaultName}'", secretNewVersionCreated.ObjectName, secretNewVersionCreated.VaultName);
         }
     }
 }
