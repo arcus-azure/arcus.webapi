@@ -48,7 +48,14 @@ namespace Arcus.WebApi.Jobs
             
             _messagePumpSettings = messagePumpSettings;
             _subscriptionName = _messagePumpSettings.SubscriptionName;
+
+            JobId = Guid.NewGuid().ToString();
         }
+
+        /// <summary>
+        /// Gets the unique identifier for this background job to distinguish this job instance in a multi-instance deployment.
+        /// </summary>
+        public string JobId { get; }
 
         /// <summary>
         /// Deserializes a raw JSON message body.
@@ -80,12 +87,12 @@ namespace Arcus.WebApi.Jobs
         {
             ServiceBusConnectionStringBuilder serviceBusConnectionString = await GetServiceBusConnectionStringAsync();
 
-            Logger.LogTrace("Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, serviceBusConnectionString.EntityPath);
+            Logger.LogTrace("[Job: {JobId}] Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
             var subscriptionDescription = new SubscriptionDescription(serviceBusConnectionString.EntityPath, _subscriptionName)
             {
                 AutoDeleteOnIdle = TimeSpan.FromHours(1),
                 MaxDeliveryCount = 3,
-                UserMetadata = $"Subscription created by Arcus {this.GetType().Name} job to process inbound CloudEvents."
+                UserMetadata = $"Subscription created by Arcus job: '{JobId}' to process inbound CloudEvents."
             };
             
             var ruleDescription = new RuleDescription("Accept-All", new TrueFilter());
@@ -94,7 +101,7 @@ namespace Arcus.WebApi.Jobs
             await serviceBusClient.CreateSubscriptionAsync(subscriptionDescription, ruleDescription, cancellationToken)
                                   .ConfigureAwait(continueOnCapturedContext: false);
 
-            Logger.LogTrace("Subscription '{SubscriptionName}' created on topic '{TopicPath}'", _subscriptionName, serviceBusConnectionString.EntityPath);
+            Logger.LogTrace("[Job: {JobId}] Subscription '{SubscriptionName}' created on topic '{TopicPath}'", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
             await serviceBusClient.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             await base.StartAsync(cancellationToken);
@@ -108,10 +115,10 @@ namespace Arcus.WebApi.Jobs
         {
             ServiceBusConnectionStringBuilder serviceBusConnectionString = await GetServiceBusConnectionStringAsync();
 
-            Logger.LogTrace("Deleting subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, serviceBusConnectionString.EntityPath);
+            Logger.LogTrace("[Job: {JobId}] Deleting subscription '{SubscriptionName}' on topic '{TopicPath}'...", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
             var serviceBusClient = new ManagementClient(serviceBusConnectionString);
             await serviceBusClient.DeleteSubscriptionAsync(serviceBusConnectionString.EntityPath, _subscriptionName, cancellationToken);
-            Logger.LogTrace("Subscription '{SubscriptionName}' deleted on topic '{TopicPath}'", _subscriptionName, serviceBusConnectionString.EntityPath);
+            Logger.LogTrace("[Job: {JobId}] Subscription '{SubscriptionName}' deleted on topic '{TopicPath}'", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
             await serviceBusClient.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             await base.StopAsync(cancellationToken);
@@ -119,10 +126,10 @@ namespace Arcus.WebApi.Jobs
 
         private async Task<ServiceBusConnectionStringBuilder> GetServiceBusConnectionStringAsync()
         {
-            Logger.LogTrace("Getting ServiceBus Topic connection string on topic '{TopicPath}'...", _messagePumpSettings.EntityName);
+            Logger.LogTrace("[Job: {JobId}] Getting ServiceBus Topic connection string on topic '{TopicPath}'...", JobId, _messagePumpSettings.EntityName);
             string connectionString = await _messagePumpSettings.GetConnectionStringAsync();
             var serviceBusConnectionBuilder = new ServiceBusConnectionStringBuilder(connectionString);
-            Logger.LogTrace("Got ServiceBus Topic connection string on topic '{TopicPath}'", _messagePumpSettings.EntityName);
+            Logger.LogTrace("[JobId: {JobId}] Got ServiceBus Topic connection string on topic '{TopicPath}'", JobId, _messagePumpSettings.EntityName);
 
             return serviceBusConnectionBuilder;
         }
