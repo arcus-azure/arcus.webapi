@@ -86,7 +86,7 @@ namespace Arcus.WebApi.Jobs
                 // TODO: configurable for user?
                 AutoDeleteOnIdle = TimeSpan.FromHours(1),
                 MaxDeliveryCount = 3,
-                UserMetadata = "Subscription created by Arcus in order to run integration tests"
+                UserMetadata = $"Subscription created by Arcus {Name} job to process inbound CloudEvents."
             };
             
             var ruleDescription = new RuleDescription("Accept-All", new TrueFilter());
