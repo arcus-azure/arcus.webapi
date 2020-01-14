@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Jobs.KeyVault
     /// <summary>
     /// Message pump implementation to automatically invalidate Azure Key Vault secrets based on the <see cref="SecretNewVersionCreated"/> emitted event.
     /// </summary>
-    public class AutoInvalidateKeyVaultSecretJob : AzureServiceBusCloudEventSubscriptionMessagePump
+    public class AutoInvalidateKeyVaultSecretJob : CloudEventBackgroundJob
     {
         private readonly ICachedSecretProvider _cachedSecretProvider;
 
@@ -63,9 +63,7 @@ namespace Arcus.WebApi.Jobs.KeyVault
             }
 
             await _cachedSecretProvider.InvalidateSecretAsync(secretNewVersionCreated.ObjectName);
-
-            // TODO: what else can we log that would make this log entry distinguishable?
-            Logger.LogInformation($"Invalidated Azure KeyVault secret in '{_cachedSecretProvider.GetType().Name}'");
+            Logger.LogInformation("Invalidated Azure KeyVault secret in '{CachedSecretProvider}'", _cachedSecretProvider.GetType().Name);
         }
     }
 }

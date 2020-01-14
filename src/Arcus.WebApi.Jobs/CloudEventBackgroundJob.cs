@@ -16,7 +16,7 @@ namespace Arcus.WebApi.Jobs
     /// <summary>
     /// Representing a Azure Service Bus Topic message pump that will create and delete a Service Bus Topic subscription during the lifetime of the pump.
     /// </summary>
-    public abstract class AzureServiceBusCloudEventSubscriptionMessagePump : AzureServiceBusMessagePump<CloudEvent>
+    public abstract class CloudEventBackgroundJob : AzureServiceBusMessagePump<CloudEvent>
     {
         private readonly string _subscriptionName;
         private readonly AzureServiceBusMessagePumpSettings _messagePumpSettings;
@@ -24,14 +24,14 @@ namespace Arcus.WebApi.Jobs
         private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureServiceBusCloudEventSubscriptionMessagePump"/> class.
+        /// Initializes a new instance of the <see cref="CloudEventBackgroundJob"/> class.
         /// </summary>
         /// <param name="configuration">Configuration of the application</param>
         /// <param name="serviceProvider">Collection of services that are configured</param>
         /// <param name="logger">Logger to write telemetry to</param>
         /// <exception cref="ArgumentNullException">When the <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="serviceProvider"/> doesn't have a registered <see cref="AzureServiceBusMessagePumpSettings"/> instance.</exception>
-        protected AzureServiceBusCloudEventSubscriptionMessagePump(
+        protected CloudEventBackgroundJob(
             IConfiguration configuration,
             IServiceProvider serviceProvider,
             ILogger logger) : base(configuration, serviceProvider, logger)
@@ -86,7 +86,7 @@ namespace Arcus.WebApi.Jobs
                 // TODO: configurable for user?
                 AutoDeleteOnIdle = TimeSpan.FromHours(1),
                 MaxDeliveryCount = 3,
-                UserMetadata = $"Subscription created by Arcus {Name} job to process inbound CloudEvents."
+                UserMetadata = $"Subscription created by Arcus {this.GetType().Name} job to process inbound CloudEvents."
             };
             
             var ruleDescription = new RuleDescription("Accept-All", new TrueFilter());
