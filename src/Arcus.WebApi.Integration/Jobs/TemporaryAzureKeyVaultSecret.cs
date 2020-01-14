@@ -8,12 +8,12 @@ namespace Arcus.WebApi.Integration.Jobs
     /// <summary>
     /// Representation of a Azure Key Vault secret with a lifetime the same as the type (dispose type = delete secret).
     /// </summary>
-    public class TempAzureKeyVaultSecret : IAsyncDisposable
+    public class TemporaryAzureKeyVaultSecret : IAsyncDisposable
     {
         private readonly IKeyVaultClient _client;
         private readonly string _keyVaultUri;
 
-        private TempAzureKeyVaultSecret(IKeyVaultClient client, string keyVaultUri, string secretName)
+        private TemporaryAzureKeyVaultSecret(IKeyVaultClient client, string keyVaultUri, string secretName)
         {
             Guard.NotNull(client, nameof(client));
             Guard.NotNullOrWhitespace(keyVaultUri, nameof(keyVaultUri));
@@ -35,7 +35,7 @@ namespace Arcus.WebApi.Integration.Jobs
         /// </summary>
         /// <param name="client">The client to the vault where the temporary secret should be set.</param>
         /// <param name="keyVaultUri">The URI of the vault.</param>
-        public static async Task<TempAzureKeyVaultSecret> CreateNewAsync(IKeyVaultClient client, string keyVaultUri)
+        public static async Task<TemporaryAzureKeyVaultSecret> CreateNewAsync(IKeyVaultClient client, string keyVaultUri)
         {
             Guard.NotNull(client, nameof(client));
             Guard.NotNullOrWhitespace(keyVaultUri, nameof(keyVaultUri));
@@ -44,7 +44,7 @@ namespace Arcus.WebApi.Integration.Jobs
             var testSecretValue = Guid.NewGuid().ToString("N");
             await client.SetSecretAsync(keyVaultUri, testSecretName, testSecretValue);
 
-            return new TempAzureKeyVaultSecret(client, keyVaultUri, testSecretName);
+            return new TemporaryAzureKeyVaultSecret(client, keyVaultUri, testSecretName);
         }
 
         /// <summary>
