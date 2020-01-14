@@ -83,7 +83,6 @@ namespace Arcus.WebApi.Jobs
             Logger.LogTrace("Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", _subscriptionName, serviceBusConnectionString.EntityPath);
             var subscriptionDescription = new SubscriptionDescription(serviceBusConnectionString.EntityPath, _subscriptionName)
             {
-                // TODO: configurable for user?
                 AutoDeleteOnIdle = TimeSpan.FromHours(1),
                 MaxDeliveryCount = 3,
                 UserMetadata = $"Subscription created by Arcus {this.GetType().Name} job to process inbound CloudEvents."

@@ -48,7 +48,7 @@ namespace Arcus.WebApi.Integration.Jobs
             
             using (IKeyVaultClient client = await authentication.AuthenticateAsync()) 
             // Act
-            await using (var tempSecret = await TempSecret.CreateNewAsync(client, keyVaultUri))
+            await using (var tempSecret = await TempAzureKeyVaultSecret.CreateNewAsync(client, keyVaultUri))
             {
                 // Assert
                 RetryAssertion(
