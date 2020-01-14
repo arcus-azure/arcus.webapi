@@ -6,7 +6,7 @@ using Microsoft.Azure.KeyVault;
 namespace Arcus.WebApi.Integration.Jobs 
 {
     /// <summary>
-    /// Representation of a Azure KeyVault secret with a lifetime the same as the type (dispose type = delete secret).
+    /// Representation of a Azure Key Vault secret with a lifetime the same as the type (dispose type = delete secret).
     /// </summary>
     public class TempSecret : IAsyncDisposable
     {
