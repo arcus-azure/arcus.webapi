@@ -14,7 +14,7 @@ using Microsoft.Extensions.Logging;
 namespace Arcus.WebApi.Jobs
 {
     /// <summary>
-    /// Representing a Azure ServiceBus Topic message pump that will create and delete a ServiceBus Topic subscription during the lifetime of the pump.
+    /// Representing a Azure Service Bus Topic message pump that will create and delete a Service Bus Topic subscription during the lifetime of the pump.
     /// </summary>
     public abstract class AzureServiceBusCloudEventSubscriptionMessagePump : AzureServiceBusMessagePump<CloudEvent>
     {
