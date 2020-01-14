@@ -51,11 +51,11 @@ namespace Arcus.WebApi.Integration.Hosting
                            cachedSecretProvider.Setup(p => p.InvalidateSecretAsync(It.IsAny<string>()))
                                                .Returns(Task.CompletedTask);
 
-                           services.AddSingleton(serviceProvider => cachedSecretProvider.Object);
                            services.AddSingleton(_outputWriter);
-                           services.AddServiceBusTopicMessagePump<AutoInvalidateKeyVaultSecretJob>(
-                               subscriptionName: $"Test-{Guid.NewGuid():N}", 
-                               getConnectionStringFromConfigurationFunc: config => config["Arcus:ServiceBus:ConnectionStringWithTopic"]);
+                           services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
+                               secretProvider: cachedSecretProvider.Object,
+                               subscriptionName: $"Test-{Guid.NewGuid():N}",
+                               serviceBusTopicConnectionStringConfigKey: "Arcus:ServiceBus:ConnectionStringWithTopic");
                        });
         }
     }
