@@ -70,34 +70,27 @@ namespace Arcus.WebApi.Correlation
 
             AddCorrelationResponseHeaders(httpContext, operationId, transactionId);
 
-            // TODO: on exception, should we enrich the exception.Data with the correlation info?
             await _next(httpContext);
         }
 
         private static string DetermineOperationId(HttpContext httpContext)
         {
-            // TODO: make ID generation configurable for the consumer.
             return httpContext.TraceIdentifier ?? Guid.NewGuid().ToString();
         }
 
         private string DetermineTransactionId(HttpContext httpContext, StringValues transactionIds)
         {
-            // TODO: make ID generation configurable for the consumer.
             if (String.IsNullOrWhiteSpace(transactionIds.ToString()))
             {
                 if (_options.Transaction.GenerateWhenNotSpecified)
                 {
                     return Guid.NewGuid().ToString();
                 }
-                else
-                {
-                    return null;
-                }
+
+                return null;
             }
-            else
-            {
-                return transactionIds.ToString();
-            }
+
+            return transactionIds.ToString();
         }
 
         private void AddCorrelationResponseHeaders(HttpContext httpContext, string operationId, string transactionId)
