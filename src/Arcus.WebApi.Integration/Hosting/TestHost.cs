@@ -14,6 +14,9 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Integration.Hosting
 {
+    /// <summary>
+    /// Represents a <see cref="Host"/> using to simulate a real-life application when integration testing the web API components.
+    /// </summary>
     public class TestHost : WebApplicationFactory<TestStartup>
     {
         private readonly TestConfig _config;
@@ -36,7 +39,7 @@ namespace Arcus.WebApi.Integration.Hosting
         /// </summary>
         /// <remarks>
         /// The default implementation of this method looks for a <c>public static IHostBuilder CreateHostBuilder(string[] args)</c>
-        /// method defined on the entry point of the assembly of <typeparamref name="TEntryPoint" /> and invokes it passing an empty string
+        /// method defined on the entry point of the assembly of <see name="TestStartup" /> and invokes it passing an empty string
         /// array as arguments.
         /// </remarks>
         /// <returns>A <see cref="T:Microsoft.Extensions.Hosting.IHostBuilder" /> instance.</returns>
