@@ -47,9 +47,9 @@ namespace Arcus.WebApi.Jobs
                 $"The '{nameof(serviceProvider)}:{serviceProvider.GetType().Name}' requires to have a non-null '{nameof(AzureServiceBusMessagePumpSettings)}' instance registered");
             
             _messagePumpSettings = messagePumpSettings;
-            _subscriptionName = _messagePumpSettings.SubscriptionName;
-
+            
             JobId = Guid.NewGuid().ToString();
+            _subscriptionName = $"{_messagePumpSettings.SubscriptionName}:{JobId}";
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Jobs.KeyVault;
 using GuardNet;
@@ -50,15 +51,23 @@ namespace Arcus.WebApi.Integration.Hosting
                        .ConfigureAppConfiguration(config => config.AddInMemoryCollection(_config.AsEnumerable()))
                        .ConfigureServices(services =>
                        {
-                           var cachedSecretProvider = new Mock<ICachedSecretProvider>();
-                           cachedSecretProvider.Setup(p => p.InvalidateSecretAsync(It.IsAny<string>()))
-                                               .Returns(Task.CompletedTask);
+                           const string secretKey = "Arcus:ServiceBus:ConnectionStringWithTopic";
 
+                           var cachedSecretProvider = new Mock<ICachedSecretProvider>();
+                           cachedSecretProvider
+                               .Setup(p => p.GetRawSecretAsync(secretKey))
+                               .ReturnsAsync(() => _config[secretKey]);
+
+                           cachedSecretProvider
+                               .Setup(p => p.InvalidateSecretAsync(It.IsAny<string>()))
+                               .Returns(Task.CompletedTask);
+
+                           services.AddSingleton<ISecretProvider>(cachedSecretProvider.Object);
+                           services.AddSingleton<ICachedSecretProvider>(cachedSecretProvider.Object);
                            services.AddSingleton(_outputWriter);
                            services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                               cachedSecretProvider: cachedSecretProvider.Object,
-                               subscriptionName: $"Test-{Guid.NewGuid():N}",
-                               serviceBusTopicConnectionStringConfigKey: "Arcus:ServiceBus:ConnectionStringWithTopic");
+                               subscriptionNamePrefix: $"Test-{Guid.NewGuid():N}",
+                               serviceBusTopicConnectionStringSecretKey: secretKey);
                        });
         }
     }
