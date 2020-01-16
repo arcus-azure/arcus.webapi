@@ -7,7 +7,7 @@ namespace Arcus.WebApi.Correlation
     /// </summary>
     public class CorrelationOptionsOperation
     {
-        private string _headerName = "X-Operation-ID";
+        private string _headerName = "RequestId";
 
         /// <summary>
         /// Gets or sets whether to include the operation ID in the response.

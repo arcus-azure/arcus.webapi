@@ -14,7 +14,7 @@ namespace Arcus.WebApi.Unit.Correlation
 {
     public class CorrelationTests
     {
-        private const string DefaultOperationId = "X-Operation-ID",
+        private const string DefaultOperationId = "RequestId",
                              DefaultTransactionId = "X-Transaction-ID";
 
         private readonly TestApiServer _testServer = new TestApiServer();
