@@ -50,6 +50,7 @@ namespace Arcus.WebApi.Jobs
             
             JobId = Guid.NewGuid().ToString();
             _subscriptionName = $"{_messagePumpSettings.SubscriptionName}.{JobId}";
+            _messagePumpSettings.SubscriptionName = _subscriptionName;
         }
 
         /// <summary>
