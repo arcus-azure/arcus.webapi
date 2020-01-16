@@ -66,7 +66,7 @@ namespace Arcus.WebApi.Integration.Hosting
                            services.AddSingleton<ICachedSecretProvider>(cachedSecretProvider.Object);
                            services.AddSingleton(_outputWriter);
                            services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
-                               subscriptionNamePrefix: "TestSubscription",
+                               subscriptionNamePrefix: "TestSub",
                                serviceBusTopicConnectionStringSecretKey: secretKey);
                        });
         }
