@@ -10,6 +10,7 @@ using Microsoft.Azure.ServiceBus.Management;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace Arcus.WebApi.Jobs
 {
@@ -18,39 +19,36 @@ namespace Arcus.WebApi.Jobs
     /// </summary>
     public abstract class CloudEventBackgroundJob : AzureServiceBusMessagePump<CloudEvent>
     {
-        private readonly string _subscriptionName;
-        private readonly AzureServiceBusMessagePumpSettings _messagePumpSettings;
-
         private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CloudEventBackgroundJob"/> class.
         /// </summary>
-        /// <param name="configuration">Configuration of the application</param>
-        /// <param name="serviceProvider">Collection of services that are configured</param>
-        /// <param name="logger">Logger to write telemetry to</param>
+        /// <param name="configuration">The configuration of the application.</param>
+        /// <param name="serviceProvider">The collection of services that are configured.</param>
+        /// <param name="options">The options to further configure this job.</param>
+        /// <param name="logger">The logger to write telemetry to.</param>
         /// <exception cref="ArgumentNullException">When the <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="serviceProvider"/> doesn't have a registered <see cref="AzureServiceBusMessagePumpSettings"/> instance.</exception>
         protected CloudEventBackgroundJob(
             IConfiguration configuration,
             IServiceProvider serviceProvider,
+            IOptions<CloudEventBackgroundJobOptions> options,
             ILogger logger) : base(configuration, serviceProvider, logger)
         {
             Guard.NotNull(
                 serviceProvider,
                 nameof(serviceProvider),
                 $"Requires a '{nameof(IServiceProvider)}' implementation to retrieve the '{nameof(AzureServiceBusMessagePumpSettings)}'");
+            Guard.NotNull(options, nameof(options), $"Requires a '{nameof(IOptions<CloudEventBackgroundJobOptions>)}' to correctly configure this job");
+            Guard.For<ArgumentException>(() => options.Value is null, $"Requires a '{nameof(IOptions<CloudEventBackgroundJobOptions>)}' to correctly configure this job");
 
             var messagePumpSettings = serviceProvider.GetRequiredService<AzureServiceBusMessagePumpSettings>();
             Guard.NotNull<AzureServiceBusMessagePumpSettings, ArgumentException>(
                 messagePumpSettings, 
                 $"The '{nameof(serviceProvider)}:{serviceProvider.GetType().Name}' requires to have a non-null '{nameof(AzureServiceBusMessagePumpSettings)}' instance registered");
             
-            _messagePumpSettings = messagePumpSettings;
-            
-            JobId = Guid.NewGuid().ToString();
-            _subscriptionName = $"{_messagePumpSettings.SubscriptionName}.{JobId}";
-            _messagePumpSettings.SubscriptionName = _subscriptionName;
+            JobId = options.Value.JobId;
         }
 
         /// <summary>
@@ -88,8 +86,8 @@ namespace Arcus.WebApi.Jobs
         {
             ServiceBusConnectionStringBuilder serviceBusConnectionString = await GetServiceBusConnectionStringAsync();
 
-            Logger.LogTrace("[Job: {JobId}] Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
-            var subscriptionDescription = new SubscriptionDescription(serviceBusConnectionString.EntityPath, _subscriptionName)
+            Logger.LogTrace("[Job: {JobId}] Creating subscription '{SubscriptionName}' on topic '{TopicPath}'...", JobId, Settings.SubscriptionName, serviceBusConnectionString.EntityPath);
+            var subscriptionDescription = new SubscriptionDescription(serviceBusConnectionString.EntityPath, Settings.SubscriptionName)
             {
                 AutoDeleteOnIdle = TimeSpan.FromHours(1),
                 MaxDeliveryCount = 3,
@@ -102,7 +100,7 @@ namespace Arcus.WebApi.Jobs
             await serviceBusClient.CreateSubscriptionAsync(subscriptionDescription, ruleDescription, cancellationToken)
                                   .ConfigureAwait(continueOnCapturedContext: false);
 
-            Logger.LogTrace("[Job: {JobId}] Subscription '{SubscriptionName}' created on topic '{TopicPath}'", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
+            Logger.LogTrace("[Job: {JobId}] Subscription '{SubscriptionName}' created on topic '{TopicPath}'", JobId, Settings.SubscriptionName, serviceBusConnectionString.EntityPath);
             await serviceBusClient.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             await base.StartAsync(cancellationToken);
@@ -116,10 +114,10 @@ namespace Arcus.WebApi.Jobs
         {
             ServiceBusConnectionStringBuilder serviceBusConnectionString = await GetServiceBusConnectionStringAsync();
 
-            Logger.LogTrace("[Job: {JobId}] Deleting subscription '{SubscriptionName}' on topic '{TopicPath}'...", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
+            Logger.LogTrace("[Job: {JobId}] Deleting subscription '{SubscriptionName}' on topic '{TopicPath}'...", JobId, Settings.SubscriptionName, serviceBusConnectionString.EntityPath);
             var serviceBusClient = new ManagementClient(serviceBusConnectionString);
-            await serviceBusClient.DeleteSubscriptionAsync(serviceBusConnectionString.EntityPath, _subscriptionName, cancellationToken);
-            Logger.LogTrace("[Job: {JobId}] Subscription '{SubscriptionName}' deleted on topic '{TopicPath}'", JobId, _subscriptionName, serviceBusConnectionString.EntityPath);
+            await serviceBusClient.DeleteSubscriptionAsync(serviceBusConnectionString.EntityPath, Settings.SubscriptionName, cancellationToken);
+            Logger.LogTrace("[Job: {JobId}] Subscription '{SubscriptionName}' deleted on topic '{TopicPath}'", JobId, Settings.SubscriptionName, serviceBusConnectionString.EntityPath);
             await serviceBusClient.CloseAsync().ConfigureAwait(continueOnCapturedContext: false);
 
             await base.StopAsync(cancellationToken);
@@ -127,10 +125,10 @@ namespace Arcus.WebApi.Jobs
 
         private async Task<ServiceBusConnectionStringBuilder> GetServiceBusConnectionStringAsync()
         {
-            Logger.LogTrace("[Job: {JobId}] Getting ServiceBus Topic connection string on topic '{TopicPath}'...", JobId, _messagePumpSettings.EntityName);
-            string connectionString = await _messagePumpSettings.GetConnectionStringAsync();
+            Logger.LogTrace("[Job: {JobId}] Getting ServiceBus Topic connection string on topic '{TopicPath}'...", JobId, Settings.EntityName);
+            string connectionString = await Settings.GetConnectionStringAsync();
             var serviceBusConnectionBuilder = new ServiceBusConnectionStringBuilder(connectionString);
-            Logger.LogTrace("[JobId: {JobId}] Got ServiceBus Topic connection string on topic '{TopicPath}'", JobId, _messagePumpSettings.EntityName);
+            Logger.LogTrace("[JobId: {JobId}] Got ServiceBus Topic connection string on topic '{TopicPath}'", JobId, Settings.EntityName);
 
             return serviceBusConnectionBuilder;
         }

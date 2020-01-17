@@ -18,7 +18,7 @@
 
   <ItemGroup>
     <PackageReference Include="Arcus.EventGrid" Version="3.0.0-preview-1" />
-    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="20191218.0.0-PR-32" />
+    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="20200115.0.0-PR-32" />
     <PackageReference Include="Arcus.Security.Core" Version="20200107.0.0-PR-120" />
     <PackageReference Include="Arcus.Security.Providers.AzureKeyVault" Version="1.0.0" />
     <PackageReference Include="Microsoft.Azure.EventGrid" Version="3.2.0" />

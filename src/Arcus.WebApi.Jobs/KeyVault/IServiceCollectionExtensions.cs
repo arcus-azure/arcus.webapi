@@ -1,4 +1,5 @@
-﻿using GuardNet;
+﻿using System;
+using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Arcus.WebApi.Jobs.KeyVault
@@ -23,8 +24,11 @@ namespace Arcus.WebApi.Jobs.KeyVault
             Guard.NotNullOrWhitespace(subscriptionNamePrefix, nameof(subscriptionNamePrefix), "Requires a non-blank subscription name of the Azure Service Bus Topic subscription, to receive Key Vault events");
             Guard.NotNullOrWhitespace(serviceBusTopicConnectionStringSecretKey, nameof(serviceBusTopicConnectionStringSecretKey), "Requires a non-blank configuration key that points to a Azure Service Bus Topic");
 
+            var jobId = Guid.NewGuid().ToString();
+            services.Configure<CloudEventBackgroundJobOptions>(options => options.JobId = jobId);
+
             services.AddServiceBusTopicMessagePump<AutoInvalidateKeyVaultSecretJob>(
-                subscriptionName: subscriptionNamePrefix,
+                subscriptionName: $"{subscriptionNamePrefix}.{jobId}",
                 getConnectionStringFromSecretFunc: secretProvider => secretProvider.GetRawSecretAsync(serviceBusTopicConnectionStringSecretKey));
 
             return services;

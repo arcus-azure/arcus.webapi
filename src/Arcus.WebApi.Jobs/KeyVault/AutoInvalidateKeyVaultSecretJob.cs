@@ -9,6 +9,7 @@ using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 using Microsoft.Rest.Azure;
 
 namespace Arcus.WebApi.Jobs.KeyVault
@@ -23,15 +24,17 @@ namespace Arcus.WebApi.Jobs.KeyVault
         /// <summary>
         /// Initializes a new instance of the <see cref="AutoInvalidateKeyVaultSecretJob"/> class.
         /// </summary>
-        /// <param name="configuration">Configuration of the application</param>
-        /// <param name="serviceProvider">Collection of services that are configured</param>
-        /// <param name="logger">Logger to write telemetry to</param>
+        /// <param name="configuration">The configuration of the application.</param>
+        /// <param name="serviceProvider">The collection of services that are configured.</param>
+        /// <param name="options">The options to further configure this job.</param>
+        /// <param name="logger">The logger to write telemetry to.</param>
         /// <exception cref="ArgumentNullException">When the <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="serviceProvider"/> doesn't have a registered <see cref="ICachedSecretProvider"/> instance.</exception>
         public AutoInvalidateKeyVaultSecretJob(
             IConfiguration configuration,
             IServiceProvider serviceProvider,
-            ILogger logger) : base(configuration, serviceProvider, logger)
+            IOptions<CloudEventBackgroundJobOptions> options,
+            ILogger logger) : base(configuration, serviceProvider, options, logger)
         {
             Guard.NotNull(
                 serviceProvider, 
