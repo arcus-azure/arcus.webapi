@@ -16,7 +16,7 @@ The background job consists of a custom implementation of the `CloudEventBackgro
 
 ## Usage
 
-The mandatory `ProcessMessageAsync` to-be-overriden method allows you to customize the processing of the **CloudEvent** message.
+You can easily implement your own job by implementing the `ProcessMessageAsync` method to prcocess new CloudEvents.
 
 ```csharp
 public class MyBackgroundJob : CloudEventBackgroundJob
