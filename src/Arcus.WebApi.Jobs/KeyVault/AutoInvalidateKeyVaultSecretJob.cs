@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Arcus.BackgroundJobs.CloudEvent;
 using Arcus.Messaging.Abstractions;
 using Arcus.Messaging.Pumps.ServiceBus;
 using Arcus.Security.Core.Caching;

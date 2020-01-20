@@ -1,4 +1,4 @@
-﻿namespace Arcus.WebApi.Jobs
+﻿namespace Arcus.BackgroundJobs.CloudEvent
 {
     /// <summary>
     /// Represents the options to configure the <see cref="CloudEventBackgroundJob"/>.

@@ -12,12 +12,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
-namespace Arcus.WebApi.Jobs
+namespace Arcus.BackgroundJobs.CloudEvent
 {
     /// <summary>
     /// Representing a Azure Service Bus Topic message pump that will create and delete a Service Bus Topic subscription during the lifetime of the pump.
     /// </summary>
-    public abstract class CloudEventBackgroundJob : AzureServiceBusMessagePump<CloudEvent>
+    public abstract class CloudEventBackgroundJob : AzureServiceBusMessagePump<CloudNative.CloudEvents.CloudEvent>
     {
         private static readonly JsonEventFormatter JsonEventFormatter = new JsonEventFormatter();
 
@@ -62,18 +62,18 @@ namespace Arcus.WebApi.Jobs
         /// <param name="rawMessageBody">Raw message body to deserialize</param>
         /// <param name="messageContext">Context concerning the message</param>
         /// <returns>Deserialized message</returns>
-        protected override CloudEvent DeserializeJsonMessageBody(byte[] rawMessageBody, MessageContext messageContext)
+        protected override CloudNative.CloudEvents.CloudEvent DeserializeJsonMessageBody(byte[] rawMessageBody, MessageContext messageContext)
         {
             Guard.NotNull(rawMessageBody, nameof(rawMessageBody), "Cannot deserialize raw JSON body from 'null' input");
             Guard.NotAny(rawMessageBody, nameof(rawMessageBody), "Cannot deserialize raw JSON body from empty input");
 
-            CloudEvent cloudEvent = JsonEventFormatter.DecodeStructuredEvent(rawMessageBody);
+            CloudNative.CloudEvents.CloudEvent cloudEvent = JsonEventFormatter.DecodeStructuredEvent(rawMessageBody);
             return cloudEvent;
         }
 
         /// <inheritdoc />
         protected abstract override Task ProcessMessageAsync(
-            CloudEvent message,
+            CloudNative.CloudEvents.CloudEvent message,
             AzureServiceBusMessageContext messageContext,
             MessageCorrelationInfo correlationInfo,
             CancellationToken cancellationToken);
