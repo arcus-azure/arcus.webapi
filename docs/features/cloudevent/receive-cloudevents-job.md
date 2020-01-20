@@ -12,7 +12,7 @@ This allows API's to have asynchronous jobs that allow external parties to forwa
 
 An Azure Service Bus Topic resource is required to receive CloudEvents on. CloudEvent messages on this Topic will be processed by a background job.
 
-The background job consists of a custom implementation of the `CloudEventBackgroundJob` which already takes care of topic subscription creation/deletion on start/stop of the job.
+You can write your own background job(s) by deriving from `CloudEventBackgroundJob` which already takes care of topic subscription creation/deletion on start/stop of the job.
 
 ## Usage
 
