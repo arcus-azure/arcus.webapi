@@ -30,7 +30,7 @@ public void ConfigureServices(IServiceCollection services)
 
     services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
         // Prefix of the Azure Service Bus Topic subscription;
-        //    this allows multiple background jobs in the same application, processing the same type of events, without conflicting subscription names.
+        //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
         subscriptionNamePrefix: "MyPrefix"
         
         // Connection string secret key to a Azure Service Bus Topic;
