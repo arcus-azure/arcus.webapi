@@ -14,7 +14,7 @@ To make this automation opperational, following Azure Resources has to be used:
 
 ## Usage
 
-In a `ConfigureServices` method (ex. in your `Startup.cs`), where we have access to the `IServiceCollection` instance, we can configure our background job:
+Our background job has to be configured in `ConfigureServices` method:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
