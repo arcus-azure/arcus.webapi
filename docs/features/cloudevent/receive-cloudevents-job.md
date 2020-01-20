@@ -6,7 +6,7 @@ layout: default
 # Securely Receive CloudEvents
 
 The `Arcus.BackgroundJobs` library provides a collection of background jobs to securely receive [CloudEvents](https://github.com/cloudevents/spec).
-This allows API's to have asynchronous jobs that allow external parties to forward events to react upon, without exposing a public endpoint.
+This allows workloads to asynchronously process event from other components without exposing a public endpoint.
 
 ## How This Works
 
