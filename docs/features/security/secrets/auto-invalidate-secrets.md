@@ -11,6 +11,7 @@ This works by subscribing on the `SecretNewVersionCreated` event of an Azure Key
 To make this automation opperational, following Azure Resources has to be used:
 * Azure Key Vault instance
 * Azure Service Bus Topic (which subsribes on an Key Vault event subscription)
+* Azure Event Grid subscription for `SecretNewVersionCreated` events that are sent to the Azure Service Bus Topic
 
 ## Usage
 
