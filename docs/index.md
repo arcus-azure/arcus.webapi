@@ -27,7 +27,7 @@ For more granular packages we recommend reading the documentation.
         - [Shared access key authentication](features/security/auth/shared-access-key)
         - [Certificate authentication](features/security/auth/certificate)
     - Secrets
-        - [Automatically invalidate secrets](features/auto-invalidate-secrets)
+        - [Automatically invalidate cached secrets from Azure Key Vault](features/security/secrets/auto-invalidate-secrets)
 - **Logging**
     - [Logging unhandled exceptions](features/logging)
 - **OpenAPI**

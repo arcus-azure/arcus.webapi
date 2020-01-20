@@ -13,11 +13,12 @@ This automation works by subscribing on the `SecretNewVersionCreated` event of a
 
 To make this automation opperational, following Azure Resources has to be used:
 * Azure Key Vault instance
-* Azure Service Bus Topic (which subsribes on an Key Vault event subscription)
+* Azure Service Bus Topic
+* Azure Event Grid subscription for `SecretNewVersionCreated` events that are sent to the Azure Service Bus Topic
 
 ## Usage
 
-In a `ConfigureServices` method (ex. in your `Startup.cs`), where we have access to the `IServiceCollection` instance, we can configure our background job:
+Our background job has to be configured in `ConfigureServices` method:
 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
@@ -32,9 +33,9 @@ public void ConfigureServices(IServiceCollection services)
 
     services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
         // Prefix of the Azure Service Bus Topic subscription;
-        //    this allows multiple background jobs in the same application, processing the same type of events, without conflicting subscription names.
+        //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
         subscriptionNamePrefix: "MyPrefix"
-        
+
         // Connection string secret key to a Azure Service Bus Topic.
         serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
 }
