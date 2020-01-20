@@ -6,7 +6,10 @@ layout: default
 # Automatically Invalidate Azure Key Vault Secrets
 
 The `Arcus.WebApi.Jobs` library provides a background job to automatically invalidate cached Azure Key Vault secrets from an `ICachedSecretProvider` instance of your choice.
-This works by subscribing on the `SecretNewVersionCreated` event of an Azure Key Vault resource and placing those events on a Azure Service Bus Topic; which we process in our background job.
+
+## How This Works
+
+This automation works by subscribing on the `SecretNewVersionCreated` event of an Azure Key Vault resource and placing those events on a Azure Service Bus Topic; which we process in our background job.
 
 To make this automation opperational, following Azure Resources has to be used:
 * Azure Key Vault instance
@@ -24,8 +27,7 @@ public void ConfigureServices(IServiceCollection services)
     var mySecretProvider = new MySecretProvider();
     services.AddSingleton<ISecretProvider>(serviceProvider => mySecretProvider);
 
-    // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated;
-    //     the `.InvalidateSecret()` method on this instance will automatically be called when an `SecretNewVersionCreated` event is emitted by the Azure Key Vault resource.
+    // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated.
     services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider(mySecretProvider));
 
     services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
@@ -33,8 +35,7 @@ public void ConfigureServices(IServiceCollection services)
         //    this allows multiple background jobs in the same application, processing the same type of events, without conflicting subscription names.
         subscriptionNamePrefix: "MyPrefix"
         
-        // Connection string secret key to a Azure Service Bus Topic;
-        //    connection string scoped to the entity path (Topic), so we can process messages on to the topic.
+        // Connection string secret key to a Azure Service Bus Topic.
         serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
 }
 ```
