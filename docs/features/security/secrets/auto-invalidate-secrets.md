@@ -33,7 +33,7 @@ public void ConfigureServices(IServiceCollection services)
         //    this allows the background jobs to support applications that are running multiple instances, processing the same type of events, without conflicting subscription names.
         subscriptionNamePrefix: "MyPrefix"
         
-        // Connection string secret key to a Azure Service Bus Topic;
+        // Connection string secret key to the Azure Service Bus Topic that contains the Azure Key Vault events;
         //    connection string scoped to the entity path (Topic), so we can process messages on to the topic.
         serviceBusTopicConnectionStringSecretKey: "MySecretKeyToServiceBusTopicConnectionString");
 }
