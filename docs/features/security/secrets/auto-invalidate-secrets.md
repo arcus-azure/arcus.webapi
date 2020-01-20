@@ -28,7 +28,7 @@ public void ConfigureServices(IServiceCollection services)
     services.AddSingleton<ISecretProvider>(serviceProvider => ...);
 
     // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated.
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider(mySecretProvider));
+    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(mySecretProvider));
 
     services.AddAutoInvalidateKeyVaultSecretBackgroundJob(
         // Prefix of the Azure Service Bus Topic subscription;
