@@ -23,10 +23,9 @@ Our background job has to be configured in `ConfigureServices` method:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    // An 'ISecretProvider' implementation to access the Azure Service Bus Topic resource;
+    // An 'ISecretProvider' implementation (see: https://security.arcus-azure.net/) to access the Azure Service Bus Topic resource;
     //     this will get the 'serviceBusTopicConnectionStringSecretKey' string (configured below) and has to retrieve the connection string for the topic.
-    var mySecretProvider = new MySecretProvider();
-    services.AddSingleton<ISecretProvider>(serviceProvider => mySecretProvider);
+    services.AddSingleton<ISecretProvider>(serviceProvider => ...);
 
     // An `ICachedSecretProvider` implementation which secret keys will automatically be invalidated.
     services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider(mySecretProvider));

@@ -21,21 +21,23 @@ The mandatory `ProcessMessageAsync` to-be-overriden method allows you to customi
 ```csharp
 public class MyBackgroundJob : CloudEventBackgroundJob
 {
-	public MyBackgroundJob(
-		IConfiguration configuration,
-		IServiceProvider serviceProvider,
-		ILogger<CloudEventBackgroundJob> logger) : base(configuration, serviceProvider, logger)
-	{
-		
-	}
+    public MyBackgroundJob(
+        IConfiguration configuration,
+        IServiceProvider serviceProvider,
+        ILogger<CloudEventBackgroundJob> logger) : base(configuration, serviceProvider, logger)
+    {
 
-	protected override async Task ProcessMessageAsync(
-		CloudEvent message,
+    }
+
+    protected override async Task ProcessMessageAsync(
+        CloudEvent message,
         AzureServiceBusMessageContext messageContext,
         MessageCorrelationInfo correlationInfo,
         CancellationToken cancellationToken)
         {
-			// Process the CloudEvent message...
-		}
+            // Process the CloudEvent message...
+    }
 }
 ```
+
+[&larr; back](/)
