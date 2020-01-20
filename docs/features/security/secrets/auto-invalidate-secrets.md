@@ -5,7 +5,7 @@ layout: default
 
 # Automatically Invalidate Azure Key Vault Secrets
 
-The `Arcus.WebApi.Jobs` library provides a background job to automatically invalidate cached Azure Key Vault secrets from an `ICachedSecretProvider` instance of you choice.
+The `Arcus.WebApi.Jobs` library provides a background job to automatically invalidate cached Azure Key Vault secrets from an `ICachedSecretProvider` instance of your choice.
 This works by subscribing on the `SecretNewVersionCreated` event of an Azure Key Vault resource and placing those events on a Azure Service Bus Topic; which we process in our background job.
 
 To make this automation opperational, following Azure Resources has to be used:
