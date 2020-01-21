@@ -1,4 +1,5 @@
 ﻿using System;
+using Arcus.WebApi.Correlation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -32,14 +33,16 @@ namespace Arcus.WebApi.Unit.Hosting
         {
 #if NETCOREAPP2_2
             services.AddMvc();
-            
 #else
             services.AddMvc(options => options.EnableEndpointRouting = false);
 #endif
+            services.AddCorrelation();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseCorrelation();
+
             app.UseMvc();
 
             app.UseSwagger();

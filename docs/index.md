@@ -26,6 +26,8 @@ For more granular packages we recommend reading the documentation.
     - Authentication
         - [Shared access key authentication](features/security/auth/shared-access-key)
         - [Certificate authentication](features/security/auth/certificate)
+- **Correlation**
+    - [Provide request and/or transaction correlation ids](features/correlation)
 - **Logging**
     - [Logging unhandled exceptions](features/logging)
 - **OpenAPI**

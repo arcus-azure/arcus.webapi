@@ -148,6 +148,16 @@ namespace Arcus.WebApi.Unit.Hosting
         }
 
         /// <summary>
+        /// Adds a configuration of the <see cref="IServiceCollection"/> to the test server.
+        /// </summary>
+        public void AddServicesConfig(Action<IServiceCollection> configureServices)
+        {
+            Guard.NotNull(configureServices, nameof(configureServices));
+
+            _configureServices.Add(configureServices);
+        }
+
+        /// <summary>
         /// Adds a filter to the current MVC setup to run on every call in this hosted test server.
         /// </summary>
         /// <param name="filter">The filter to add.</param>
