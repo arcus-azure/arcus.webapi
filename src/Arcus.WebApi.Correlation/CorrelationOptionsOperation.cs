@@ -18,7 +18,7 @@ namespace Arcus.WebApi.Correlation
         public bool IncludeInResponse { get; set; } = true;
 
         /// <summary>
-        /// Gets or sets the header that will contain the request/response operation ID.
+        /// Gets or sets the header that will contain the response operation ID.
         /// </summary>
         public string HeaderName
         {
