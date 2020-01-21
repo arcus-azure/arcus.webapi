@@ -17,7 +17,7 @@ Additional [configuration](#configuration) is available to tweak this functional
 
 ## Installation
 
-This feature requires to install our NuGet package
+This feature requires to install our NuGet package:
 
 ```shell
 PM > Install-Package Arcus.WebApi.Correlation
