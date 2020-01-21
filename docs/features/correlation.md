@@ -55,28 +55,28 @@ public void ConfigureServices(IServiceCollection services)
         // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
         // ---------------------------------------------------------------------------------
 
-        // Whether the transaction ID can be specified in the request, and will be used throughout the request handling.
+        // (default: true) Whether the transaction ID can be specified in the request, and will be used throughout the request handling.
         // The request will return early when the `.AllowInRequest` is set to `false` and the request does contain the header.
         options.Transaction.AllowInRequest = true;
 
-        // Whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
+        // (deffault: true) Whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
         // When the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header, no value will be available for the transaction ID; 
         // otherwise a GUID will be generated.
         options.Transaction.GenerateWhenNotSpecified = true;
 
-        // Whether to include the transaction ID in the response.
+        // (default: true) Whether to include the transaction ID in the response.
         options.Transaction.IncludeInResponse = true;
 
-        // The header to look for in the HTTP request, and will be set in the HTTP response.
+        // The header (default: X-Transaction-ID) to look for in the HTTP request, and will be set in the HTTP response.
         options.Transaction.HeaderName = "X-Transaction-ID";
 
         // Configuration on the operation ID (`RequestId`) response header.
         // ----------------------------------------------------------------
 
-        // Whether to include the operation ID in the response.
+        // (default: true) Whether to include the operation ID in the response.
         options.Operation.IncludeInResponse = true;
 
-        // The header that will contain the operation ID in the HTTP response.
+        // The header (default: RequestId) that will contain the operation ID in the HTTP response.
         options.Operation.HeaderName = "RequestId";
     });
 }
