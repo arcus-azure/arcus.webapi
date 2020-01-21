@@ -12,6 +12,7 @@ This correlation is based the `RequestId` and `X-Transaction-ID` HTTP request/re
 ## How This Works
 
 When an application is configured to use the default configuration of the correlation, each HTTP response will get an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses.
+
 The `X-Transaction-ID` can be overriden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
 
 Additional [configuration](#configuration) is available to tweak this functionality.
