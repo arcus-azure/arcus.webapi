@@ -14,10 +14,21 @@ namespace Arcus.WebApi.Correlation
         /// Adds operation and transaction correlation to the application.
         /// </summary>
         /// <param name="services">The services collection containing the dependency injection services.</param>
+        public static IServiceCollection AddCorrelation(this IServiceCollection services)
+        {
+            Guard.NotNull(services, nameof(services));
+
+            return AddCorrelation(services, configureOptions: null);
+        }
+
+        /// <summary>
+        /// Adds operation and transaction correlation to the application.
+        /// </summary>
+        /// <param name="services">The services collection containing the dependency injection services.</param>
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         public static IServiceCollection AddCorrelation(
             this IServiceCollection services, 
-            Action<CorrelationOptions> configureOptions = null)
+            Action<CorrelationOptions> configureOptions)
         {
             Guard.NotNull(services, nameof(services));
 
