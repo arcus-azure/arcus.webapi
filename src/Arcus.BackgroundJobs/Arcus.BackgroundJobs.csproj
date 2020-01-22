@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>    
+    <Authors>Arcus</Authors>
+    <Company>Arcus</Company>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
+    <Description>Provides capabilities for running background jobs to automate workflows.</Description>
+    <Copyright>Copyright (c) Arcus</Copyright>
+    <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Arcus.EventGrid" Version="3.0.0-preview-1" />
+    <PackageReference Include="Arcus.Messaging.Pumps.ServiceBus" Version="20200115.0.0-PR-32" />
+    <PackageReference Include="Microsoft.Azure.EventGrid" Version="3.2.0" />
+  </ItemGroup>
+
+  <PropertyGroup>
+    <RestoreSources>$(RestoreSources);https://api.nuget.org/v3/index.json;https://www.myget.org/F/arcus/api/v3/index.json</RestoreSources>
+  </PropertyGroup>
+</Project>

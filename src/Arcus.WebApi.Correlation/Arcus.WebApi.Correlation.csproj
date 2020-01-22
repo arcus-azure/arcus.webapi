@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.0</TargetFrameworks>
+    <TargetFramework>netstandard2.0</TargetFramework>    
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Open API</PackageTags>
-    <Description>Provides extensions that can be used when documenting an API using Swashbuckle.</Description>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
+    <Description>Provides capabilities for easily correlating requests when building Web APIs running in Azure.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
@@ -14,14 +14,13 @@
     <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <GenerateOpenApiDocuments>false</GenerateOpenApiDocuments>
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Guard.Net" Version="1.2.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" Condition="'$(TargetFramework)' == 'netstandard2.0'" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="5.0.0-rc5" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />
+    <PackageReference Include="Guard.NET" Version="1.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
   </ItemGroup>
 
-  <Target Name="GenerateOpenApiDocuments" />
 </Project>

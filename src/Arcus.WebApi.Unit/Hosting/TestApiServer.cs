@@ -10,6 +10,8 @@ using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi.Models;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Arcus.WebApi.Unit.Hosting
@@ -50,6 +52,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// <param name="builder">The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> for the application.</param>
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
+            builder.UseStartup<TestStartup>();
             builder.ConfigureServices(services =>
             {
                 if (_clientCertificate != null)
@@ -71,11 +74,21 @@ namespace Arcus.WebApi.Unit.Hosting
                 });
 
                 string assemblyName = typeof(TestApiServer).Assembly.GetName().Name;
+
+#if NETCOREAPP2_2
                 var openApiInformation = new Info
                 {
                     Title = assemblyName,
                     Version = "v1"
                 };
+#endif
+#if NETCOREAPP3_0
+                var openApiInformation = new OpenApiInfo
+                {
+                    Title = assemblyName,
+                    Version = "v1"
+                };
+#endif
 
                 services.AddSwaggerGen(swaggerGenerationOptions =>
                 {
@@ -98,8 +111,7 @@ namespace Arcus.WebApi.Unit.Hosting
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
             return new WebHostBuilder()
-                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
-                .UseStartup<TestStartup>();
+                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
         }
 
         /// <summary>
@@ -133,6 +145,16 @@ namespace Arcus.WebApi.Unit.Hosting
             Guard.NotNull(service, "Service cannot be 'null'");
 
             _configureServices.Add(services => services.AddScoped(_ => service));
+        }
+
+        /// <summary>
+        /// Adds a configuration of the <see cref="IServiceCollection"/> to the test server.
+        /// </summary>
+        public void AddServicesConfig(Action<IServiceCollection> configureServices)
+        {
+            Guard.NotNull(configureServices, nameof(configureServices));
+
+            _configureServices.Add(configureServices);
         }
 
         /// <summary>

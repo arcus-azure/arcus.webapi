@@ -5,6 +5,9 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
 using GuardNet;
+#if NETCOREAPP3_0
+using Microsoft.OpenApi.Models;    
+#endif
 
 namespace Arcus.WebApi.OpenApi.Extensions
 {
@@ -33,9 +36,13 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// <summary>
         /// Applies the OperationFilter to the API <paramref name="operation"/>.
         /// </summary>
-        /// <param name="operation">The <see cref="Operation"/> instance on which the OperationFilter must be applied.</param>
+        /// <param name="operation">The operation instance on which the OperationFilter must be applied.</param>
         /// <param name="context">Provides meta-information on the <paramref name="operation"/> instance.</param>
+#if NETCOREAPP3_0
+        public void Apply(OpenApiOperation operation, OperationFilterContext context)
+#else
         public void Apply(Operation operation, OperationFilterContext context)
+#endif
         {
             var hasAuthorize = context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() ||
                                (
@@ -48,21 +55,42 @@ namespace Arcus.WebApi.OpenApi.Extensions
             {
                 if (operation.Responses.ContainsKey("401") == false)
                 {
+#if NETCOREAPP3_0
+                    operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
+#else
                     operation.Responses.Add("401", new Response { Description = "Unauthorized" });
+#endif
+                    
                 }
 
                 if (operation.Responses.ContainsKey("403") == false)
                 {
+#if NETCOREAPP3_0
+                    operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
+#else
                     operation.Responses.Add("403", new Response { Description = "Forbidden" });
+#endif
                 }
-
-                operation.Security = new List<IDictionary<string, IEnumerable<string>>>
+#if NETCOREAPP3_0
+                var oauth2Scheme = new OpenApiSecurityScheme
                 {
-                    new Dictionary<string, IEnumerable<string>>
+                    Scheme = "oauth2",
+                    Type = SecuritySchemeType.OAuth2
+                };
+
+                operation.Security = new List<OpenApiSecurityRequirement>
+                {
+                    new OpenApiSecurityRequirement
                     {
-                        { "oauth2", _scopes }
+                        [oauth2Scheme] = _scopes.ToList()
                     }
                 };
+#else
+                operation.Security = new List<IDictionary<string, IEnumerable<string>>>
+                { 
+                    new Dictionary<string, IEnumerable<string>> { ["oauth2"] = _scopes }
+                };
+#endif
             }
         }
     }
