@@ -17,8 +17,10 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.WebApi.Correlation" Version="20191230.0.0-PR-92" />
     <PackageReference Include="Serilog" Version="2.9.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Arcus.WebApi.Correlation\Arcus.WebApi.Correlation.csproj" />
+  </ItemGroup>
 </Project>
