@@ -102,8 +102,8 @@ namespace Arcus.WebApi.Unit.Correlation
             // Arrange
             _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Operation.IncludeInResponse = false));
             
-            using (HttpClient client = _testServer.CreateClient())
-                // Act
+            using (HttpClient client = _testServer.CreateClient()) 
+            // Act
             using (HttpResponseMessage response = await client.GetAsync(Route))
             {
                 // Assert
