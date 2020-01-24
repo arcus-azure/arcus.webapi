@@ -1,4 +1,5 @@
-﻿using GuardNet;
+﻿using System;
+using GuardNet;
 
 namespace Arcus.WebApi.Correlation
 {
@@ -8,6 +9,7 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationOptionsOperation
     {
         private string _headerName = "RequestId";
+        private Func<string> _generateId = Guid.NewGuid().ToString;
 
         /// <summary>
         /// Gets or sets whether to include the operation ID in the response.
@@ -27,6 +29,19 @@ namespace Arcus.WebApi.Correlation
             {
                 Guard.NotNullOrWhitespace(value, nameof(value), "Correlation operation header cannot be blank");
                 _headerName = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the function to generate the operation ID when the <see cref="IncludeInResponse"/> is set to <c>true</c> (default: <c>true</c>).
+        /// </summary>
+        public Func<string> GenerateId
+        {
+            get => _generateId;
+            set
+            {
+                Guard.NotNull(value, nameof(value), "Correlation function to generate an operation ID cannot be 'null'");
+                _generateId = value;
             }
         }
     }

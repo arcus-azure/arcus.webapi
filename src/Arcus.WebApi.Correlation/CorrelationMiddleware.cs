@@ -64,7 +64,7 @@ namespace Arcus.WebApi.Correlation
             }
 
             string operationId = DetermineOperationId(httpContext);
-            string transactionId = DetermineTransactionId(httpContext, transactionIds);
+            string transactionId = DetermineTransactionId(transactionIds);
             var correlation = new CorrelationInfo(operationId, transactionId);
             httpContext.Features.Set(correlation);
 
@@ -73,18 +73,37 @@ namespace Arcus.WebApi.Correlation
             await _next(httpContext);
         }
 
-        private static string DetermineOperationId(HttpContext httpContext)
+        private string DetermineOperationId(HttpContext httpContext)
         {
-            return httpContext.TraceIdentifier ?? Guid.NewGuid().ToString();
+            if (String.IsNullOrWhiteSpace(httpContext.TraceIdentifier))
+            {
+                string operationId = _options.Operation.GenerateId();
+                if (String.IsNullOrWhiteSpace(operationId))
+                {
+                    throw new InvalidOperationException(
+                        $"Correlation cannot use '{nameof(_options.Operation.GenerateId)}' to generate an operation ID because the resulting ID value is blank");
+                }
+
+                return operationId;
+            }
+
+            return httpContext.TraceIdentifier;
         }
 
-        private string DetermineTransactionId(HttpContext httpContext, StringValues transactionIds)
+        private string DetermineTransactionId(StringValues transactionIds)
         {
             if (String.IsNullOrWhiteSpace(transactionIds.ToString()))
             {
                 if (_options.Transaction.GenerateWhenNotSpecified)
                 {
-                    return Guid.NewGuid().ToString();
+                    string transactionId = _options.Transaction.GenerateId();
+                    if (String.IsNullOrWhiteSpace(transactionId))
+                    {
+                        throw new InvalidOperationException(
+                            $"Correlation cannot use function '{nameof(_options.Transaction.GenerateId)}' to generate an transaction ID because the resulting ID value is blank");
+                    }
+
+                    return transactionId;
                 }
 
                 return null;
