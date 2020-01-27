@@ -74,7 +74,7 @@ public void ConfigureServices(IServiceCollection services)
 
         // The function that will generate the transaction ID, when the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header.
         // (default: new `Guid`).
-        options.Transaction.GenerateId = () => Guid.NewGuid().ToString();
+        options.Transaction.GenerateId = () => $"Transaction-{Guid.NewGuid().ToString()}";
 
         // Configuration on the operation ID (`RequestId`) response header.
         // ----------------------------------------------------------------
