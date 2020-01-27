@@ -12,6 +12,9 @@ namespace Arcus.WebApi.Telemetry.Serilog.Correlation
     /// </summary>
     public class CorrelationInfoEnricher : ILogEventEnricher
     {
+        private const string TransactionIdProperty = "TransactionId",
+                             OperationIdProperty = "OperationId";
+
         private readonly HttpCorrelationInfo _correlationInfo;
 
         /// <summary>
@@ -35,15 +38,18 @@ namespace Arcus.WebApi.Telemetry.Serilog.Correlation
             if (!String.IsNullOrEmpty(_correlationInfo.TransactionId))
             {
                 LogEventProperty transactionIdProperty = 
-                    propertyFactory.CreateProperty(nameof(_correlationInfo.TransactionId), _correlationInfo.TransactionId);
+                    propertyFactory.CreateProperty(TransactionIdProperty, _correlationInfo.TransactionId);
 
                 logEvent.AddPropertyIfAbsent(transactionIdProperty);
             }
 
-            LogEventProperty operationIdProperty =
-                propertyFactory.CreateProperty(nameof(_correlationInfo.OperationId), _correlationInfo.OperationId);
+            if (!String.IsNullOrEmpty(_correlationInfo.OperationId))
+            {
+                LogEventProperty operationIdProperty =
+                    propertyFactory.CreateProperty(OperationIdProperty, _correlationInfo.OperationId);
 
-            logEvent.AddPropertyIfAbsent(operationIdProperty);
+                logEvent.AddPropertyIfAbsent(operationIdProperty);
+            }
         }
     }
 }
