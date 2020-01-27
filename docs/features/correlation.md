@@ -72,6 +72,10 @@ public void ConfigureServices(IServiceCollection services)
         // The header to look for in the HTTP request, and will be set in the HTTP response (default: X-Transaction-ID).
         options.Transaction.HeaderName = "X-Transaction-ID";
 
+        // The function that will generate the transaction ID, when the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header.
+        // (default: new `Guid`).
+        options.Transaction.GenerateId = () => Guid.NewGuid().ToString();
+
         // Configuration on the operation ID (`RequestId`) response header.
         // ----------------------------------------------------------------
 
@@ -80,6 +84,10 @@ public void ConfigureServices(IServiceCollection services)
 
         // The header that will contain the operation ID in the HTTP response (default: RequestId).
         options.Operation.HeaderName = "RequestId";
+
+        // The function that will generate the operation ID header value.
+        // (default: new `Guid`).
+        options.Operation.GenerateId = () => Guid.NewGuid().ToString();
     });
 }
 ```
