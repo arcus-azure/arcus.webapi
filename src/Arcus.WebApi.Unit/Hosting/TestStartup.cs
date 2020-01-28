@@ -1,5 +1,6 @@
 ﻿using System;
 using Arcus.WebApi.Correlation;
+using Arcus.WebApi.Unit.Correlation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -41,6 +42,7 @@ namespace Arcus.WebApi.Unit.Hosting
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseMiddleware<TraceIdentifierMiddleware>();
             app.UseCorrelation();
 
             app.UseMvc();
