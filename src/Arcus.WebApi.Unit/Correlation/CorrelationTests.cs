@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Unit.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
@@ -54,9 +55,7 @@ namespace Arcus.WebApi.Unit.Correlation
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.Contains(response.Headers, header => header.Key == DefaultOperationId);
-                (string transactionIdHeaderName, IEnumerable<string> transactionIds) = 
-                    Assert.Single(response.Headers, header => header.Key == DefaultTransactionId);
-                Assert.Empty(transactionIds);
+                Assert.DoesNotContain(response.Headers, header => header.Key == DefaultTransactionId);
             }
         }
 
@@ -78,13 +77,33 @@ namespace Arcus.WebApi.Unit.Correlation
         }
 
         [Fact]
+        public async Task SendRequest_WithCorrelateOptionsCustomGenerateTransactionId_ResponseWitCustomGeneratedTransactionId()
+        {
+            // Arrange
+            var expectedTransactionId = $"transaction-{Guid.NewGuid():N}";
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.GenerateId = () => expectedTransactionId));
+
+            using (HttpClient client = _testServer.CreateClient())
+            // Act
+            using (HttpResponseMessage response = await client.GetAsync(Route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Contains(response.Headers, header => header.Key == DefaultOperationId);
+                
+                string actualTransactionId = GetResponseHeader(response, DefaultTransactionId);
+                Assert.Equal(expectedTransactionId, actualTransactionId);
+            }
+        }
+
+        [Fact]
         public async Task SendRequest_WithCorrelateOptionsNonOperationIncludeInResponse_ResponseWithoutCorrelationHeaders()
         {
             // Arrange
             _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Operation.IncludeInResponse = false));
             
-            using (HttpClient client = _testServer.CreateClient())
-                // Act
+            using (HttpClient client = _testServer.CreateClient()) 
+            // Act
             using (HttpResponseMessage response = await client.GetAsync(Route))
             {
                 // Assert
@@ -122,7 +141,7 @@ namespace Arcus.WebApi.Unit.Correlation
         public async Task SendRequest_WithCorrelationHeader_ResponseWithSameCorrelationHeader()
         {
             // Arrange
-            string expected = $"correlationId-{Guid.NewGuid()}";
+            string expected = $"transaction-{Guid.NewGuid()}";
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, Route);
@@ -144,7 +163,7 @@ namespace Arcus.WebApi.Unit.Correlation
         public async Task SendRequest_WithRequestIdHeader_ResponseWithDifferentRequestIdHeader()
         {
             // Arrange
-            string expected = $"requestId-{Guid.NewGuid()}";
+            string expected = $"operation-{Guid.NewGuid()}";
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, Route);
@@ -159,6 +178,27 @@ namespace Arcus.WebApi.Unit.Correlation
                     string actual = GetResponseHeader(response, DefaultOperationId);
                     Assert.NotEqual(expected, actual);
                 }
+            }
+        }
+
+        [Fact]
+        public async Task SendRequest_WithCorrelateOptionsCustomGenerateOperationId_ResponseWitCustomGeneratedOperationId()
+        {
+            // Arrange
+            var expectedOperationId = $"operation-{Guid.NewGuid():N}";
+            _testServer.AddServicesConfig(services => services.Configure<TraceIdentifierOptions>(options => options.EnableTraceIdentifier = false));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Operation.GenerateId = () => expectedOperationId));
+
+            using (HttpClient client = _testServer.CreateClient())
+                // Act
+            using (HttpResponseMessage response = await client.GetAsync(Route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Contains(response.Headers, header => header.Key == DefaultTransactionId);
+                
+                string actualOperationId = GetResponseHeader(response, DefaultOperationId);
+                Assert.Equal(expectedOperationId, actualOperationId);
             }
         }
 

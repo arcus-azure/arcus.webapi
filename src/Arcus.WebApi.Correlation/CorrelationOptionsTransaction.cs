@@ -1,4 +1,5 @@
-﻿using GuardNet;
+﻿using System;
+using GuardNet;
 
 namespace Arcus.WebApi.Correlation
 {
@@ -8,6 +9,7 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationOptionsTransaction
     {
         private string _headerName = "X-Transaction-ID";
+        private Func<string> _generateId = Guid.NewGuid().ToString;
 
         /// <summary>
         /// Get or sets whether the transaction ID can be specified in the request, and will be used throughout the request handling.
@@ -37,6 +39,22 @@ namespace Arcus.WebApi.Correlation
             {
                 Guard.NotNullOrWhitespace(value, nameof(value), "Correlation transaction header cannot be blank");
                 _headerName = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the function to generate the transaction ID when
+        /// (1) the request doesn't have already an transaction ID, and
+        /// (2) the <see cref="IncludeInResponse"/> is set to <c>true</c> (default: <c>true</c>), and
+        /// (3) the <see cref="GenerateWhenNotSpecified"/> is set to <c>true</c> (default: <c>true</c>).
+        /// </summary>
+        public Func<string> GenerateId
+        {
+            get => _generateId;
+            set
+            {
+                Guard.NotNull(value, nameof(value), "Correlation function to generate an transaction ID cannot be 'null'");
+                _generateId = value;
             }
         }
     }

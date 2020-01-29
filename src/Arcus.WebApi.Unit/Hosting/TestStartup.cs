@@ -45,6 +45,7 @@ namespace Arcus.WebApi.Unit.Hosting
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseMiddleware<TraceIdentifierMiddleware>();
             app.UseCorrelation();
             app.UseSerilogRequestLogging(options => options.WithCorrelation());
 
