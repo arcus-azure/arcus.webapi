@@ -1,9 +1,13 @@
 ﻿using System;
 using Arcus.WebApi.Correlation;
+using Arcus.WebApi.Telemetry.Serilog;
+using Arcus.WebApi.Telemetry.Serilog.Correlation;
+using Arcus.WebApi.Unit.Correlation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 
 namespace Arcus.WebApi.Unit.Hosting
 {
@@ -42,6 +46,7 @@ namespace Arcus.WebApi.Unit.Hosting
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseCorrelation();
+            app.UseSerilogRequestLogging(options => options.WithCorrelation());
 
             app.UseMvc();
 
