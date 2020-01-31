@@ -3,11 +3,13 @@ using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Telemetry.Serilog;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Unit.Correlation;
+using Arcus.WebApi.Unit.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
+using Serilog.Events;
 
 namespace Arcus.WebApi.Unit.Hosting
 {
@@ -41,13 +43,15 @@ namespace Arcus.WebApi.Unit.Hosting
             services.AddMvc(options => options.EnableEndpointRouting = false);
 #endif
             services.AddCorrelation();
+
+            services.AddSingleton<InMemorySink>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
             app.UseMiddleware<TraceIdentifierMiddleware>();
             app.UseCorrelation();
-            app.UseSerilogRequestLogging(options => options.WithCorrelation());
+            app.UseSerilogRequestLogging();
 
             app.UseMvc();
 
@@ -59,6 +63,19 @@ namespace Arcus.WebApi.Unit.Hosting
                 swaggerUiOptions.SwaggerEndpoint("v1/swagger.json", assemblyName);
                 swaggerUiOptions.DocumentTitle = assemblyName;
             });
+
+            Log.Logger = CreateLoggerConfiguration(app.ApplicationServices).CreateLogger();
+        }
+
+        private static LoggerConfiguration CreateLoggerConfiguration(IServiceProvider serviceProvider)
+        {
+            return new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                .Enrich.FromLogContext()
+                .Enrich.With(new CorrelationInfoEnricher(serviceProvider))
+                .WriteTo.Console()
+                .WriteTo.Sink(serviceProvider.GetRequiredService<InMemorySink>());
         }
     }
 }

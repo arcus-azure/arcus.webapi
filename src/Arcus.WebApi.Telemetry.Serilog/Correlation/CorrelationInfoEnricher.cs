@@ -2,38 +2,52 @@
 using Arcus.WebApi.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
-using Serilog;
+using Microsoft.Extensions.DependencyInjection;
+using Serilog.Core;
+using Serilog.Events;
 
 namespace Arcus.WebApi.Telemetry.Serilog.Correlation
 {
     /// <summary>
     /// Enriches the log events with the correlation information.
     /// </summary>
-    public class CorrelationInfoEnricher : IDiagnosticEnricher
+    public class CorrelationInfoEnricher : ILogEventEnricher
     {
         private const string TransactionIdProperty = "TransactionId",
                              OperationIdProperty = "OperationId";
+        
+        private readonly IServiceProvider _services;
 
         /// <summary>
-        /// Enrich the Serilog request logging <paramref name="diagnosticContext"/> with the <paramref name="httpContext"/>.
+        /// Initializes a new instance of the <see cref="CorrelationInfoEnricher"/> class.
         /// </summary>
-        /// <param name="diagnosticContext">The context to enrich.</param>
-        /// <param name="httpContext">The current context in the request pipeline.</param>
-        public void Enrich(IDiagnosticContext diagnosticContext, HttpContext httpContext)
+        public CorrelationInfoEnricher(IServiceProvider services)
         {
-            Guard.NotNull(diagnosticContext, nameof(diagnosticContext));
-            Guard.NotNull(httpContext, nameof(httpContext));
+            Guard.NotNull(services, nameof(services));
 
-            var correlationInfo = httpContext.Features.Get<CorrelationInfo>();
+            _services = services;
+        }
 
-            if (!String.IsNullOrEmpty(correlationInfo.TransactionId))
-            {
-                diagnosticContext.Set(TransactionIdProperty, correlationInfo.TransactionId);
-            }
+        /// <summary>Enrich the log event.</summary>
+        /// <param name="logEvent">The log event to enrich.</param>
+        /// <param name="propertyFactory">Factory for creating new properties to add to the event.</param>
+        public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory)
+        {
+            Guard.NotNull(logEvent, nameof(logEvent));
+            Guard.NotNull(propertyFactory, nameof(propertyFactory));
+
+            var correlationInfo = _services.GetService<HttpCorrelationInfo>();
 
             if (!String.IsNullOrEmpty(correlationInfo.OperationId))
             {
-                diagnosticContext.Set(OperationIdProperty, correlationInfo.OperationId);
+                LogEventProperty property = propertyFactory.CreateProperty(OperationIdProperty, correlationInfo.OperationId);
+                logEvent.AddPropertyIfAbsent(property);
+            }
+
+            if (!String.IsNullOrEmpty(correlationInfo.TransactionId))
+            {
+                LogEventProperty property = propertyFactory.CreateProperty(TransactionIdProperty, correlationInfo.TransactionId);
+                logEvent.AddPropertyIfAbsent(property);
             }
         }
     }

@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Arcus.WebApi.OpenApi.Extensions;
+using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Hosting;
@@ -51,7 +52,7 @@ namespace Arcus.WebApi.Unit.Hosting
         /// <summary>
         /// Gets the in-memory sink where the log events will be emitted to.
         /// </summary>
-        public InMemorySink LogSink { get; } = new InMemorySink();
+        public InMemorySink LogSink => Server.Host.Services.GetRequiredService<InMemorySink>();
 
         /// <summary>
         /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -119,10 +120,7 @@ namespace Arcus.WebApi.Unit.Hosting
         {
             Log.Logger = new LoggerConfiguration()
                 .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
                 .WriteTo.Console()
-                .WriteTo.Sink(LogSink)
                 .CreateLogger();
 
             try
@@ -130,7 +128,7 @@ namespace Arcus.WebApi.Unit.Hosting
                 Log.Information("Starting web host");
                 return new WebHostBuilder()
                     .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
-                    .UseSerilog(Log.Logger);
+                    .UseSerilog();
 
             }
             catch (Exception ex)
