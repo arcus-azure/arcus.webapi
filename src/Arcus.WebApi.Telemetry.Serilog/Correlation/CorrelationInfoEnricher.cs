@@ -36,7 +36,7 @@ namespace Arcus.WebApi.Telemetry.Serilog.Correlation
             Guard.NotNull(logEvent, nameof(logEvent));
             Guard.NotNull(propertyFactory, nameof(propertyFactory));
 
-            var correlationInfo = _services.GetService<HttpCorrelationInfo>();
+            var correlationInfo = _services.GetRequiredService<HttpCorrelationInfo>();
 
             if (!String.IsNullOrEmpty(correlationInfo.OperationId))
             {

@@ -15,7 +15,14 @@ namespace Arcus.WebApi.Unit.Logging
         /// <summary>
         /// Gets the current emitted log events.
         /// </summary>
-        public IEnumerable<LogEvent> LogEvents => _logEvents.ToArray();
+        public IEnumerable<LogEvent> DequeueLogEvents()
+        {
+            LogEvent[] logEvents = _logEvents.ToArray();
+            _logEvents.Clear();
+
+            return logEvents;
+        }
+
 
         /// <summary>Emit the provided log event to the sink.</summary>
         /// <param name="logEvent">The log event to write.</param>
