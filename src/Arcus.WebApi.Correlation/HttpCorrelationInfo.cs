@@ -1,4 +1,5 @@
-﻿using GuardNet;
+﻿using Arcus.Observability.Correlation;
+using GuardNet;
 using Microsoft.AspNetCore.Http;
 
 namespace Arcus.WebApi.Correlation
