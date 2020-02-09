@@ -9,7 +9,7 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationOptionsTransaction
     {
         private string _headerName = "X-Transaction-ID";
-        private Func<string> _generateId = Guid.NewGuid().ToString;
+        private Func<string> _generateId = () => Guid.NewGuid().ToString();
 
         /// <summary>
         /// Get or sets whether the transaction ID can be specified in the request, and will be used throughout the request handling.

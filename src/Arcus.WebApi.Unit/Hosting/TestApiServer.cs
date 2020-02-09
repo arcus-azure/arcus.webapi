@@ -4,14 +4,17 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Arcus.WebApi.OpenApi.Extensions;
+using Arcus.WebApi.Telemetry.Serilog.Correlation;
+using Arcus.WebApi.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
+using Serilog;
+using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Arcus.WebApi.Unit.Hosting
@@ -45,6 +48,11 @@ namespace Arcus.WebApi.Unit.Hosting
             _filters = new Collection<IFilterMetadata>();
             _configurationCollection = new Dictionary<string, string>();
         }
+
+        /// <summary>
+        /// Gets the in-memory sink where the log events will be emitted to.
+        /// </summary>
+        public InMemorySink LogSink => Server.Host.Services.GetRequiredService<InMemorySink>();
 
         /// <summary>
         /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -110,8 +118,24 @@ namespace Arcus.WebApi.Unit.Hosting
         /// <returns>A <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> instance.</returns>
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
-            return new WebHostBuilder()
-                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
+            Log.Logger = new LoggerConfiguration()
+                .MinimumLevel.Debug()
+                .WriteTo.Console()
+                .CreateLogger();
+
+            try
+            {
+                Log.Information("Starting web host");
+                return new WebHostBuilder()
+                    .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
+                    .UseSerilog();
+
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "Host terminated unexpectedly");
+                throw;
+            }
         }
 
         /// <summary>

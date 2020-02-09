@@ -9,7 +9,7 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationOptionsOperation
     {
         private string _headerName = "RequestId";
-        private Func<string> _generateId = Guid.NewGuid().ToString;
+        private Func<string> _generateId = () => Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets whether to include the operation ID in the response.
