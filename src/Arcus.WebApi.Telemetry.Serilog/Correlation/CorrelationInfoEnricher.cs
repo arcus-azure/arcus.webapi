@@ -1,7 +1,6 @@
 ﻿using System;
 using Arcus.WebApi.Correlation;
 using GuardNet;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;
 using Serilog.Events;

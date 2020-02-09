@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Arcus.Observability.Correlation;
 using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Unit.Hosting;
 using Newtonsoft.Json;
