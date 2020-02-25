@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using GuardNet;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Arcus.WebApi.Logging
@@ -62,20 +64,24 @@ namespace Arcus.WebApi.Logging
             {
                 await _next(context);
             }
+            catch (BadHttpRequestException ex)
+            {
+                LogException(loggerFactory, ex);
+                context.Response.StatusCode = ex.StatusCode;
+            }
             catch (Exception ex)
             {
-                HandleException(context, ex, loggerFactory);
+                LogException(loggerFactory, ex);
+                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
             }
         }
 
-        private void HandleException(HttpContext context, Exception ex, ILoggerFactory loggerFactory)
+        private void LogException(ILoggerFactory loggerFactory, Exception ex)
         {
             string categoryName = _getLoggingCategory() ?? String.Empty;
-
             var logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
-            logger.LogCritical(ex, ex.Message);
 
-            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            logger.LogCritical(ex, ex.Message);
         }
     }
 }

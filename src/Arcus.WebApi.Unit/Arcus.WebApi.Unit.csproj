@@ -18,6 +18,7 @@
     <ItemGroup>
         <PackageReference Include="BouncyCastle" Version="1.8.5" />
         <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
+        <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
         <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.4" />
         <PackageReference Include="Moq" Version="4.13.1" />
         <PackageReference Include="Serilog.AspNetCore" Version="3.2.0" />
@@ -34,6 +35,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Arcus.WebApi.Correlation\Arcus.WebApi.Correlation.csproj" />
+        <ProjectReference Include="..\Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj" />
         <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
         <ProjectReference Include="..\Arcus.WebApi.Security.Authentication\Arcus.WebApi.Security.Authentication.csproj" />
         <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
