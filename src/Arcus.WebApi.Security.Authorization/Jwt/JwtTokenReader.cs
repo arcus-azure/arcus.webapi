@@ -13,15 +13,15 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         private const string MicrosoftDiscoveryEndpoint =
             "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
-        private readonly string _managedIdentityAppId;
+        private readonly string _applicationId;
         private readonly JwtSecurityTokenHandler _handler;
         private readonly ConfigurationManager<OpenIdConnectConfiguration> _configManager;
 
-        public JwtTokenReader(string managedIdentityAppId)
+        public JwtTokenReader(string applicationId)
         {
-            Guard.NotNullOrWhitespace(managedIdentityAppId, nameof(managedIdentityAppId));
+            Guard.NotNullOrWhitespace(applicationId, nameof(applicationId));
 
-            _managedIdentityAppId = managedIdentityAppId;
+            _applicationId = applicationId;
 
             _handler = new JwtSecurityTokenHandler();
             _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(MicrosoftDiscoveryEndpoint,
@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             var validationParameters = new TokenValidationParameters
             {
                 ValidateAudience = true,
-                ValidAudience = _managedIdentityAppId,
+                ValidAudience = _applicationId,
                 ValidateIssuer = false,
                 IssuerSigningKeys = config.SigningKeys,
                 ValidateLifetime = true

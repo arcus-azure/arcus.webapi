@@ -41,7 +41,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
                     {
-                        // Arrange
+                        // Assert
                         Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                     }
                 }
@@ -79,7 +79,7 @@ namespace Arcus.WebApi.Unit.Security.Authentication
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
                     {
-                        // Arrange
+                        // Assert
                         Assert.True(
                             (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
                             $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
