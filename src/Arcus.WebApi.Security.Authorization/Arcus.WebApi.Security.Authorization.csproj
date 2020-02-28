@@ -6,7 +6,7 @@
       <Company>Arcus</Company>
       <RepositoryType>Git</RepositoryType>
       <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
-      <Description>Provides capabilities to easily build secure Web APIs running in Azure.</Description>
+      <Description>Provides capabilities to easily authorization Web APIs running in Azure.</Description>
       <Copyright>Copyright (c) Arcus</Copyright>
       <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
       <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
