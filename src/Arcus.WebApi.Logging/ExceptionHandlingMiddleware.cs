@@ -66,6 +66,9 @@ namespace Arcus.WebApi.Logging
             }
             catch (BadHttpRequestException ex)
             {
+                // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
+                // When the Kestrel maximum request body restriction is exceeded, for example, this kind of exception is thrown.
+
                 LogException(loggerFactory, ex);
                 context.Response.StatusCode = ex.StatusCode;
             }
