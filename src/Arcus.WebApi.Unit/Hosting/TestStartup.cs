@@ -1,5 +1,6 @@
 ﻿using System;
 using Arcus.WebApi.Correlation;
+using Arcus.WebApi.Logging;
 using Arcus.WebApi.Telemetry.Serilog;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Unit.Correlation;
@@ -49,6 +50,7 @@ namespace Arcus.WebApi.Unit.Hosting
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<TraceIdentifierMiddleware>();
             app.UseCorrelation();
             app.UseSerilogRequestLogging();
