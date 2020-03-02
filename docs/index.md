@@ -28,6 +28,8 @@ For more granular packages we recommend reading the documentation.
         - [Certificate authentication](features/security/auth/certificate)
 - **Correlation**
     - [Provide request and/or transaction correlation ids](features/correlation)
+- **Telemetry**
+    - [Enrich with telemetry information](features/telemetry)
 - **Logging**
     - [Logging unhandled exceptions](features/logging)
 - **OpenAPI**
