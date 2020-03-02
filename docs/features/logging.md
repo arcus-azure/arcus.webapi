@@ -9,7 +9,6 @@ The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span>
 The unhandled exceptions are caught by this middleware component and are logged through the `ILogger` implementations that are configured inside the project.
 
 The HTTP status code `500` is used as response code when an unhandled exception is caught. However, when the runtime throws a `BadHttpRequestException` we will reflect this by returning the corresponding status code determined by the runtime.
-When an `BadHttpRequestException` is thrown (typically from a built-in <span>ASP.NET</span> component), the `.StatusCode` is used as response code.
 
 ## Installation
 
