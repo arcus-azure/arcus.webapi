@@ -3,8 +3,8 @@ using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.Telemetry.Serilog;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
-using Arcus.WebApi.Unit.Correlation;
-using Arcus.WebApi.Unit.Logging;
+using Arcus.WebApi.Tests.Unit.Correlation;
+using Arcus.WebApi.Tests.Unit.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
@@ -12,7 +12,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Serilog.Events;
 
-namespace Arcus.WebApi.Unit.Hosting
+namespace Arcus.WebApi.Tests.Unit.Hosting
 {
     /// <summary>
     /// Test representation of a "Startup" class for ASP.NET Core.

@@ -4,11 +4,11 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Arcus.WebApi.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Hosting;
 using Xunit;
-using static Arcus.WebApi.Unit.Logging.SaboteurController;
+using static Arcus.WebApi.Tests.Unit.Logging.SaboteurController;
 
-namespace Arcus.WebApi.Unit.Logging
+namespace Arcus.WebApi.Tests.Unit.Logging
 {
     public class ExceptionHandlingMiddlewareTests
     {

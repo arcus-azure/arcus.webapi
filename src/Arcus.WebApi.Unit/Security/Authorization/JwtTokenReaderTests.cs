@@ -2,7 +2,7 @@
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Xunit;
 
-namespace Arcus.WebApi.Unit.Security.Authorization
+namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
     public class JwtTokenReaderTests
     {

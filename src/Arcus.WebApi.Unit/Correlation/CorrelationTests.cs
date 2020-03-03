@@ -4,14 +4,14 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.WebApi.Correlation;
-using Arcus.WebApi.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Newtonsoft.Json;
 using Xunit;
-using static Arcus.WebApi.Unit.Correlation.CorrelationController;
+using static Arcus.WebApi.Tests.Unit.Correlation.CorrelationController;
 
-namespace Arcus.WebApi.Unit.Correlation
+namespace Arcus.WebApi.Tests.Unit.Correlation
 {
     public class CorrelationTests
     {

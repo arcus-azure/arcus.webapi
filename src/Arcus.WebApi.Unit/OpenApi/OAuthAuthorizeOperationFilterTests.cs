@@ -5,13 +5,13 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Arcus.WebApi.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Hosting;
 using Microsoft.OpenApi.Models;
 using Microsoft.OpenApi.Readers;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Arcus.WebApi.Unit.OpenApi
+namespace Arcus.WebApi.Tests.Unit.OpenApi
 {
     public class OAuthAuthorizeOperationFilterTests : IDisposable
     {

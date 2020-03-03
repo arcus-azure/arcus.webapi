@@ -11,7 +11,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Security", "Ar
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A7297998-6B45-4F85-AE6A-04C13F61F8B3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Unit", "Arcus.WebApi.Unit\Arcus.WebApi.Unit.csproj", "{94679133-8D37-4168-8F40-E173D6354918}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Tests.Unit", "Arcus.WebApi.Tests.Unit\Arcus.WebApi.Tests.Unit.csproj", "{94679133-8D37-4168-8F40-E173D6354918}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.OpenApi.Extensions", "Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj", "{BC9FF9BC-330B-4736-BAF9-8A2EBB64F8EA}"
 EndProject
@@ -21,7 +21,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Telemetry.Seri
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Correlation", "Arcus.WebApi.Correlation\Arcus.WebApi.Correlation.csproj", "{455086AD-C6AD-42FB-AA83-B294F64D9F26}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Integration", "Arcus.WebApi.Integration\Arcus.WebApi.Integration.csproj", "{257F0347-4F29-4386-B2A2-DEBF947C6E41}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Tests.Integration", "Arcus.WebApi.Tests.Integration\Arcus.WebApi.Tests.Integration.csproj", "{257F0347-4F29-4386-B2A2-DEBF947C6E41}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Security.Authorization", "Arcus.WebApi.Security.Authorization\Arcus.WebApi.Security.Authorization.csproj", "{B3932833-DD99-4732-BCCB-3F8E53E8DA62}"
 EndProject

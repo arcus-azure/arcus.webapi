@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
 using GuardNet;
 
-namespace Arcus.WebApi.Unit.Security
+namespace Arcus.WebApi.Tests.Unit.Security
 {
     /// <summary>
     /// <see cref="ISecretProvider"/> implementation that provides an in-memory storage of secrets by name.

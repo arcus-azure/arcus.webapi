@@ -1,6 +1,6 @@
 ﻿using Serilog.Events;
 
-namespace Arcus.WebApi.Unit.Correlation
+namespace Arcus.WebApi.Tests.Unit.Correlation
 {
     /// <summary>
     /// Extensions on the <see cref="LogEventPropertyValue"/>

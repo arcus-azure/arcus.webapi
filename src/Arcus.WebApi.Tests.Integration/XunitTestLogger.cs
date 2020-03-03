@@ -3,7 +3,7 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Xunit.Abstractions;
 
-namespace Arcus.WebApi.Integration
+namespace Arcus.WebApi.Tests.Integration
 {
     /// <summary>
     /// <see cref="ILogger"/> implementation for the xUnit <see cref="ITestOutputHelper"/>.

@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcus.WebApi.Unit.OpenApi
+namespace Arcus.WebApi.Tests.Unit.OpenApi
 {
     [ApiController]
     public class OAuthAuthorizeController : ControllerBase

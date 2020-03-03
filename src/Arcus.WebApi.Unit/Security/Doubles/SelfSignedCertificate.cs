@@ -14,7 +14,7 @@ using Org.BouncyCastle.Utilities;
 using Org.BouncyCastle.X509;
 using X509Certificate = Org.BouncyCastle.X509.X509Certificate;
 
-namespace Arcus.WebApi.Unit.Security.Doubles
+namespace Arcus.WebApi.Tests.Unit.Security.Doubles
 {
     /// <summary>
     /// Exposes several certificate generation function to control the OCSP and/or CRL information of the certificates.

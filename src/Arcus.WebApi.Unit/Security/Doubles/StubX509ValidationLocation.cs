@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 
-namespace Arcus.WebApi.Unit.Security.Doubles
+namespace Arcus.WebApi.Tests.Unit.Security.Doubles
 {
     /// <summary>
     /// Stubbed implementation of the <see cref="IX509ValidationLocation"/>.

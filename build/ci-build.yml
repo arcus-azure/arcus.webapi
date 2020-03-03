@@ -98,7 +98,7 @@ stages:
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              projectName: '$(Project).Integration'
+              projectName: '$(Project).Tests.Integration'
 
   - stage: ReleaseToMyget
     displayName: 'Release to MyGet'

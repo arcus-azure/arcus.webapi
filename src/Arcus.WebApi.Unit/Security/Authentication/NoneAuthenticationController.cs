@@ -2,7 +2,7 @@
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcus.WebApi.Unit.Security.Authentication
+namespace Arcus.WebApi.Tests.Unit.Security.Authentication
 {
     [ApiController]
     public class NoneAuthenticationController : ControllerBase

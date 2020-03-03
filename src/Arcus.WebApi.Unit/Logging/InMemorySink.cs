@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Serilog.Core;
 using Serilog.Events;
 
-namespace Arcus.WebApi.Unit.Logging
+namespace Arcus.WebApi.Tests.Unit.Logging
 {
     /// <summary>
     /// An in-memory implementation for the Serilog logging.

@@ -4,7 +4,7 @@ using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Options;
 
-namespace Arcus.WebApi.Unit.Correlation
+namespace Arcus.WebApi.Tests.Unit.Correlation
 {
     /// <summary>
     /// Represents a component to disable the <see cref="HttpContext.TraceIdentifier"/> from the request information.

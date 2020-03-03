@@ -13,7 +13,7 @@
         <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
-        <DocumentationFile>Arcus.WebApi.Unit.Open-Api.xml</DocumentationFile>
+        <DocumentationFile>Arcus.WebApi.Tests.Unit.Open-Api.xml</DocumentationFile>
     </PropertyGroup>
     <ItemGroup>
         <PackageReference Include="BouncyCastle" Version="1.8.5" />

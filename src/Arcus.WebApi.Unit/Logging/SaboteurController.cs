@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.AspNetCore.Server.Kestrel.Core.Internal.Http;
 
-namespace Arcus.WebApi.Unit.Logging
+namespace Arcus.WebApi.Tests.Unit.Logging
 {
     [ApiController]
     public class SaboteurController : ControllerBase

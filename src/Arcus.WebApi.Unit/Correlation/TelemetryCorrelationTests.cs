@@ -6,13 +6,13 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Correlation;
-using Arcus.WebApi.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Hosting;
 using Newtonsoft.Json;
 using Serilog.Events;
 using Xunit;
-using static Arcus.WebApi.Unit.Correlation.CorrelationController;
+using static Arcus.WebApi.Tests.Unit.Correlation.CorrelationController;
 
-namespace Arcus.WebApi.Unit.Correlation
+namespace Arcus.WebApi.Tests.Unit.Correlation
 {
     public class TelemetryCorrelationTests
     {

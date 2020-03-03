@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcus.WebApi.Unit.Security.Authentication
+namespace Arcus.WebApi.Tests.Unit.Security.Authentication
 {
     [ApiController]
     public class CertificateAuthenticationOnMethodController : ControllerBase

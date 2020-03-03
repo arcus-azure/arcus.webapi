@@ -4,7 +4,7 @@ using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
-namespace Arcus.WebApi.Unit.Hosting
+namespace Arcus.WebApi.Tests.Unit.Hosting
 {
     /// <summary>
     /// Security configuration addition to set the TLS client certificate on every call made via the <see cref="TestApiServer"/>.

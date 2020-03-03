@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Http;
 
-namespace Arcus.WebApi.Unit.Correlation 
+namespace Arcus.WebApi.Tests.Unit.Correlation 
 {
     /// <summary>
     /// Represents the options available for the <see cref="TraceIdentifierMiddleware"/> component.

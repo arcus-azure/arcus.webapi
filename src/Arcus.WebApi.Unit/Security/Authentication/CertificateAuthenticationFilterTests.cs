@@ -5,11 +5,11 @@ using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.Security.Secrets.Core.Interfaces;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using Arcus.WebApi.Unit.Hosting;
-using Arcus.WebApi.Unit.Security.Doubles;
+using Arcus.WebApi.Tests.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Security.Doubles;
 using Xunit;
 
-namespace Arcus.WebApi.Unit.Security.Authentication
+namespace Arcus.WebApi.Tests.Unit.Security.Authentication
 {
     public class CertificateAuthenticationFilterTests : IDisposable
     {

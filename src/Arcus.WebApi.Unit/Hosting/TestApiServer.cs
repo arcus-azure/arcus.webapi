@@ -5,7 +5,7 @@ using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Arcus.WebApi.OpenApi.Extensions;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
-using Arcus.WebApi.Unit.Logging;
+using Arcus.WebApi.Tests.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -17,7 +17,7 @@ using Serilog;
 using Serilog.Events;
 using Swashbuckle.AspNetCore.Swagger;
 
-namespace Arcus.WebApi.Unit.Hosting
+namespace Arcus.WebApi.Tests.Unit.Hosting
 {
     /// <summary>
     /// Representation of a HTTP server that serves as a startup point for testing web API functionality.

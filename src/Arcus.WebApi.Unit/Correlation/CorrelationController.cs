@@ -7,7 +7,7 @@ using Serilog;
 using Serilog.Events;
 using Serilog.Extensions.Hosting;
 
-namespace Arcus.WebApi.Unit.Correlation
+namespace Arcus.WebApi.Tests.Unit.Correlation
 {
     [ApiController]
     public class CorrelationController : ControllerBase
