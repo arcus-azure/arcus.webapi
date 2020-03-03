@@ -14,18 +14,50 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
         private readonly string _applicationId;
+        private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly JwtSecurityTokenHandler _handler;
         private readonly ConfigurationManager<OpenIdConnectConfiguration> _configManager;
 
-        public JwtTokenReader(string applicationId)
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
+        /// <param name="applicationId">Azure AD Application used as audience to validate against</param>
+        public JwtTokenReader(string applicationId) : this()
         {
             Guard.NotNullOrWhitespace(applicationId, nameof(applicationId));
 
             _applicationId = applicationId;
+            _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(MicrosoftDiscoveryEndpoint, new OpenIdConnectConfigurationRetriever());
+        }
 
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
+        /// <param name="tokenValidationParameters">Collection of parameters to influence how the token validation is done</param>
+        public JwtTokenReader(TokenValidationParameters tokenValidationParameters) : this(MicrosoftDiscoveryEndpoint, tokenValidationParameters)
+        {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="openIdConnectDiscoveryUri">Uri of an OpenId connect endpoint for discovering the configuration</param>
+        /// <param name="tokenValidationParameters">Collection of parameters to influence how the token validation is done</param>
+        public JwtTokenReader(string openIdConnectDiscoveryUri, TokenValidationParameters tokenValidationParameters) :
+            this()
+        {
+            Guard.NotNullOrWhitespace(openIdConnectDiscoveryUri, nameof(openIdConnectDiscoveryUri));
+            Guard.NotNull(tokenValidationParameters, nameof(tokenValidationParameters));
+
+            _tokenValidationParameters = tokenValidationParameters;
+            _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(openIdConnectDiscoveryUri, new OpenIdConnectConfigurationRetriever());
+        }
+
+        private JwtTokenReader()
+        {
             _handler = new JwtSecurityTokenHandler();
-            _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(MicrosoftDiscoveryEndpoint,
-                new OpenIdConnectConfigurationRetriever());
         }
 
         /// <summary>
@@ -36,7 +68,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         {
             OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
 
-            var validationParameters = new TokenValidationParameters
+            var validationParameters = _tokenValidationParameters ?? new TokenValidationParameters
             {
                 ValidateAudience = true,
                 ValidAudience = _applicationId,
@@ -45,10 +77,9 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
                 ValidateLifetime = true
             };
 
-            SecurityToken jwtToken;
             try
             {
-                _handler.ValidateToken(token, validationParameters, out jwtToken);
+                _handler.ValidateToken(token, validationParameters, out _);
             }
             catch (Exception)
             {
