@@ -51,7 +51,7 @@ namespace Arcus.WebApi.Unit.Security.Authorization
             string openIdConnectDiscoveryUri = string.Empty;
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => new JwtTokenReader(openIdConnectDiscoveryUri, tokenValidationParameters));
+            Assert.Throws<ArgumentException>(() => new JwtTokenReader(tokenValidationParameters, openIdConnectDiscoveryUri));
         }
 
         [Fact]
@@ -72,7 +72,7 @@ namespace Arcus.WebApi.Unit.Security.Authorization
             string openIdConnectDiscoveryUri = "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
             // Act
-            var jwtTokenReader = new JwtTokenReader(openIdConnectDiscoveryUri, tokenValidationParameters);
+            var jwtTokenReader = new JwtTokenReader(tokenValidationParameters, openIdConnectDiscoveryUri);
 
             // Assert
             Assert.NotNull(jwtTokenReader);
