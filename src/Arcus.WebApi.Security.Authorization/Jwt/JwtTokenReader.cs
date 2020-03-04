@@ -64,7 +64,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         ///     Validates if the token is considered valid
         /// </summary>
         /// <param name="token">JWT token</param>
-        public async Task<bool> IsValidToken(string token)
+        public async Task<bool> IsValidTokenAsync(string token)
         {
             OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
 

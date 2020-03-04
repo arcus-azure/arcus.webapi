@@ -31,7 +31,7 @@ namespace Arcus.WebApi.Security.Authorization
         {
             var jwtString = context.HttpContext.Request.Headers[_headerName].ToString();
 
-            if (string.IsNullOrWhiteSpace(jwtString) || !await _jwtTokenReader.IsValidToken(jwtString))
+            if (string.IsNullOrWhiteSpace(jwtString) || !await _jwtTokenReader.IsValidTokenAsync(jwtString))
             {
                 context.Result = new UnauthorizedObjectResult("Unauthorized because of wrong JWT MSI token.");
             }
