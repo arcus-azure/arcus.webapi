@@ -61,7 +61,7 @@ namespace Arcus.WebApi.Unit.Security.Authorization
             TokenValidationParameters tokenValidationParameters = null;
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => new JwtTokenReader(tokenValidationParameters));
+            Assert.Throws<ArgumentNullException>(() => new JwtTokenReader(tokenValidationParameters));
         }
 
         [Fact]
