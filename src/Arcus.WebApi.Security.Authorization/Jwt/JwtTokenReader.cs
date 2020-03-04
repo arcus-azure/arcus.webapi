@@ -15,7 +15,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
 
         private readonly string _applicationId;
         private readonly TokenValidationParameters _tokenValidationParameters;
-        private readonly JwtSecurityTokenHandler _handler;
+        private readonly JwtSecurityTokenHandler _handler = new JwtSecurityTokenHandler();
         private readonly ConfigurationManager<OpenIdConnectConfiguration> _configManager;
 
         /// <summary>
@@ -23,7 +23,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// </summary>
         /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
         /// <param name="applicationId">Azure AD Application used as audience to validate against</param>
-        public JwtTokenReader(string applicationId) : this()
+        public JwtTokenReader(string applicationId)
         {
             Guard.NotNullOrWhitespace(applicationId, nameof(applicationId));
 
@@ -45,19 +45,13 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// </summary>
         /// <param name="openIdConnectDiscoveryUri">Uri of an OpenId connect endpoint for discovering the configuration</param>
         /// <param name="tokenValidationParameters">Collection of parameters to influence how the token validation is done</param>
-        public JwtTokenReader(TokenValidationParameters tokenValidationParameters, string openIdConnectDiscoveryUri) :
-            this()
+        public JwtTokenReader(TokenValidationParameters tokenValidationParameters, string openIdConnectDiscoveryUri)
         {
             Guard.NotNullOrWhitespace(openIdConnectDiscoveryUri, nameof(openIdConnectDiscoveryUri));
             Guard.NotNull(tokenValidationParameters, nameof(tokenValidationParameters));
 
             _tokenValidationParameters = tokenValidationParameters;
             _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(openIdConnectDiscoveryUri, new OpenIdConnectConfigurationRetriever());
-        }
-
-        private JwtTokenReader()
-        {
-            _handler = new JwtSecurityTokenHandler();
         }
 
         /// <summary>
