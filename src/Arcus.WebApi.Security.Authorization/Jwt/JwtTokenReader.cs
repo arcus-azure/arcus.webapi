@@ -71,9 +71,10 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
                 ValidateLifetime = true
             };
 
+            SecurityToken jwtToken;
             try
             {
-                _handler.ValidateToken(token, validationParameters, out _);
+                _handler.ValidateToken(token, validationParameters, out jwtToken);
             }
             catch (Exception)
             {
