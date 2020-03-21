@@ -23,4 +23,9 @@
   <ItemGroup>
     <ProjectReference Include="..\Arcus.WebApi.Correlation\Arcus.WebApi.Correlation.csproj" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <RestoreSources>$(RestoreSources);https://api.nuget.org/v3/index.json;https://www.myget.org/F/arcus/api/v3/index.json</RestoreSources>
+  </PropertyGroup>
+
 </Project>

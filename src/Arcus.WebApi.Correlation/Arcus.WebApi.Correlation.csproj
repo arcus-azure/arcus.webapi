@@ -31,4 +31,8 @@
     <PackageReference Include="Guard.NET" Version="1.2.0" />
   </ItemGroup>
 
+  <PropertyGroup>
+    <RestoreSources>$(RestoreSources);https://api.nuget.org/v3/index.json;https://www.myget.org/F/arcus/api/v3/index.json</RestoreSources>
+  </PropertyGroup>
+
 </Project>
