@@ -15,7 +15,7 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly CorrelationOptions _options;
+        private readonly CorrelationInfoOptions _options;
         private readonly ILogger<CorrelationMiddleware> _logger;
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace Arcus.WebApi.Correlation
         /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
         public CorrelationMiddleware(
             RequestDelegate next,
-            IOptions<CorrelationOptions> options,
+            IOptions<CorrelationInfoOptions> options,
             ILogger<CorrelationMiddleware> logger)
         {
             Guard.NotNull(next, nameof(next), "Requires a continuation delegate");

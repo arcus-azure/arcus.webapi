@@ -127,7 +127,7 @@ namespace Arcus.WebApi.Unit.Hosting
             {
                 Log.Information("Starting web host");
                 return new WebHostBuilder()
-                    .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
+                       .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
                     .UseSerilog();
 
             }

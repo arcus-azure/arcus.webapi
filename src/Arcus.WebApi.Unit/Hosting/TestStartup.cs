@@ -43,7 +43,7 @@ namespace Arcus.WebApi.Unit.Hosting
 #else
             services.AddMvc(options => options.EnableEndpointRouting = false);
 #endif
-            services.AddCorrelation();
+            services.AddHttpCorrelation();
 
             services.AddSingleton<InMemorySink>();
         }
@@ -52,7 +52,7 @@ namespace Arcus.WebApi.Unit.Hosting
         {
             app.UseMiddleware<ExceptionHandlingMiddleware>();
             app.UseMiddleware<TraceIdentifierMiddleware>();
-            app.UseCorrelation();
+            app.UseHttpCorrelation();
             app.UseSerilogRequestLogging();
 
             app.UseMvc();
