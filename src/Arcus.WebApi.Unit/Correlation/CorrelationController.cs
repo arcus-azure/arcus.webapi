@@ -1,11 +1,6 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Arcus.Observability.Correlation;
-using Arcus.WebApi.Correlation;
+﻿using Arcus.Observability.Correlation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Serilog;
-using Serilog.Events;
 using Serilog.Extensions.Hosting;
 
 namespace Arcus.WebApi.Unit.Correlation
@@ -31,13 +26,7 @@ namespace Arcus.WebApi.Unit.Correlation
         [Route(Route)]
         public IActionResult Get()
         {
-            var correlationInfoModel = new
-            {
-                _correlationInfoAccessor.CorrelationInfo.TransactionId, 
-                _correlationInfoAccessor.CorrelationInfo.OperationId
-            };
-            string json = JsonConvert.SerializeObject(correlationInfoModel);
-
+            string json = JsonConvert.SerializeObject(_correlationInfoAccessor.CorrelationInfo);
             return Ok(json);
         }
     }
