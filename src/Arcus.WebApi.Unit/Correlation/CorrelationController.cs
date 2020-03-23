@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Unit.Correlation
         [Route(Route)]
         public IActionResult Get()
         {
-            string json = JsonConvert.SerializeObject(_correlationInfoAccessor.CorrelationInfo);
+            string json = JsonConvert.SerializeObject(_correlationInfoAccessor.GetCorrelationInfo());
             return Ok(json);
         }
     }

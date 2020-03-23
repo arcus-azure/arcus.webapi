@@ -37,7 +37,7 @@ namespace Arcus.WebApi.Telemetry.Serilog.Correlation
             Guard.NotNull(propertyFactory, nameof(propertyFactory));
 
             var correlationInfoAccessor = _services.GetRequiredService<ICorrelationInfoAccessor>();
-            CorrelationInfo correlationInfo = correlationInfoAccessor.CorrelationInfo;
+            CorrelationInfo correlationInfo = correlationInfoAccessor.GetCorrelationInfo();
 
             if (!String.IsNullOrEmpty(correlationInfo.OperationId))
             {
