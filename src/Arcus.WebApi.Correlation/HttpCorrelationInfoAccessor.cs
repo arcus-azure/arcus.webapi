@@ -23,12 +23,20 @@ namespace Arcus.WebApi.Correlation
         }
 
         /// <summary>
-        /// Gets or sets the current correlation information initialized in this context.
+        /// Gets the current correlation information initialized in this context.
         /// </summary>
-        public CorrelationInfo CorrelationInfo
+        public CorrelationInfo GetCorrelationInfo()
         {
-            get => _httpContextAccessor.HttpContext.Features.Get<CorrelationInfo>();
-            set => throw new NotSupportedException(
+            return _httpContextAccessor.HttpContext.Features.Get<CorrelationInfo>();
+        }
+
+        /// <summary>
+        /// Sets the current correlation information for this context.
+        /// </summary>
+        /// <param name="correlationInfo">The correlation model to set.</param>
+        public void SetCorrelationInfo(CorrelationInfo correlationInfo)
+        {
+            throw new NotSupportedException(
                 "The correlation information is automatically set during the application middleware and is not supported to be altered afterwards");
         }
     }
