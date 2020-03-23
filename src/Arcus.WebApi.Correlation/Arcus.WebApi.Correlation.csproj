@@ -27,7 +27,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.Observability.Correlation" Version="20200320.0.0-PR-43" />
+    <PackageReference Include="Arcus.Observability.Correlation" Version="20200322.0.0-PR-43" />
     <PackageReference Include="Guard.NET" Version="1.2.0" />
   </ItemGroup>
 

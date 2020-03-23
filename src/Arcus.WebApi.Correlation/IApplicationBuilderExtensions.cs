@@ -1,4 +1,5 @@
-﻿using GuardNet;
+﻿using System;
+using GuardNet;
 using Microsoft.AspNetCore.Builder;
 
 namespace Arcus.WebApi.Correlation 
@@ -9,6 +10,17 @@ namespace Arcus.WebApi.Correlation
     // ReSharper disable once InconsistentNaming
     public static class IApplicationBuilderExtensions
     {
+        /// <summary>
+        /// Adds operation and transaction correlation to the application by using the <see cref="CorrelationMiddleware"/> in the request pipeline.
+        /// </summary>
+        [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use " + nameof(UseHttpCorrelation) + " instead")]
+        public static IApplicationBuilder UseCorrelation(this IApplicationBuilder applicationBuilder)
+        {
+            Guard.NotNull(applicationBuilder, nameof(applicationBuilder));
+
+            return UseHttpCorrelation(applicationBuilder);
+        }
+
         /// <summary>
         /// Adds operation and transaction correlation to the application by using the <see cref="CorrelationMiddleware"/> in the request pipeline.
         /// </summary>
