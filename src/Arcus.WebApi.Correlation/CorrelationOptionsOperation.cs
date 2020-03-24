@@ -8,7 +8,7 @@ namespace Arcus.WebApi.Correlation
     /// Correlation options specific for the operation ID.
     /// </summary>
     [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use " + nameof(CorrelationInfoOperationOptions) + " instead")]
-    public class CorrelationOperationOptions
+    public class CorrelationOptionsOperation
     {
         private string _headerName = "RequestId";
         private Func<string> _generateId = () => Guid.NewGuid().ToString();

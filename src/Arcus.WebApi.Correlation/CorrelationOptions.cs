@@ -12,12 +12,12 @@ namespace Arcus.WebApi.Correlation
         /// <summary>
         /// Gets the correlation options specific for the transaction ID.
         /// </summary>
-        public CorrelationTransactionOptions Transaction { get; } = new CorrelationTransactionOptions();
+        public CorrelationOptionsTransaction Transaction { get; } = new CorrelationOptionsTransaction();
 
         /// <summary>
         /// Gets the correlation options specific for the operation ID.
         /// </summary>
-        public CorrelationOperationOptions Operation { get; } = new CorrelationOperationOptions ();
+        public CorrelationOptionsOperation Operation { get; } = new CorrelationOptionsOperation ();
 
         /// <summary>
         /// Transforms the old <see cref="CorrelationOptions"/> to the new <see cref="CorrelationInfoOptions"/>.
