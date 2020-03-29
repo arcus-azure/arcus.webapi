@@ -32,12 +32,12 @@ To make sure the correlation is added to the HTTP response, following additions 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddCorrelation();
+    services.AddHttpCorrelation();
 }
 
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
-    app.UseCorrelation();
+    app.UseHttpCorrelation();
 
     app.UseMvc();
 }
@@ -52,7 +52,7 @@ Some extra options are available to alter the functionality of the correlation:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddCorrelation(options =>
+    services.AddHttpCorrelation(options =>
     {
         // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
         // ---------------------------------------------------------------------------------

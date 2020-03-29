@@ -22,12 +22,11 @@
 
   <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.0'">
     <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.Observability.Correlation" Version="0.1.0-preview-1" />
+    <PackageReference Include="Arcus.Observability.Correlation" Version="0.1.0-preview-5" />
     <PackageReference Include="Guard.NET" Version="1.2.0" />
   </ItemGroup>
 

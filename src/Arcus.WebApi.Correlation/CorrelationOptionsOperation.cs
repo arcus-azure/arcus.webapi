@@ -1,11 +1,13 @@
 ﻿using System;
+using Arcus.Observability.Correlation;
 using GuardNet;
 
-namespace Arcus.WebApi.Correlation
+namespace Arcus.WebApi.Correlation 
 {
     /// <summary>
     /// Correlation options specific for the operation ID.
     /// </summary>
+    [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use " + nameof(CorrelationInfoOperationOptions) + " instead")]
     public class CorrelationOptionsOperation
     {
         private string _headerName = "RequestId";

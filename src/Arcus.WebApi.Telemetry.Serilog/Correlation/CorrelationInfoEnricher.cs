@@ -1,4 +1,5 @@
 ﻿using System;
+using Arcus.Observability.Correlation;
 using Arcus.WebApi.Correlation;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
@@ -35,7 +36,8 @@ namespace Arcus.WebApi.Telemetry.Serilog.Correlation
             Guard.NotNull(logEvent, nameof(logEvent));
             Guard.NotNull(propertyFactory, nameof(propertyFactory));
 
-            var correlationInfo = _services.GetRequiredService<HttpCorrelationInfo>();
+            var correlationInfoAccessor = _services.GetRequiredService<ICorrelationInfoAccessor>();
+            CorrelationInfo correlationInfo = correlationInfoAccessor.GetCorrelationInfo();
 
             if (!String.IsNullOrEmpty(correlationInfo.OperationId))
             {

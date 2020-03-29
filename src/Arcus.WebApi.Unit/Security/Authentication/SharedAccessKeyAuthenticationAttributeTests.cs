@@ -59,9 +59,12 @@ namespace Arcus.WebApi.Unit.Security.Authentication
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
 
-            // Act / Assert
-            await Assert.ThrowsAsync<KeyNotFoundException>(
-                () => SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue));
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
+            }
         }
 
         [Fact]
