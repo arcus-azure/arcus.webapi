@@ -37,7 +37,7 @@ namespace Arcus.WebApi.Correlation
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
             throw new NotSupportedException(
-                "The correlation information is automatically set during the application middleware and is not supported to be altered afterwards");
+                $"The correlation information is automatically set during the application middleware '{nameof(CorrelationMiddleware)}' and is not supported to be altered afterwards");
         }
     }
 }
