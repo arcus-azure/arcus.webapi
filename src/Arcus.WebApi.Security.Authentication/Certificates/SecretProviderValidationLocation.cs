@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
+using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
@@ -46,7 +47,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                     + "Please configure such an implementation (ex. in the Startup) of your application");
             }
 
-            Task<string> getValueAsync = userDefinedSecretProvider.Get(configurationKey);
+            Task<string> getValueAsync = userDefinedSecretProvider.GetRawSecretAsync(configurationKey);
             return getValueAsync == null ? null : await getValueAsync;
         }
     }

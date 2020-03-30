@@ -1,5 +1,4 @@
 ﻿using System.Security.Cryptography.X509Certificates;
-using Arcus.Security.Secrets.Core.Interfaces;
 using Microsoft.Extensions.Configuration;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates

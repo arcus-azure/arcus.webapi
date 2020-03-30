@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.Linq;
 using System.Security.Cryptography.X509Certificates;
-using Arcus.WebApi.Correlation;
 using Arcus.WebApi.OpenApi.Extensions;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;
@@ -12,7 +10,6 @@ using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

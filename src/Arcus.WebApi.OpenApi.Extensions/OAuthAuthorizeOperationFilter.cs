@@ -1,10 +1,10 @@
 ﻿using System;
 using Microsoft.AspNetCore.Authorization;
-using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
 using GuardNet;
+using Swashbuckle.AspNetCore.Swagger;
 #if NETCOREAPP3_0
 using Microsoft.OpenApi.Models;    
 #endif

@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
+using Arcus.Security.Core.Caching;
+using Arcus.Security.Core.Caching.Configuration;
 using GuardNet;
 
 namespace Arcus.WebApi.Tests.Unit.Security
@@ -33,12 +35,9 @@ namespace Arcus.WebApi.Tests.Unit.Security
         /// <returns>Returns a <see cref="Task{TResult}"/> that contains the secret key</returns>
         /// <exception cref="ArgumentException">The name must not be empty</exception>
         /// <exception cref="ArgumentNullException">The name must not be null</exception>
-        public async Task<string> Get(string secretName, bool ignoreCache)
+        public Task<string> GetRawSecretAsync(string secretName, bool ignoreCache)
         {
-            Guard.NotNull(secretName, "Secret name cannot be 'null'");
-
-            string value = await Get(secretName);
-            return value;
+            return GetRawSecretAsync(secretName);
         }
 
         /// <summary>
@@ -48,7 +47,7 @@ namespace Arcus.WebApi.Tests.Unit.Security
         /// <returns>Returns a <see cref="Task"/> that contains the secret key</returns>
         /// <exception cref="ArgumentException">The name must not be empty</exception>
         /// <exception cref="ArgumentNullException">The name must not be null</exception>
-        public Task<string> Get(string secretName)
+        public Task<string> GetRawSecretAsync(string secretName)
         {
             Guard.NotNull(secretName, "Secret name cannot be 'null'");
 
@@ -59,5 +58,34 @@ namespace Arcus.WebApi.Tests.Unit.Security
 
             return Task.FromResult<string>(null);
         }
+
+        public Task<string> Get(string secretName)
+        {
+            return GetRawSecretAsync(secretName);
+        }
+
+        public Task<string> Get(string secretName, bool ignoreCache)
+        {
+            return GetRawSecretAsync(secretName, ignoreCache);
+        }
+
+        public Task<Secret> GetSecretAsync(string secretName)
+        {
+            return GetSecretAsync(secretName, false);
+        }
+
+        public async Task<Secret> GetSecretAsync(string secretName, bool ignoreCache)
+        {
+            var rawSecret = await GetRawSecretAsync(secretName, ignoreCache);
+
+            return new Secret(rawSecret, "v1.0");
+        }
+
+        public Task InvalidateSecretAsync(string secretName)
+        {
+            return Task.CompletedTask;
+        }
+
+        public ICacheConfiguration Configuration { get; }
     }
 }
