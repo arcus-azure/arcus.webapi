@@ -1,6 +1,5 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
-using Arcus.WebApi.Correlation;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog.Core;

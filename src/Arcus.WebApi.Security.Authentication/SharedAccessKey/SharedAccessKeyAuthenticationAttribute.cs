@@ -1,5 +1,5 @@
 ﻿using System;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 

@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
-using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Tests.Unit.Hosting;
 using Newtonsoft.Json;
 using Serilog.Events;

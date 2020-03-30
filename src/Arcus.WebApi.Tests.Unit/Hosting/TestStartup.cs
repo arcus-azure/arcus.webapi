@@ -1,7 +1,6 @@
 ﻿using System;
 using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Logging;
-using Arcus.WebApi.Telemetry.Serilog;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Tests.Unit.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;

@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Arcus.Security.Secrets.Core.Interfaces;
-using Arcus.Security.Secrets.Core.Models;
+using Arcus.Security.Core;
+using Arcus.Security.Core.Caching;
+using Arcus.Security.Core.Caching.Configuration;
 using GuardNet;
 
 namespace Arcus.WebApi.Tests.Unit.Security
@@ -63,29 +64,9 @@ namespace Arcus.WebApi.Tests.Unit.Security
             return GetRawSecretAsync(secretName);
         }
 
-        public Task<string> GetRawSecret(string secretName)
-        {
-            return GetRawSecretAsync(secretName);
-        }
-
-        public Task<Secret> GetSecret(string secretName)
-        {
-            return GetSecretAsync(secretName);
-        }
-
         public Task<string> Get(string secretName, bool ignoreCache)
         {
             return GetRawSecretAsync(secretName, ignoreCache);
-        }
-
-        public Task<string> GetRawSecret(string secretName, bool ignoreCache)
-        {
-            return GetRawSecretAsync(secretName, ignoreCache);
-        }
-
-        public Task<Secret> GetSecret(string secretName, bool ignoreCache)
-        {
-            return GetSecretAsync(secretName, ignoreCache);
         }
 
         public Task<Secret> GetSecretAsync(string secretName)
@@ -99,5 +80,12 @@ namespace Arcus.WebApi.Tests.Unit.Security
 
             return new Secret(rawSecret, "v1.0");
         }
+
+        public Task InvalidateSecretAsync(string secretName)
+        {
+            return Task.CompletedTask;
+        }
+
+        public ICacheConfiguration Configuration { get; }
     }
 }

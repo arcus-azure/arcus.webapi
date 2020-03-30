@@ -1,7 +1,6 @@
 ﻿using System;
-using Arcus.Security.Secrets.Core.Interfaces;
+using Arcus.Security.Core;
 using GuardNet;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Security.Authentication
