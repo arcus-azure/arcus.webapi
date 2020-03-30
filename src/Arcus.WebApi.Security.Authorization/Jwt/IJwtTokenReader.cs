@@ -8,6 +8,6 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         ///     Validates if the token is considered valid
         /// </summary>
         /// <param name="token">JWT token</param>
-        Task<bool> IsValidToken(string token);
+        Task<bool> IsValidTokenAsync(string token);
     }
 }

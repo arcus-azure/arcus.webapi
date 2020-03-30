@@ -15,8 +15,32 @@ namespace Arcus.WebApi.Correlation
     public class CorrelationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly CorrelationOptions _options;
+        private readonly CorrelationInfoOptions _options;
         private readonly ILogger<CorrelationMiddleware> _logger;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CorrelationMiddleware"/> class.
+        /// </summary>
+        /// <param name="next">The next functionality in the request pipeline to be executed.</param>
+        /// <param name="options">The options controlling how the correlation should happen.</param>
+        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
+        /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
+        [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use the other constructor with " + nameof(CorrelationInfoOptions) + " instead")]
+        public CorrelationMiddleware(
+            RequestDelegate next,
+            IOptions<CorrelationOptions> options,
+            ILogger<CorrelationMiddleware> logger)
+        {
+            Guard.NotNull(next, nameof(next), "Requires a continuation delegate");
+            Guard.NotNull(options, nameof(options), "Requires a set of correlation options to manipulate how the correlation should happen");
+            Guard.NotNull(logger, nameof(logger), "Requires a logging implementation to trace diagnostic messages during the correlation");
+            Guard.For<ArgumentException>(() => options.Value is null, "Requires a set of correlation options to manipulate how the correlation should happen");
+
+            _next = next;
+            _options = options.Value.ToCorrelationInfoOptions();
+            _logger = logger;
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationMiddleware"/> class.
@@ -28,7 +52,7 @@ namespace Arcus.WebApi.Correlation
         /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
         public CorrelationMiddleware(
             RequestDelegate next,
-            IOptions<CorrelationOptions> options,
+            IOptions<CorrelationInfoOptions> options,
             ILogger<CorrelationMiddleware> logger)
         {
             Guard.NotNull(next, nameof(next), "Requires a continuation delegate");

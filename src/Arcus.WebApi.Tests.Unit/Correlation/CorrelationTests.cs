@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Arcus.Observability.Correlation;
 using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Tests.Unit.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -24,7 +25,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         public async Task SendRequest_WithCorrelateOptionsNotAllowTransactionInRequest_ResponseWithBadRequest()
         {
             // Arrange
-            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.AllowInRequest = false));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Transaction.AllowInRequest = false));
             
             using (HttpClient client = _testServer.CreateClient())
             using (var request = new HttpRequestMessage(HttpMethod.Get, Route))
@@ -43,10 +44,10 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         }
 
         [Fact]
-        public async Task SendRequest_WithCorrelationOptionsNotGenerateTransactionId_ResponseWithoutTransactionId()
+        public async Task SendRequest_WithCorrelationInfoOptionsNotGenerateTransactionId_ResponseWithoutTransactionId()
         {
             // Arrange
-            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.GenerateWhenNotSpecified = false));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Transaction.GenerateWhenNotSpecified = false));
 
             using (HttpClient client = _testServer.CreateClient())
             // Act
@@ -63,7 +64,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         public async Task SendRequest_WithCorrelateOptionsNonTransactionIncludeInResponse_ResponseWithoutCorrelationHeaders()
         {
             // Arrange
-            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.IncludeInResponse = false));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Transaction.IncludeInResponse = false));
             
             using (HttpClient client = _testServer.CreateClient())
             // Act
@@ -81,7 +82,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         {
             // Arrange
             var expectedTransactionId = $"transaction-{Guid.NewGuid():N}";
-            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Transaction.GenerateId = () => expectedTransactionId));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Transaction.GenerateId = () => expectedTransactionId));
 
             using (HttpClient client = _testServer.CreateClient())
             // Act
@@ -100,7 +101,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         public async Task SendRequest_WithCorrelateOptionsNonOperationIncludeInResponse_ResponseWithoutCorrelationHeaders()
         {
             // Arrange
-            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Operation.IncludeInResponse = false));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Operation.IncludeInResponse = false));
             
             using (HttpClient client = _testServer.CreateClient()) 
             // Act
@@ -187,7 +188,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             // Arrange
             var expectedOperationId = $"operation-{Guid.NewGuid():N}";
             _testServer.AddServicesConfig(services => services.Configure<TraceIdentifierOptions>(options => options.EnableTraceIdentifier = false));
-            _testServer.AddServicesConfig(services => services.Configure<CorrelationOptions>(options => options.Operation.GenerateId = () => expectedOperationId));
+            _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Operation.GenerateId = () => expectedOperationId));
 
             using (HttpClient client = _testServer.CreateClient())
                 // Act
