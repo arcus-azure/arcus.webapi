@@ -3,7 +3,7 @@
     <TargetFrameworks>netcoreapp2.2;netcoreapp3.0</TargetFrameworks>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
-    <DocumentationFile>Arcus.WebApi.Unit.Open-Api.xml</DocumentationFile>
+    <DocumentationFile>Arcus.WebApi.Tests.Unit.Open-Api.xml</DocumentationFile>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.0'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
