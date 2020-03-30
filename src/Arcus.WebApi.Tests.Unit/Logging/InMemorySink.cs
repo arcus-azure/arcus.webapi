@@ -1,4 +1,5 @@
-﻿using System.Collections.Concurrent;
+﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Serilog.Core;
 using Serilog.Events;
@@ -8,7 +9,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
     /// <summary>
     /// An in-memory implementation for the Serilog logging.
     /// </summary>
-    public class InMemorySink : ILogEventSink
+    public class InMemorySink : ILogEventSink, IDisposable
     {
         private readonly ConcurrentQueue<LogEvent> _logEvents = new ConcurrentQueue<LogEvent>();
 
@@ -29,6 +30,14 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         public void Emit(LogEvent logEvent)
         {
             _logEvents.Enqueue(logEvent);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</
+        /// summary>
+        public void Dispose()
+        {
+            _logEvents.Clear();
         }
     }
 }

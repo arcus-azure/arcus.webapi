@@ -44,8 +44,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
             services.AddMvc(options => options.EnableEndpointRouting = false);
 #endif
             services.AddHttpCorrelation();
-
-            services.AddSingleton<InMemorySink>();
         }
 
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
@@ -66,7 +64,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 swaggerUiOptions.DocumentTitle = assemblyName;
             });
 
-            Log.Logger = CreateLoggerConfiguration(app.ApplicationServices).CreateLogger();
+            //Log.Logger = CreateLoggerConfiguration(app.ApplicationServices).CreateLogger();
         }
 
         private static LoggerConfiguration CreateLoggerConfiguration(IServiceProvider serviceProvider)

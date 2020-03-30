@@ -2,7 +2,9 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography.X509Certificates;
+using Arcus.WebApi.Correlation;
 using Arcus.WebApi.OpenApi.Extensions;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;
@@ -10,11 +12,16 @@ using GuardNet;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Core;
 using Serilog.Events;
+using Serilog.Extensions.Hosting;
+using Serilog.Extensions.Logging;
 using Swashbuckle.AspNetCore.Swagger;
 
 namespace Arcus.WebApi.Tests.Unit.Hosting
@@ -33,26 +40,29 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// <summary>
         /// Initializes a new instance of the <see cref="TestApiServer"/> class.
         /// </summary>
-        public TestApiServer() : this(services => { }) { }
+        public TestApiServer() : this(new InMemorySink(), services => { }) { }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestApiServer"/> class.
         /// </summary>
+        /// <param name="logSink">The Serilog destination logging sink.</param>
         /// <param name="configureServices">The action to populate the required services in the current hosted test server.</param>
         /// <exception cref="ArgumentNullException">When the <paramref name="configureServices"/> is <c>null</c>.</exception>
-        public TestApiServer(Action<IServiceCollection> configureServices)
+        public TestApiServer(InMemorySink logSink, Action<IServiceCollection> configureServices)
         {
             Guard.NotNull(configureServices, "Configure services cannot be 'null'");
 
-            _configureServices = new Collection<Action<IServiceCollection>> { configureServices };
+            _configureServices = new Collection<Action<IServiceCollection>> { configureServices, services => services.AddSingleton(logSink) };
             _filters = new Collection<IFilterMetadata>();
             _configurationCollection = new Dictionary<string, string>();
+
+            LogSink = logSink;
         }
 
         /// <summary>
         /// Gets the in-memory sink where the log events will be emitted to.
         /// </summary>
-        public InMemorySink LogSink => Server.Host.Services.GetRequiredService<InMemorySink>();
+        public InMemorySink LogSink { get; }
 
         /// <summary>
         /// Gives a fixture an opportunity to configure the application before it gets built.
@@ -60,7 +70,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// <param name="builder">The <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> for the application.</param>
         protected override void ConfigureWebHost(IWebHostBuilder builder)
         {
-            builder.UseStartup<TestStartup>();
             builder.ConfigureServices(services =>
             {
                 if (_clientCertificate != null)
@@ -105,6 +114,41 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     swaggerGenerationOptions.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] { new[] { "myApiScope" } });
                 });
             });
+
+            builder.UseStartup<TestStartup>();
+
+            builder.ConfigureServices(collection =>
+            {
+                Logger logger = null;
+                collection.AddSingleton<ILoggerFactory>(services =>
+                {
+                    logger = new LoggerConfiguration()
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                        .Enrich.FromLogContext()
+                        .Enrich.With(new CorrelationInfoEnricher(services))
+                        .WriteTo.Console()
+                        .WriteTo.Sink(LogSink)
+                        .CreateLogger();
+
+                    return new SerilogLoggerFactory(logger, dispose: false);
+                });
+
+                if (logger != null)
+                {
+                    // This won't (and shouldn't) take ownership of the logger. 
+                    collection.AddSingleton(logger);
+                }
+
+                // Registered to provide two services...
+                var diagnosticContext = new DiagnosticContext(logger);
+
+                // Consumed by e.g. middleware
+                collection.AddSingleton(diagnosticContext);
+
+                // Consumed by user code
+                collection.AddSingleton<IDiagnosticContext>(diagnosticContext);
+            });
         }
 
         /// <summary>
@@ -118,24 +162,8 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// <returns>A <see cref="T:Microsoft.AspNetCore.Hosting.IWebHostBuilder" /> instance.</returns>
         protected override IWebHostBuilder CreateWebHostBuilder()
         {
-            Log.Logger = new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .WriteTo.Console()
-                .CreateLogger();
-
-            try
-            {
-                Log.Information("Starting web host");
-                return new WebHostBuilder()
-                    .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection))
-                    .UseSerilog();
-
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "Host terminated unexpectedly");
-                throw;
-            }
+            return new WebHostBuilder()
+                .ConfigureAppConfiguration(builder => builder.AddInMemoryCollection(_configurationCollection));
         }
 
         /// <summary>
@@ -202,6 +230,20 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
             Guard.NotNull(clientCertificate, nameof(clientCertificate));
 
             _clientCertificate = clientCertificate;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        /// <param name="disposing">
+        /// <see langword="true" /> to release both managed and unmanaged resources;
+        /// <see langword="false" /> to release only unmanaged resources.
+        /// </param>
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            LogSink.Dispose();
         }
     }
 }

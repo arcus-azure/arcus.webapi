@@ -14,7 +14,7 @@ using static Arcus.WebApi.Tests.Unit.Correlation.CorrelationController;
 
 namespace Arcus.WebApi.Tests.Unit.Correlation
 {
-    public class TelemetryCorrelationTests
+    public class TelemetryCorrelationTests : IDisposable
     {
         private const string TransactionIdPropertyName = "TransactionId",
                              OperationIdPropertyName = "OperationId";
@@ -108,8 +108,16 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             var transactionIdProperties = properties.Where(prop => prop.Key == TransactionIdPropertyName);
             var operationIdProperties = properties.Where(prop => prop.Key == OperationIdPropertyName);
 
-            Assert.All(transactionIdProperties, prop => Assert.Equal(correlationInfo.TransactionId, prop.Value.ToStringValue()));
-            Assert.All(operationIdProperties, prop => Assert.Equal(correlationInfo.OperationId, prop.Value.ToStringValue()));
+            Assert.Contains(transactionIdProperties, prop => correlationInfo.TransactionId == prop.Value.ToStringValue());
+            Assert.Contains(operationIdProperties, prop => correlationInfo.OperationId == prop.Value.ToStringValue());
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _testServer?.Dispose();
         }
     }
 }

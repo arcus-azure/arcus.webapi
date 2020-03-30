@@ -14,7 +14,7 @@ using static Arcus.WebApi.Tests.Unit.Correlation.CorrelationController;
 
 namespace Arcus.WebApi.Tests.Unit.Correlation
 {
-    public class CorrelationTests
+    public class CorrelationTests : IDisposable
     {
         private const string DefaultOperationId = "RequestId",
                              DefaultTransactionId = "X-Transaction-ID";
@@ -212,6 +212,14 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             Assert.False(String.IsNullOrWhiteSpace(value), $"Response header '{headerName}' cannot be blank");
 
             return value;
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _testServer?.Dispose();
         }
     }
 }

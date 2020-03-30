@@ -10,7 +10,7 @@ using static Arcus.WebApi.Tests.Unit.Logging.SaboteurController;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
-    public class ExceptionHandlingMiddlewareTests
+    public class ExceptionHandlingMiddlewareTests : IDisposable
     {
         private readonly TestApiServer _testServer = new TestApiServer();
 
@@ -29,5 +29,12 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 #endif
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            _testServer?.Dispose();
+        }
     }
 }
