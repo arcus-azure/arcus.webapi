@@ -26,7 +26,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.Security.Secrets.AzureKeyVault" Version="0.1.0" />
+    <PackageReference Include="Arcus.Security.Providers.AzureKeyVault" Version="1.1.0" />
+    <PackageReference Include="Arcus.Security.Secrets.AzureKeyVault" Version="0.4.0" />
     <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="System.Web.Http" Version="4.0.0" />
   </ItemGroup>
