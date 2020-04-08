@@ -92,4 +92,20 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+## Logging
+
+As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseHttpCorrelation();
+    
+    Log.Logger = new LoggerConfiguration()
+        .Enrich.WithHttpCorrelationInfo()
+        .WriteTo.Console()
+        .CreateLogger();
+}
+```
+
 [&larr; back](/)
