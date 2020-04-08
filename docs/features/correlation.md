@@ -5,7 +5,7 @@ layout: default
 
 # Correlation Between HTTP Requests
 
-The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
+The `Arcus.WebApi.Logging` library provides a way to add correlation between HTTP requests. 
 
 This correlation is based the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.
 
@@ -22,7 +22,7 @@ Additional [configuration](#configuration) is available to tweak this functional
 This feature requires to install our NuGet package:
 
 ```shell
-PM > Install-Package Arcus.WebApi.Correlation
+PM > Install-Package Arcus.WebApi.Logging
 ```
 
 ## Usage
