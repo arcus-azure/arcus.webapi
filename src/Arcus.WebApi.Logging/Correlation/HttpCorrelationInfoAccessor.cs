@@ -3,12 +3,11 @@ using Arcus.Observability.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 
-namespace Arcus.WebApi.Correlation
+namespace Arcus.WebApi.Logging.Correlation
 {
     /// <summary>
     /// Represents the correlation information on the current HTTP request, accessible throughout the application.
     /// </summary>
-    [Obsolete("Correlation is moved to 'Arcus.WebApi.Logging' package")]
     public class HttpCorrelationInfoAccessor : ICorrelationInfoAccessor
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

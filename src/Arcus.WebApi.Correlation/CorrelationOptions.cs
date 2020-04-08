@@ -6,7 +6,7 @@ namespace Arcus.WebApi.Correlation
     /// <summary>
     /// Options for handling correlation id on incoming requests.
     /// </summary>
-    [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use " + nameof(CorrelationInfoOptions) + " instead")]
+    [Obsolete("Correlation is moved to 'Arcus.WebApi.Logging' package")]
     public class CorrelationOptions
     {
         /// <summary>

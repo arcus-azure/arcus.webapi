@@ -59,6 +59,7 @@ namespace Arcus.WebApi.Correlation
         /// </summary>
         /// <param name="services">The services collection containing the dependency injection services.</param>
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
+        [Obsolete("Correlation is moved to 'Arcus.WebApi.Logging' package")]
         public static IServiceCollection AddHttpCorrelation(
             this IServiceCollection services, 
             Action<CorrelationInfoOptions> configureOptions = null)

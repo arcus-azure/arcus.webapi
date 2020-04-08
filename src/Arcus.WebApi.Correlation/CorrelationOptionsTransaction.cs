@@ -1,5 +1,4 @@
 ﻿using System;
-using Arcus.Observability.Correlation;
 using GuardNet;
 
 namespace Arcus.WebApi.Correlation 
@@ -7,7 +6,7 @@ namespace Arcus.WebApi.Correlation
     /// <summary>
     /// Correlation options specific to the transaction ID.
     /// </summary>
-    [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use " + nameof(CorrelationInfoTransactionOptions) + " instead")]
+    [Obsolete("Correlation is moved to 'Arcus.WebApi.Logging' package")]
     public class CorrelationOptionsTransaction
     {
         private string _headerName = "X-Transaction-ID";

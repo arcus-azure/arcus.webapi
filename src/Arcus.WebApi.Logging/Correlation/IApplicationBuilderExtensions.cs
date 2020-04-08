@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
-using Microsoft.AspNetCore.Builder;
 
-namespace Arcus.WebApi.Correlation 
+// ReSharper disable once CheckNamespace
+namespace Microsoft.AspNetCore.Builder
 {
     /// <summary>
     /// Adds the <see cref="CorrelationMiddleware"/> to the application pipeline.
@@ -13,18 +13,6 @@ namespace Arcus.WebApi.Correlation
         /// <summary>
         /// Adds operation and transaction correlation to the application by using the <see cref="CorrelationMiddleware"/> in the request pipeline.
         /// </summary>
-        [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use " + nameof(UseHttpCorrelation) + " instead")]
-        public static IApplicationBuilder UseCorrelation(this IApplicationBuilder applicationBuilder)
-        {
-            Guard.NotNull(applicationBuilder, nameof(applicationBuilder));
-
-            return UseHttpCorrelation(applicationBuilder);
-        }
-
-        /// <summary>
-        /// Adds operation and transaction correlation to the application by using the <see cref="CorrelationMiddleware"/> in the request pipeline.
-        /// </summary>
-        [Obsolete("Correlation is moved to 'Arcus.WebApi.Logging' package")]
         public static IApplicationBuilder UseHttpCorrelation(this IApplicationBuilder applicationBuilder)
         {
             Guard.NotNull(applicationBuilder, nameof(applicationBuilder));
