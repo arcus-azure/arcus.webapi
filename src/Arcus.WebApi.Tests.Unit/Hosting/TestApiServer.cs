@@ -14,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Extensions.Hosting;
@@ -122,7 +123,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                         .MinimumLevel.Debug()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                         .Enrich.FromLogContext()
-                        .Enrich.WithCorrelationInfo()
+                        .Enrich.WithHttpCorrelationInfo(services)
                         .WriteTo.Console()
                         .WriteTo.Sink(LogSink)
                         .CreateLogger();
