@@ -91,6 +91,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         private static async Task<CorrelationInfo> AssertAppCorrelationInfoAsync(HttpResponseMessage response)
         {
             string json = await response.Content.ReadAsStringAsync();
+            Assert.False(String.IsNullOrWhiteSpace(json), "No HTTP response content available");
             var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "" });
             Assert.False(String.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
             Assert.False(String.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
