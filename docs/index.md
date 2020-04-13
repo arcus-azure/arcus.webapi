@@ -31,7 +31,7 @@ For more granular packages we recommend reading the documentation.
 - **Telemetry**
     - [Enrich with telemetry information](features/telemetry)
 - **Logging**
-    - [Logging unhandled exceptions](features/logging)
+    - [Logging](features/logging)
 - **OpenAPI**
     - [Exposing security information in Swashbuckle documentation](features/openapi/security-definitions)
 

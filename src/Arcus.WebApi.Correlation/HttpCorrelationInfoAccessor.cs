@@ -27,7 +27,7 @@ namespace Arcus.WebApi.Correlation
         /// </summary>
         public CorrelationInfo GetCorrelationInfo()
         {
-            var correlationInfo = _httpContextAccessor.HttpContext.Features.Get<CorrelationInfo>();
+            var correlationInfo = _httpContextAccessor.HttpContext?.Features.Get<CorrelationInfo>();
             return correlationInfo;
         }
 

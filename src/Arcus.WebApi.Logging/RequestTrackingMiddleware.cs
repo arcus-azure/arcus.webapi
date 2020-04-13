@@ -3,36 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Logging
 {
-    /// <summary>
-    /// 
-    /// </summary>
-    public static class IApplicationBuilderExtensions
-    {
-        /// <summary>
-        /// Adds the request tracing middleware component <see cref="RequestTrackingMiddleware"/> to the application to log every incoming HTTP request.
-        /// </summary>
-        /// <param name="app">THe current HTTP context.</param>
-        /// <param name="extractHeaders"></param>
-        /// <param name="extractBody"></param>
-        /// <returns></returns>
-        public static IApplicationBuilder UseRequestTracking(
-            this IApplicationBuilder app, 
-            Func<IHeaderDictionary, IDictionary<string, object>> extractHeaders = null,
-            Func<HttpRequest, IDictionary<string, object>> extractBody = null)
-        {
-            return app.UseMiddleware<RequestTrackingMiddleware>(extractHeaders, extractBody);
-        }
-    }
-        
     /// <summary>
     /// Request tracing middleware component to log every incoming HTTP request.
     /// </summary>
@@ -61,6 +37,10 @@ namespace Arcus.WebApi.Logging
         public async Task Invoke(HttpContext httpContext)
         {
             var stopwatch = Stopwatch.StartNew();
+            if (ShouldExtractRequestBody())
+            {
+                httpContext.Request.EnableBuffering();
+            }
 
             try
             {
@@ -89,11 +69,27 @@ namespace Arcus.WebApi.Logging
             }
         }
 
+        /// <summary>
+        /// Determines if it is necessary to extract the request body (meaning the request body should be buffered).
+        /// </summary>
+        protected virtual bool ShouldExtractRequestBody()
+        {
+            return true;
+        }
+
+        /// <summary>
+        /// Extracts information from the given HTTP <paramref name="requestHeaders"/> to include in the request tracking context.
+        /// </summary>
+        /// <param name="requestHeaders">The headers of the current HTTP request.</param>
         protected virtual IDictionary<string, object> ExtractRequestHeaders(IHeaderDictionary requestHeaders)
         {
             return requestHeaders.ToDictionary(header => header.Key, header => (object) header.Value);
         }
 
+        /// <summary>
+        /// Extracts information from the given HTTP request body <paramref name="requestStream"/> to include in the request tracking context.
+        /// </summary>
+        /// <param name="requestStream">The body of the current HTTP request.</param>
         protected virtual async Task<IDictionary<string, object>> ExtractRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
