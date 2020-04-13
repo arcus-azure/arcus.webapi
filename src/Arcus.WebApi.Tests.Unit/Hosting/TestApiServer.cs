@@ -158,13 +158,13 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 collection.AddSingleton<ILoggerFactory>(services =>
                 {
                     logger = new LoggerConfiguration()
-                             .MinimumLevel.Debug()
-                             .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                             .Enrich.FromLogContext()
-                             .Enrich.WithHttpCorrelationInfo(services)
-                             .WriteTo.Console()
-                             .WriteTo.Sink(LogSink)
-                             .CreateLogger();
+                        .MinimumLevel.Debug()
+                        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
+                        .Enrich.FromLogContext()
+                        .Enrich.WithHttpCorrelationInfo(services)
+                        .WriteTo.Console()
+                        .WriteTo.Sink(LogSink)
+                        .CreateLogger();
 
                     return new SerilogLoggerFactory(logger, dispose: false);
                 });
