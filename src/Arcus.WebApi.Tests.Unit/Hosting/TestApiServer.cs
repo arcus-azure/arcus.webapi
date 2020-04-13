@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Arcus.WebApi.Logging;
 using Arcus.WebApi.OpenApi.Extensions;
+using Arcus.WebApi.Tests.Unit.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;
 using GuardNet;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -30,6 +33,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
     {
         private readonly IDictionary<string, string> _configurationCollection;
         private readonly ICollection<Action<IServiceCollection>> _configureServices;
+        private readonly ICollection<Action<IApplicationBuilder>> _configures;
         private readonly ICollection<IFilterMetadata> _filters;
 
         private X509Certificate2 _clientCertificate;
@@ -51,6 +55,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
 
             _configureServices = new Collection<Action<IServiceCollection>> { configureServices, services => services.AddSingleton(logSink) };
             _filters = new Collection<IFilterMetadata>();
+            _configures = new Collection<Action<IApplicationBuilder>>();
             _configurationCollection = new Dictionary<string, string>();
 
             LogSink = logSink;
@@ -112,10 +117,40 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 });
             });
 
-            builder.UseStartup<TestStartup>();
+            builder.Configure(app =>
+            {
+                foreach (Action<IApplicationBuilder> configure in _configures)
+                {
+                    configure(app);
+                }
+
+                app.UseMiddleware<ExceptionHandlingMiddleware>();
+                app.UseMiddleware<TraceIdentifierMiddleware>();
+
+                app.UseHttpCorrelation();
+                app.UseSerilogRequestLogging();
+
+                app.UseMvc();
+
+                app.UseSwagger();
+                app.UseSwaggerUI(swaggerUiOptions =>
+                {
+                    string assemblyName = typeof(TestStartup).Assembly.GetName().Name;
+
+                    swaggerUiOptions.SwaggerEndpoint("v1/swagger.json", assemblyName);
+                    swaggerUiOptions.DocumentTitle = assemblyName;
+                });
+            });
 
             builder.ConfigureServices(collection =>
             {
+#if NETCOREAPP2_2
+                collection.AddMvc();
+#else
+                collection.AddMvc(options => options.EnableEndpointRouting = false);
+#endif
+                collection.AddHttpCorrelation();
+
                 Logger logger = null;
                 collection.AddSingleton<ILoggerFactory>(services =>
                 {
