@@ -28,12 +28,10 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Arcus.WebApi.Correlation\Arcus.WebApi.Correlation.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security.Authentication\Arcus.WebApi.Security.Authentication.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security.Authorization\Arcus.WebApi.Security.Authorization.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
-    <ProjectReference Include="..\Arcus.WebApi.Telemetry.Serilog\Arcus.WebApi.Telemetry.Serilog.csproj" />
   </ItemGroup>
 </Project>

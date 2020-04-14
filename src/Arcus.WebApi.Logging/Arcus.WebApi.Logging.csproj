@@ -25,9 +25,12 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Guard.Net" Version="1.2.0" />
+    <PackageReference Include="Arcus.Observability.Correlation" Version="0.1.0-preview-5" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="0.1.0-preview-5" />
   </ItemGroup>
 </Project>

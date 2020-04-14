@@ -1,15 +1,12 @@
 ﻿using System;
-using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Logging;
-using Arcus.WebApi.Telemetry.Serilog.Correlation;
+using Arcus.WebApi.Logging.Correlation;
 using Arcus.WebApi.Tests.Unit.Correlation;
-using Arcus.WebApi.Tests.Unit.Logging;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using Serilog.Events;
 
 namespace Arcus.WebApi.Tests.Unit.Hosting
 {
@@ -62,19 +59,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 swaggerUiOptions.SwaggerEndpoint("v1/swagger.json", assemblyName);
                 swaggerUiOptions.DocumentTitle = assemblyName;
             });
-
-            //Log.Logger = CreateLoggerConfiguration(app.ApplicationServices).CreateLogger();
-        }
-
-        private static LoggerConfiguration CreateLoggerConfiguration(IServiceProvider serviceProvider)
-        {
-            return new LoggerConfiguration()
-                .MinimumLevel.Debug()
-                .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
-                .Enrich.FromLogContext()
-                .Enrich.With(new CorrelationInfoEnricher(serviceProvider))
-                .WriteTo.Console()
-                .WriteTo.Sink(serviceProvider.GetRequiredService<InMemorySink>());
         }
     }
 }
