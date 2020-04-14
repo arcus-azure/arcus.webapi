@@ -1,5 +1,5 @@
 ---
-title: "Logging via ASP.NET Core middleware"
+title: "Logging"
 layout: default
 ---
 
