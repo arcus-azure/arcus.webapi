@@ -22,7 +22,7 @@ Additional [configuration](#configuration) is available to tweak this functional
 This feature requires to install our NuGet package:
 
 ```shell
-PM > Install-Package Arcus.WebApi.Correlation
+PM > Install-Package Arcus.WebApi.Logging
 ```
 
 ## Usage
