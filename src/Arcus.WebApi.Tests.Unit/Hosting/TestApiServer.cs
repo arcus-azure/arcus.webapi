@@ -7,7 +7,6 @@ using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.OpenApi.Extensions;
 using Arcus.WebApi.Telemetry.Serilog.Correlation;
-using Arcus.WebApi.Tests.Unit.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Builder;
