@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using Arcus.WebApi.Correlation;
 using Arcus.WebApi.Logging;
+using Arcus.WebApi.Logging.Correlation;
 using Arcus.WebApi.OpenApi.Extensions;
-using Arcus.WebApi.Telemetry.Serilog.Correlation;
+using Arcus.WebApi.Tests.Unit.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Builder;
@@ -130,8 +130,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 app.UseMiddleware<TraceIdentifierMiddleware>();
 
                 app.UseHttpCorrelation();
-                app.UseSerilogRequestLogging();
-
                 app.UseMvc();
 
                 app.UseSwagger();
