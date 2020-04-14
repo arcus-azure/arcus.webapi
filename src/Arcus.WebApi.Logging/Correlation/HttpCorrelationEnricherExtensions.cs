@@ -1,7 +1,7 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Serilog.Enrichers;
-using Arcus.WebApi.Correlation;
+using Arcus.WebApi.Logging.Correlation;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +20,7 @@ namespace Serilog.Configuration
         /// <param name="enrichmentConfiguration">The configuration to add the enricher.</param>
         /// <param name="serviceProvider">The provider to retrieve the <see cref="IHttpContextAccessor"/> service.</param>
         /// <remarks>
-        ///     In order to use the <see cref="HttpCorrelationInfoAccessor"/>, the <see cref="Arcus.WebApi.Correlation.IServiceCollectionExtensions.AddHttpCorrelation"/> must be called first.
+        ///     In order to use the <see cref="HttpCorrelationInfoAccessor"/>, the <see cref="Arcus.WebApi.Logging.Correlation.IServiceCollectionExtensions.AddHttpCorrelation"/> must be called first.
         /// </remarks>
         public static LoggerConfiguration WithHttpCorrelationInfo(this LoggerEnrichmentConfiguration enrichmentConfiguration, IServiceProvider serviceProvider)
         {

@@ -7,7 +7,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
-namespace Arcus.WebApi.Correlation 
+namespace Arcus.WebApi.Logging.Correlation 
 {
     /// <summary>
     /// Correlate the incoming request with the outgoing response by using previously configured options.
@@ -41,30 +41,6 @@ namespace Arcus.WebApi.Correlation
             _logger = logger;
         }
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CorrelationMiddleware"/> class.
-        /// </summary>
-        /// <param name="next">The next functionality in the request pipeline to be executed.</param>
-        /// <param name="options">The options controlling how the correlation should happen.</param>
-        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
-        /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
-        [Obsolete("Correlation options is moved to 'Arcus.Observability.Correlation', use the other constructor with " + nameof(CorrelationInfoOptions) + " instead")]
-        public CorrelationMiddleware(
-            RequestDelegate next,
-            IOptions<CorrelationOptions> options,
-            ILogger<CorrelationMiddleware> logger)
-        {
-            Guard.NotNull(next, nameof(next), "Requires a continuation delegate");
-            Guard.NotNull(options, nameof(options), "Requires a set of correlation options to manipulate how the correlation should happen");
-            Guard.NotNull(logger, nameof(logger), "Requires a logging implementation to trace diagnostic messages during the correlation");
-            Guard.For<ArgumentException>(() => options.Value is null, "Requires a set of correlation options to manipulate how the correlation should happen");
-
-            _next = next;
-            _options = options.Value.ToCorrelationInfoOptions();
-            _logger = logger;
-        }
-        
         /// <summary>Request handling method.</summary>
         /// <param name="httpContext">The <see cref="T:Microsoft.AspNetCore.Http.HttpContext" /> for the current request.</param>
         /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that represents the execution of this middleware.</returns>

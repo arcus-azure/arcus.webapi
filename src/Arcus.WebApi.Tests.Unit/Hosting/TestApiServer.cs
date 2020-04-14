@@ -4,7 +4,6 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
 using Arcus.WebApi.OpenApi.Extensions;
-using Arcus.WebApi.Telemetry.Serilog.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Hosting;
@@ -15,6 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.OpenApi.Models;
 using Serilog;
+using Serilog.Configuration;
 using Serilog.Core;
 using Serilog.Events;
 using Serilog.Extensions.Hosting;
@@ -123,7 +123,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                         .MinimumLevel.Debug()
                         .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                         .Enrich.FromLogContext()
-                        .Enrich.With(new CorrelationInfoEnricher(services))
+                        .Enrich.WithHttpCorrelationInfo(services)
                         .WriteTo.Console()
                         .WriteTo.Sink(LogSink)
                         .CreateLogger();
