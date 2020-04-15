@@ -6,7 +6,7 @@ namespace Arcus.WebApi.Security.Authorization
     {
         private const string DefaultHeaderName = "x-managed-identity-token";
 
-        public string HeaderName { get; }
+        public string HeaderName { get; set; }
 
         public AzureManagedIdentityAuthorizationOptions(string headerName)
         {

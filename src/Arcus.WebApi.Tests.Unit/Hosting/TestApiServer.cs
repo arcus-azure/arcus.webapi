@@ -85,6 +85,10 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     {
                         options.Filters.Add(filter);
                     }
+
+                    // Examples
+                    options.Filters.AddAzureManagedIdentityAuthorization(services);
+                    options.Filters.AddAzureManagedIdentityAuthorization(services, authorizationOptions => authorizationOptions.HeaderName = "x-jwt");
                 });
 
                 string assemblyName = typeof(TestApiServer).Assembly.GetName().Name;
