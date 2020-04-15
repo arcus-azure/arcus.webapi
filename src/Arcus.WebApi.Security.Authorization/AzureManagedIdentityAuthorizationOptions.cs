@@ -15,6 +15,6 @@ namespace Arcus.WebApi.Security.Authorization
             HeaderName = headerName;
         }
 
-        public static AzureManagedIdentityAuthorizationOptions Default = new AzureManagedIdentityAuthorizationOptions(DefaultHeaderName);
+        public static readonly AzureManagedIdentityAuthorizationOptions Default = new AzureManagedIdentityAuthorizationOptions(DefaultHeaderName);
     }
 }
