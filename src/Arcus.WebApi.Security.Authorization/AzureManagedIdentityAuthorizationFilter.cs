@@ -14,16 +14,10 @@ namespace Arcus.WebApi.Security.Authorization
         private readonly IJwtTokenReader _jwtTokenReader;
 
         public AzureManagedIdentityAuthorizationFilter(IJwtTokenReader jwtTokenReader)
-            : this(DefaultHeaderName, jwtTokenReader)
         {
-        }
-
-        public AzureManagedIdentityAuthorizationFilter(string headerName, IJwtTokenReader jwtTokenReader)
-        {
-            Guard.NotNullOrEmpty(headerName, nameof(headerName));
             Guard.NotNull(jwtTokenReader, nameof(jwtTokenReader));
 
-            _headerName = headerName;
+            _headerName = DefaultHeaderName;
             _jwtTokenReader = jwtTokenReader;
         }
 
