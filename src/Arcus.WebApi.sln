@@ -15,11 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Tests.Unit", "
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.OpenApi.Extensions", "Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj", "{BC9FF9BC-330B-4736-BAF9-8A2EBB64F8EA}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Security.Authentication", "Arcus.WebApi.Security.Authentication\Arcus.WebApi.Security.Authentication.csproj", "{88EADCAB-29BF-42F1-8748-646676898903}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Tests.Integration", "Arcus.WebApi.Tests.Integration\Arcus.WebApi.Tests.Integration.csproj", "{257F0347-4F29-4386-B2A2-DEBF947C6E41}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Security.Authorization", "Arcus.WebApi.Security.Authorization\Arcus.WebApi.Security.Authorization.csproj", "{B3932833-DD99-4732-BCCB-3F8E53E8DA62}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,18 +43,10 @@ Global
 		{BC9FF9BC-330B-4736-BAF9-8A2EBB64F8EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BC9FF9BC-330B-4736-BAF9-8A2EBB64F8EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BC9FF9BC-330B-4736-BAF9-8A2EBB64F8EA}.Release|Any CPU.Build.0 = Release|Any CPU
-		{88EADCAB-29BF-42F1-8748-646676898903}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{88EADCAB-29BF-42F1-8748-646676898903}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{88EADCAB-29BF-42F1-8748-646676898903}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{88EADCAB-29BF-42F1-8748-646676898903}.Release|Any CPU.Build.0 = Release|Any CPU
 		{257F0347-4F29-4386-B2A2-DEBF947C6E41}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{257F0347-4F29-4386-B2A2-DEBF947C6E41}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{257F0347-4F29-4386-B2A2-DEBF947C6E41}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{257F0347-4F29-4386-B2A2-DEBF947C6E41}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B3932833-DD99-4732-BCCB-3F8E53E8DA62}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B3932833-DD99-4732-BCCB-3F8E53E8DA62}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B3932833-DD99-4732-BCCB-3F8E53E8DA62}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B3932833-DD99-4732-BCCB-3F8E53E8DA62}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
