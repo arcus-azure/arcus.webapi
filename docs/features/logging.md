@@ -72,7 +72,7 @@ public void Configure(IApplicationBuilder app, IWebHostEvironment env)
 
 **Configuration**
 
-Optionally, one can inherit from this middleware component and override the default request header and body extraction to discared one or both.
+Optionally, one can inherit from this middleware component and override the default request headers and body extraction to discared one or both.
 Following example discards the request headers:
 
 ```csharp
