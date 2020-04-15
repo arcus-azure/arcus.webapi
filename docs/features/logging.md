@@ -10,7 +10,7 @@ The `Arcus.WebApi.Logging` package provides a way to log several kinds of inform
 - [Logging unhandled exceptions](#logging-unhandled-exceptions)
 - [Logging incoming requests](#logging-incoming-requests)
 
-To send the logging information to Application Insights, see [this explenation](#application-insights).
+To send the logging information to Application Insights, see [this explanation](#application-insights).
 
 ## Installation
 
