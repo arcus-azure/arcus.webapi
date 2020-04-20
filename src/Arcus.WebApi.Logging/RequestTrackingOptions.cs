@@ -1,4 +1,7 @@
-﻿namespace Arcus.WebApi.Logging
+﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
+
+namespace Arcus.WebApi.Logging
 {
     /// <summary>
     /// Options that control the behavior in the <see cref="RequestTrackingMiddleware"/>.
@@ -18,6 +21,6 @@
         /// <summary>
         /// Gets or sets the HTTP request headers names that will be omitted during request tracking.
         /// </summary>
-        public string[] OmittedHeaderNames { get; set; } = { "Authentication", "X-Api-Key", "X-ARR-ClientCert" };
+        public ICollection<string> OmittedHeaderNames { get; set; } = new Collection<string> { "Authentication", "X-Api-Key", "X-ARR-ClientCert" };
     }
 }
