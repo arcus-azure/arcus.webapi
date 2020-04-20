@@ -118,7 +118,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             // Arrange
             const string customHeaderName = "x-custom-secret-header", customHeaderValue = "custom header value", body = "echo me";
-            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedHeaderNames.Add(customHeaderValue)));
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedHeaderNames.Add(customHeaderName)));
             using (HttpClient client = _testServer.CreateClient())
             {
                 var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
