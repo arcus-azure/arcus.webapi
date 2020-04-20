@@ -14,7 +14,7 @@ To send the logging information to Application Insights, see [this explanation](
 
 ## Installation
 
-These features requires to install our NuGet package
+These features require to install our NuGet package
 
 ```shell
 PM > Install-Package Arcus.WebApi.Logging
