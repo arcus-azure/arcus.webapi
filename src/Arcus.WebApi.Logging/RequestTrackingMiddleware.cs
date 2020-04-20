@@ -4,8 +4,11 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Logging
 {
@@ -14,18 +17,26 @@ namespace Arcus.WebApi.Logging
     /// </summary>
     public class RequestTrackingMiddleware
     {
+        private readonly RequestTrackingOptions _options;
         private readonly RequestDelegate _next;
         private readonly ILogger<RequestTrackingMiddleware> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestTrackingMiddleware"/> class.
         /// </summary>
+        /// <param name="options">The options to control the behavior of the request tracking.</param>
         /// <param name="next">The next pipeline function to process the HTTP context.</param>
         /// <param name="logger">The logger to write diagnostic messages during the request tracking.</param>
         public RequestTrackingMiddleware(
+            RequestTrackingOptions options,
             RequestDelegate next,
             ILogger<RequestTrackingMiddleware> logger)
         {
+            Guard.NotNull(options, nameof(options));
+            Guard.NotNull(next, nameof(next));
+            Guard.NotNull(logger, nameof(logger));
+
+            _options = options;
             _next = next;
             _logger = logger;
         }
@@ -37,7 +48,7 @@ namespace Arcus.WebApi.Logging
         public async Task Invoke(HttpContext httpContext)
         {
             var stopwatch = Stopwatch.StartNew();
-            if (ShouldExtractRequestBody())
+            if (_options.IncludeRequestBody)
             {
                 httpContext.Request.EnableBuffering();
             }
@@ -57,10 +68,18 @@ namespace Arcus.WebApi.Logging
         {
             try
             {
-                var headers = ExtractRequestHeaders(httpContext.Request.Headers) ?? new Dictionary<string, object>();
-                var body = await ExtractRequestBodyAsync(httpContext.Request.Body) ?? new Dictionary<string, object>();
-                Dictionary<string, object> logContext = headers.Concat(body).ToDictionary(kv => kv.Key, kv => kv.Value);
-
+                IDictionary<string, StringValues> headers = 
+                    _options.IncludeRequestHeaders
+                        ? SanitizeRequestHeaders(httpContext.Request.Headers) ?? new Dictionary<string, StringValues>()
+                        : new Dictionary<string, StringValues>();
+                
+                
+                IDictionary<string, StringValues> body = 
+                    _options.IncludeRequestBody
+                        ? await SanitizeRequestBodyAsync(httpContext.Request.Body) ?? new Dictionary<string, StringValues>()
+                        : new Dictionary<string, StringValues>();
+                
+                Dictionary<string, object> logContext = headers.Concat(body).ToDictionary(kv => kv.Key, kv => (object) kv.Value);
                 _logger.LogRequest(httpContext.Request, httpContext.Response, duration, logContext);
             }
             catch (Exception exception)
@@ -70,31 +89,19 @@ namespace Arcus.WebApi.Logging
         }
 
         /// <summary>
-        /// Determines if it is necessary to extract the request body (meaning the request body should be buffered).
-        /// </summary>
-        protected virtual bool ShouldExtractRequestBody()
-        {
-            return true;
-        }
-
-        /// <summary>
         /// Extracts information from the given HTTP <paramref name="requestHeaders"/> to include in the request tracking context.
         /// </summary>
         /// <param name="requestHeaders">The headers of the current HTTP request.</param>
-        protected virtual IDictionary<string, object> ExtractRequestHeaders(IHeaderDictionary requestHeaders)
+        protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
         {
-            return requestHeaders.ToDictionary(header => header.Key, header => (object) header.Value);
+            return requestHeaders.Where(header => !_options.OmittedHeaderNames.Contains(header.Key));
         }
 
-        /// <summary>
-        /// Extracts information from the given HTTP request body <paramref name="requestStream"/> to include in the request tracking context.
-        /// </summary>
-        /// <param name="requestStream">The body of the current HTTP request.</param>
-        protected virtual async Task<IDictionary<string, object>> ExtractRequestBodyAsync(Stream requestStream)
+        private static async Task<IDictionary<string, StringValues>> SanitizeRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
             {
-                return new Dictionary<string, object>();
+                return new Dictionary<string, StringValues>();
             }
 
             if (requestStream.CanSeek)
@@ -108,7 +115,7 @@ namespace Arcus.WebApi.Logging
             using (var reader = new StreamReader(requestStream))
             {
                 string contents = await reader.ReadToEndAsync();
-                return new Dictionary<string, object>
+                return new Dictionary<string, StringValues>
                 {
                     ["Body"] = contents
                 };

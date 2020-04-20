@@ -50,7 +50,9 @@ By doing so, unhandled exceptions that might occur in other middleware component
 The `RequestTrackingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log all received HTTP requests.
 The requests by this middleware component are logged through the `ILogger` implementations that are configured inside the project.
 
-The HTTP request headers and request body are by default logged.
+The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
+The HTTP request body is not logged by default.
+See [configuration](#configuration) for more details.
 
 **Example**
 
@@ -63,7 +65,7 @@ To use this middleware, add the following line of code in the `Startup.Configure
 ```csharp
 public void Configure(IApplicationBuilder app, IWebHostEvironment env)
 {
-    app.UseMiddleware<Arcus.WebApi.Logging.RequestTrackingMiddleware>();
+    app.UseRequestTracking();
 
     ...
     app.UseMvc();
@@ -72,43 +74,90 @@ public void Configure(IApplicationBuilder app, IWebHostEvironment env)
 
 **Configuration**
 
-Optionally, one can inherit from this middleware component and override the default request header and body extraction to discared one or both.
+The request tracking middleware has several configuration options to manipulate what the request logging emits should contain.
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRequestTracking(options =>
+    {
+        // Whether or not the HTTP request body should be included in the request tracking logging emits.
+        // (default: `false`)
+        options.IncludeRequestBody = true;
+
+        // Whether or not the configured HTTP request headers should be included in the request tracking logging emits.
+        // (default: `true`)
+        options.IncludeRequestHeaders = true;
+
+        // All omitted HTTP request header names that should always be excluded from the request tracking logging emits.
+        // (default: `[ "Authentication", "X-Api-Key", "X-ARR-ClientCert" ]`)
+        options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
+    });
+
+    ...
+    app.UseMvc();
+}
+```
+
+Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
 Following example discards the request headers:
 
 ```csharp
-public class NoRequestHeadersRequestTrackingMiddleware : RequestTrackingMiddleware
+public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddleware
 {
-    public NoRequestHeadersRequestTrackingMiddleware(
+    public EmptyButNotOmitRequestTrackingMiddleware(
         RequestDelegate next,
         ILogger<RequestTrackingMiddleware> logger) 
         : base(next, logger)
         {
         }
 
-    protected override IDictionary<string, object> ExtractRequestHeaders(IHeaderDictionary requestHeaders)
+    protected override IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
     {
-        return new Dictionary<string, object>();
+        requestHeaders["X-Api-Key"] = String.Empty;
+        return requestHeaders;
     }
+}
+```
+
+And, configure your custom middleware like this in the `Startup.cs`:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRequestTracking<EmptyButNotOmitRequestTrackingMiddleware>(options => options.OmittedHeaderNames.Clear());
+
+    ...
+    app.UseMvc();
 }
 ```
 
 So the resulting log message becomes:
 
-`HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [Content-Type, application/json])`
+`HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [X-Api-Key,])`
 
 ## Application Insights
 
-To get the information logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Program.cs`:
+To get the information logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Startup.cs`:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    Log.Logger = new LoggerConfiguration()
+        .WriteTo.AzureApplicationInsights("my-instrumentation-key")
+        .CreateLogger();
+}
+```
+
+Note, don't forget to add `.UseSerilog` in the `Program.cs`.
 
 ```csharp
 WebHost.CreateDefaultBuilder(args)
        .UseApplicationInsights()
-       .ConfigureLogging(loggers => loggers.AddApplicationInsights())
+       .UseSerilog()
        .UseStartup<Startup>();
 ```
 
-To be able to use the `AddApplicationInsights` extension method, the Microsoft.Extensions.Logging.ApplicationInsights package must be installed.
-
-If the parameter-less `AddApplicationInsights` method is used, the configurationsetting `ApplicationInsights:InstrumentationKey` must be specified and the value of the instrumentation-key of the Application Insights resource must be set.
+To have access to the `.AzureApplicationInsights` extension, make sure you've installed [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/).
 
 [&larr; back](/)
