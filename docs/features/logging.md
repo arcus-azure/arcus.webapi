@@ -48,7 +48,7 @@ By doing so, unhandled exceptions that might occur in other middleware component
 ## Logging incoming requests
 
 The `RequestTrackingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log all received HTTP requests.
-The requests by this middleware component are logged through the `ILogger` implementations that are configured inside the project.
+The incoming requests are logged by this middleware component using the `ILogger` implementations that are configured in the project.
 
 The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
 The HTTP request body is not logged by default.
