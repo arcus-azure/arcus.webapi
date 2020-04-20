@@ -10,7 +10,7 @@ The `Arcus.WebApi.Logging` package provides a way to log several kinds of inform
 - [Logging unhandled exceptions](#logging-unhandled-exceptions)
 - [Logging incoming requests](#logging-incoming-requests)
 
-To send the logging information to Application Insights, see [this explenation](#application-insights).
+To send the logging information to Application Insights, see [this explanation](#application-insights).
 
 ## Installation
 
@@ -100,7 +100,8 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 ```
 
 Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
-Following example discards the request headers:
+
+Following example shows how the request security headers can be emptied by not omitted:
 
 ```csharp
 public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddleware
