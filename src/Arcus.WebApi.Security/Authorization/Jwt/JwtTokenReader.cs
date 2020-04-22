@@ -60,23 +60,25 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <param name="token">JWT token</param>
         public async Task<bool> IsValidTokenAsync(string token)
         {
-            OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
-
-            var validationParameters = _tokenValidationParameters ?? new TokenValidationParameters
-            {
-                ValidateAudience = true,
-                ValidAudience = _applicationId,
-                ValidateIssuer = false,
-                IssuerSigningKeys = config.SigningKeys,
-                ValidateLifetime = true
-            };
-
-            SecurityToken jwtToken;
             try
             {
+                OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
+
+                var validationParameters = _tokenValidationParameters ?? new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidAudience = _applicationId,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = true,
+                    IssuerSigningKeys = config.SigningKeys,
+                    ValidateLifetime = true
+                };
+
+                SecurityToken jwtToken;
+
                 _handler.ValidateToken(token, validationParameters, out jwtToken);
             }
-            catch (Exception)
+            catch (Exception exception)
             {
                 return false;
             }

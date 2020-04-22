@@ -8,7 +8,7 @@ namespace Arcus.WebApi.Security.Authorization
 {
     public class AzureManagedIdentityAuthorizationFilter : IAsyncAuthorizationFilter
     {
-        private const string DefaultHeaderName = "x-managed-identity-token";
+        public const string DefaultHeaderName = "x-managed-identity-token";
 
         private readonly string _headerName;
         private readonly IJwtTokenReader _jwtTokenReader;
