@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using Polly;
 using Serilog;
 using Xunit;
+using Xunit.Abstractions;
 using Secret = IdentityServer4.Models.Secret;
 
 namespace Arcus.WebApi.Tests.Unit.Hosting
@@ -84,8 +85,9 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// <summary>
         /// Starts a new OpenId test server on the given <paramref name="address"/>.
         /// </summary>
+        /// <param name="outputWriter">The logger to write diagnostic messages during the lifetime of the the OpenId server.</param>
         /// <param name="address">The address on which the server will be available.</param>
-        public static async Task<TestOpenIdServer> StartNewAsync(string address = "https://localhost:5000/")
+        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter, string address = "https://localhost:5000/")
         {
             IWebHost host =
                 new WebHostBuilder()
@@ -96,7 +98,17 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     .Configure(Configure)
                     .Build();
 
-            Task.Run(() => host.RunAsync());
+            Task.Run(async () =>
+            {
+                try
+                {
+                    await host.RunAsync();
+                }
+                catch (Exception exception)
+                {
+                    
+                }
+            });
             await WaitUntilAvailableAsync(address);
 
             return new TestOpenIdServer(address, host);

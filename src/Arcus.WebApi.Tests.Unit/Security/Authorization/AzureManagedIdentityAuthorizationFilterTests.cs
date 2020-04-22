@@ -7,19 +7,29 @@ using Arcus.WebApi.Tests.Unit.Hosting;
 using Bogus;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
     public class AzureManagedIdentityAuthorizationFilterTests
     {
+        private readonly ITestOutputHelper _outputWriter;
         private readonly Faker _bogusGenerator = new Faker();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AzureManagedIdentityAuthorizationFilterTests"/> class.
+        /// </summary>
+        public AzureManagedIdentityAuthorizationFilterTests(ITestOutputHelper outputWriter)
+        {
+            _outputWriter = outputWriter;
+        }
 
         [Fact]
         public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
             using (var testServer = new TestApiServer())
-            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync())
+            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
@@ -46,7 +56,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         {
             // Arrange
             using (var testServer = new TestApiServer())
-            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync())
+            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
@@ -73,7 +83,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         {
             // Arrange
             using (var testServer = new TestApiServer())
-            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync())
+            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 var validationParameters = new TokenValidationParameters
                 {
@@ -106,7 +116,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         {
             // Arrange
             using (var testServer = new TestApiServer())
-            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync())
+            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var unavailableOpenIdServer = "http://localhost:6000";
