@@ -87,7 +87,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// </summary>
         /// <param name="outputWriter">The logger to write diagnostic messages during the lifetime of the the OpenId server.</param>
         /// <param name="address">The address on which the server will be available.</param>
-        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter, string address = "https://localhost:8135/")
+        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter, string address = "https://localhost:4000/")
         {
             IWebHost host =
                 new WebHostBuilder()
