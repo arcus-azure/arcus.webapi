@@ -55,16 +55,31 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         }
 
         /// <summary>
-        ///     Validates if the token is considered valid
+        ///     Validates if the token is considered valid.
         /// </summary>
         /// <param name="token">JWT token</param>
         public async Task<bool> IsValidTokenAsync(string token)
         {
             try
             {
-                OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
+                TokenValidationParameters validationParameters = await DetermineTokenValidationParametersAsync();
+                _handler.ValidateToken(token, validationParameters, out SecurityToken jwtToken);
+            }
+            catch (Exception exception)
+            {
+                return false;
+            }
 
-                var validationParameters = _tokenValidationParameters ?? new TokenValidationParameters
+            return true;
+        }
+
+        private async Task<TokenValidationParameters> DetermineTokenValidationParametersAsync()
+        {
+            if (_tokenValidationParameters is null)
+            {
+                OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
+                
+                var validationParameters = new TokenValidationParameters
                 {
                     ValidateAudience = false,
                     ValidAudience = _applicationId,
@@ -74,16 +89,10 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
                     ValidateLifetime = true
                 };
 
-                SecurityToken jwtToken;
-
-                _handler.ValidateToken(token, validationParameters, out jwtToken);
-            }
-            catch (Exception exception)
-            {
-                return false;
+                return validationParameters;
             }
 
-            return true;
+            return _tokenValidationParameters;
         }
     }
 }

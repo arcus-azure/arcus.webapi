@@ -110,33 +110,5 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                 }
             }
         }
-
-        [Fact]
-        public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorizationWithoutOpenIdServer_ReturnsInternalServerError()
-        {
-            // Arrange
-            using (var testServer = new TestApiServer())
-            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
-            {
-                TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
-                var unavailableOpenIdServer = "http://localhost:6000";
-                var reader = new JwtTokenReader(validationParameters, unavailableOpenIdServer);
-                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
-
-                using (HttpClient client = testServer.CreateClient())
-                using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
-                {
-                    string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
-
-                    // Act
-                    using (HttpResponseMessage response = await client.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
-                }
-            }
-        }
     }
 }

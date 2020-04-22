@@ -49,7 +49,11 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// </summary>
         public async Task<TokenValidationParameters> GenerateTokenValidationParametersAsync()
         {
-            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(OpenIdAddressConfiguration, new OpenIdConnectConfigurationRetriever());
+            var configurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(
+                OpenIdAddressConfiguration, 
+                new OpenIdConnectConfigurationRetriever(),
+                new HttpDocumentRetriever { RequireHttps = false });
+
             OpenIdConnectConfiguration configuration = await configurationManager.GetConfigurationAsync();
 
             var validationParameters = new TokenValidationParameters
@@ -87,7 +91,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// </summary>
         /// <param name="outputWriter">The logger to write diagnostic messages during the lifetime of the the OpenId server.</param>
         /// <param name="address">The address on which the server will be available.</param>
-        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter, string address = "https://localhost:4000/")
+        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter, string address = "http://localhost:4000/")
         {
             IWebHost host =
                 new WebHostBuilder()
