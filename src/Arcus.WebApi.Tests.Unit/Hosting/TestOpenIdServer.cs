@@ -106,7 +106,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 }
                 catch (Exception exception)
                 {
-                    
+                    outputWriter.WriteLine(exception.Message);
                 }
             });
             await WaitUntilAvailableAsync(address);
