@@ -68,17 +68,26 @@ namespace Arcus.WebApi.Logging
         {
             try
             {
-                IDictionary<string, StringValues> headers = 
-                    _options.IncludeRequestHeaders
-                        ? SanitizeRequestHeaders(httpContext.Request.Headers) ?? new Dictionary<string, StringValues>()
-                        : new Dictionary<string, StringValues>();
-                
-                
-                IDictionary<string, StringValues> body = 
-                    _options.IncludeRequestBody
-                        ? await SanitizeRequestBodyAsync(httpContext.Request.Body) ?? new Dictionary<string, StringValues>()
-                        : new Dictionary<string, StringValues>();
-                
+                IDictionary<string, StringValues> headers = new Dictionary<string, StringValues>();
+                if (_options.IncludeRequestHeaders)
+                {
+                    IDictionary<string, StringValues> sanitizedHeaders = SanitizeRequestHeaders(httpContext.Request.Headers);
+                    if (sanitizedHeaders != null)
+                    {
+                        headers = sanitizedHeaders;
+                    }
+                }
+
+                IDictionary<string, StringValues> body = new Dictionary<string, StringValues>();
+                if (_options.IncludeRequestBody)
+                {
+                    IDictionary<string, StringValues> sanitizedBody = await SanitizeRequestBodyAsync(httpContext.Request.Body);
+                    if (sanitizedBody != null)
+                    {
+                        body = sanitizedBody;
+                    }
+                }
+
                 Dictionary<string, object> logContext = headers.Concat(body).ToDictionary(kv => kv.Key, kv => (object) kv.Value);
                 _logger.LogRequest(httpContext.Request, httpContext.Response, duration, logContext);
             }
