@@ -103,7 +103,7 @@ namespace Arcus.WebApi.Logging
         /// <param name="requestHeaders">The headers of the current HTTP request.</param>
         protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
         {
-            return requestHeaders.Where(header => !_options.OmittedHeaderNames.Contains(header.Key));
+            return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
         private static async Task<IDictionary<string, StringValues>> SanitizeRequestBodyAsync(Stream requestStream)
