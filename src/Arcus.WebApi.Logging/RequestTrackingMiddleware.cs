@@ -115,9 +115,23 @@ namespace Arcus.WebApi.Logging
 
             if (requestStream.CanSeek)
             {
-                if (requestStream.Position > 0)
+                if (requestStream.Position != 0)
                 {
                     requestStream.Position = 0;
+                }
+            }
+            else
+            {
+                try
+                {
+                    if (requestStream.Position != 0)
+                    {
+                        return new Dictionary<string, StringValues>();
+                    }
+                }
+                catch
+                {
+                    return new Dictionary<string, StringValues>();
                 }
             }
 
