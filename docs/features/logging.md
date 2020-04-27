@@ -116,7 +116,7 @@ public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddlewar
 
     protected override IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
     {
-        requestHeaders["X-Api-Key"] = String.Empty;
+        requestHeaders["X-Api-Key"] = "<redacted>";
         return requestHeaders;
     }
 }
