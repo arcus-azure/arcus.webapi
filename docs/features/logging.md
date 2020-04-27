@@ -1,29 +1,39 @@
 ---
-title: "Logging unhandled exceptions via ASP.NET Core middleware"
+title: "Logging"
 layout: default
 ---
 
-# Logging unhandled exceptions
+# Logging
 
-The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
-The unhandled exceptions are caught by this middleware component and are logged through the `ILogger` implementations that are configured inside the project.
+The `Arcus.WebApi.Logging` package provides a way to log several kinds of information during the receival and handling of HTTP requests.
 
-The HTTP status code `500` is used as response code when an unhandled exception is caught. However, when the runtime throws a `BadHttpRequestException` we will reflect this by returning the corresponding status code determined by the runtime.
+- [Logging unhandled exceptions](#logging-unhandled-exceptions)
+- [Logging incoming requests](#logging-incoming-requests)
+
+To send the logging information to Application Insights, see [this explanation](#application-insights).
 
 ## Installation
 
-This feature requires to install our NuGet package
+These features require to install our NuGet package
 
 ```shell
 PM > Install-Package Arcus.WebApi.Logging
 ```
 
-## Usage
+## Logging unhandled exceptions
+
+The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
+The unhandled exceptions are caught by this middleware component and are logged through the `ILogger` implementations that are configured inside the project.
+
+The HTTP status code `500` is used as response code when an unhandled exception is caught. 
+However, when the runtime throws a `BadHttpRequestException` we will reflect this by returning the corresponding status code determined by the runtime.
+
+**Usage**
 
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
    app.UseMiddleware<Arcus.WebApi.Logging.ExceptionHandlingMiddleware>();
 
@@ -32,20 +42,124 @@ public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 }
 ```
 
-If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as the first one.  By doing so, unhandled exceptions that might occur in other middleware components will also be logged by the `ExceptionHandlingMiddleware` component.
+If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as the first one.
+By doing so, unhandled exceptions that might occur in other middleware components will also be logged by the `ExceptionHandlingMiddleware` component.
 
-To get the exceptions logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Program.cs`:
+## Logging incoming requests
+
+The `RequestTrackingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log all received HTTP requests.
+The incoming requests are logged by this middleware component using the `ILogger` implementations that are configured in the project.
+
+The HTTP request body is not logged by default.
+
+The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
+See [configuration](#configuration) for more details.
+
+**Example**
+
+`HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [Content-Type, application/json], [Body, {"today":"cloudy"}])`
+
+**Usage**
+
+To use this middleware, add the following line of code in the `Startup.Configure` method:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEvironment env)
+{
+    app.UseRequestTracking();
+
+    ...
+    app.UseMvc();
+}
+```
+
+**Configuration**
+
+The request tracking middleware has several configuration options to manipulate what the request logging emits should contain.
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRequestTracking(options =>
+    {
+        // Whether or not the HTTP request body should be included in the request tracking logging emits.
+        // (default: `false`)
+        options.IncludeRequestBody = true;
+
+        // Whether or not the configured HTTP request headers should be included in the request tracking logging emits.
+        // (default: `true`)
+        options.IncludeRequestHeaders = true;
+
+        // All omitted HTTP request header names that should always be excluded from the request tracking logging emits.
+        // (default: `[ "Authentication", "X-Api-Key", "X-ARR-ClientCert" ]`)
+        options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
+    });
+
+    ...
+    app.UseMvc();
+}
+```
+
+Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
+
+Following example shows how the request security headers can be emptied by not omitted:
+
+```csharp
+public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddleware
+{
+    public EmptyButNotOmitRequestTrackingMiddleware(
+        RequestDelegate next,
+        ILogger<RequestTrackingMiddleware> logger) 
+        : base(next, logger)
+        {
+        }
+
+    protected override IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
+    {
+        requestHeaders["X-Api-Key"] = "<redacted>";
+        return requestHeaders;
+    }
+}
+```
+
+And, configure your custom middleware like this in the `Startup.cs`:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    app.UseRequestTracking<EmptyButNotOmitRequestTrackingMiddleware>(options => options.OmittedHeaderNames.Clear());
+
+    ...
+    app.UseMvc();
+}
+```
+
+So the resulting log message becomes:
+
+`HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [X-Api-Key,])`
+
+## Application Insights
+
+To get the information logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Startup.cs`:
+
+```csharp
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    Log.Logger = new LoggerConfiguration()
+        .WriteTo.AzureApplicationInsights("my-instrumentation-key")
+        .CreateLogger();
+}
+```
+
+Note, don't forget to add `.UseSerilog` in the `Program.cs`.
 
 ```csharp
 WebHost.CreateDefaultBuilder(args)
        .UseApplicationInsights()
-       .ConfigureLogging(loggers => loggers.AddApplicationInsights())
+       .UseSerilog()
        .UseStartup<Startup>();
 ```
 
-To be able to use the `AddApplicationInsights` extension method, the Microsoft.Extensions.Logging.ApplicationInsights package must be installed.
-
-
-If the parameter-less `AddApplicationInsights` method is used, the configurationsetting `ApplicationInsights:InstrumentationKey` must be specified and the value of the instrumentation-key of the Application Insights resource must be set.
+To have access to the `.AzureApplicationInsights` extension, make sure you've installed [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/).
 
 [&larr; back](/)
