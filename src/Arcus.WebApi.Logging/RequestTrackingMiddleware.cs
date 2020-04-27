@@ -68,27 +68,26 @@ namespace Arcus.WebApi.Logging
         {
             try
             {
-                IDictionary<string, StringValues> headers = new Dictionary<string, StringValues>();
+                IDictionary<string, StringValues> telemetryContext = new Dictionary<string, StringValues>();
                 if (_options.IncludeRequestHeaders)
                 {
                     IDictionary<string, StringValues> sanitizedHeaders = SanitizeRequestHeaders(httpContext.Request.Headers);
                     if (sanitizedHeaders != null)
                     {
-                        headers = sanitizedHeaders;
+                        telemetryContext = sanitizedHeaders;
                     }
                 }
 
-                IDictionary<string, StringValues> body = new Dictionary<string, StringValues>();
                 if (_options.IncludeRequestBody)
                 {
-                    IDictionary<string, StringValues> sanitizedBody = await SanitizeRequestBodyAsync(httpContext.Request.Body);
+                    string sanitizedBody = await SanitizeRequestBodyAsync(httpContext.Request.Body);
                     if (sanitizedBody != null)
                     {
-                        body = sanitizedBody;
+                        telemetryContext.Add("Body", sanitizedBody);
                     }
                 }
 
-                Dictionary<string, object> logContext = headers.Concat(body).ToDictionary(kv => kv.Key, kv => (object) kv.Value);
+                Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object) kv.Value);
                 _logger.LogRequest(httpContext.Request, httpContext.Response, duration, logContext);
             }
             catch (Exception exception)
@@ -106,11 +105,11 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private static async Task<IDictionary<string, StringValues>> SanitizeRequestBodyAsync(Stream requestStream)
+        private static async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
             {
-                return new Dictionary<string, StringValues>();
+                return null;
             }
 
             if (requestStream.CanSeek)
@@ -126,22 +125,19 @@ namespace Arcus.WebApi.Logging
                 {
                     if (requestStream.Position != 0)
                     {
-                        return new Dictionary<string, StringValues>();
+                        return null;
                     }
                 }
                 catch
                 {
-                    return new Dictionary<string, StringValues>();
+                    return null;
                 }
             }
 
             using (var reader = new StreamReader(requestStream))
             {
                 string contents = await reader.ReadToEndAsync();
-                return new Dictionary<string, StringValues>
-                {
-                    ["Body"] = contents
-                };
+                return contents;
             }
         }
     }
