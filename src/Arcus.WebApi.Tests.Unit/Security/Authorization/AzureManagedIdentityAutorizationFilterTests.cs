@@ -11,7 +11,7 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
-    public class JwtTokenAutorizationFilterTests
+    public class AzureManagedIdentityAuthorizationFilterTests
     {
         private readonly ITestOutputHelper _outputWriter;
         private readonly Faker _bogusGenerator = new Faker();
@@ -19,7 +19,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtTokenAutorizationFilterTests"/> class.
         /// </summary>
-        public JwtTokenAutorizationFilterTests(ITestOutputHelper outputWriter)
+        public AzureManagedIdentityAuthorizationFilterTests(ITestOutputHelper outputWriter)
         {
             _outputWriter = outputWriter;
         }
@@ -33,13 +33,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -60,7 +60,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+                testServer.AddFilter(new JwtTokenAuthorizationFilter (reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
@@ -93,13 +93,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter (reader));
+                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -126,7 +126,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
