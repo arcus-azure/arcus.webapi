@@ -22,7 +22,7 @@ using Secret = IdentityServer4.Models.Secret;
 namespace Arcus.WebApi.Tests.Unit.Hosting
 {
     /// <summary>
-    /// Represents a test implementation of a OpenId server to authenticate with in combination with the <see cref="AzureManagedIdentityAuthorizationFilter"/>.
+    /// Represents a test implementation of a OpenId server to authenticate with in combination with the <see cref="JwtTokenAuthorizationFilter "/>.
     /// </summary>
     public class TestOpenIdServer : IDisposable
     {

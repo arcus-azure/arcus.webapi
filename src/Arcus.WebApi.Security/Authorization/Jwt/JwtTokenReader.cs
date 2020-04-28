@@ -8,6 +8,9 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Arcus.WebApi.Security.Authorization.Jwt
 {
+    /// <summary>
+    /// <see cref="IJwtTokenReader"/> implementation to verify with OpenID configuration the JWT token from the HTTP request header.
+    /// </summary>
     public class JwtTokenReader : IJwtTokenReader
     {
         private const string MicrosoftDiscoveryEndpoint =
@@ -57,7 +60,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <summary>
         ///     Verify if the token is considered valid.
         /// </summary>
-        /// <param name="token">JWT token</param>
+        /// <param name="token">The JWT token.</param>
         public async Task<bool> IsValidTokenAsync(string token)
         {
             try
