@@ -11,15 +11,15 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
-    public class AzureManagedIdentityAuthorizationFilterTests
+    public class JwtTokenAutorizationFilterTests
     {
         private readonly ITestOutputHelper _outputWriter;
         private readonly Faker _bogusGenerator = new Faker();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureManagedIdentityAuthorizationFilterTests"/> class.
+        /// Initializes a new instance of the <see cref="JwtTokenAutorizationFilterTests"/> class.
         /// </summary>
-        public AzureManagedIdentityAuthorizationFilterTests(ITestOutputHelper outputWriter)
+        public JwtTokenAutorizationFilterTests(ITestOutputHelper outputWriter)
         {
             _outputWriter = outputWriter;
         }
@@ -33,13 +33,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -60,13 +60,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
-                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -93,14 +93,44 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
+                testServer.AddFilter(new JwtTokenAuthorizationFilter (reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
 
+                    // Act
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        // Assert
+                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task GetHealthWithoutBearerToken_WithIncorrectAzureManagedIdentityAuthorization_ReturnsUnauthorized()
+        {
+            // Arrange
+            using (var testServer = new TestApiServer())
+            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
+            {
+                var validationParameters = new TokenValidationParameters
+                {
+                    ValidateAudience = false,
+                    ValidateIssuer = false,
+                    ValidateIssuerSigningKey = true,
+                    ValidateLifetime = true
+                };
+                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+
+                using (HttpClient client = testServer.CreateClient())
+                using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
+                {
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
                     {
