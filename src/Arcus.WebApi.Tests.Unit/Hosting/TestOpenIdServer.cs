@@ -29,6 +29,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         private readonly IWebHost _host;
         private readonly string _address;
 
+        private static readonly Random Random = new Random();
         private static readonly HttpClient HttpClient = new HttpClient();
 
         private TestOpenIdServer(string address, IWebHost host)
@@ -91,8 +92,9 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         /// </summary>
         /// <param name="outputWriter">The logger to write diagnostic messages during the lifetime of the the OpenId server.</param>
         /// <param name="address">The address on which the server will be available.</param>
-        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter, string address = "http://localhost:4000/")
+        public static async Task<TestOpenIdServer> StartNewAsync(ITestOutputHelper outputWriter)
         {
+            string address = $"http://localhost:" + Random.Next(3000, 4001);
             IWebHost host =
                 new WebHostBuilder()
                     .UseUrls(address)
