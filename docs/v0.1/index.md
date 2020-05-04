@@ -6,7 +6,7 @@ redirect_from:
  - /index.html
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/0.1.0)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?packageVersion=0.1.0)](https://www.nuget.org/packages/Arcus.WebApi.All/0.1.0)
 
 
 # Installation
