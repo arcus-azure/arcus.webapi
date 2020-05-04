@@ -6,7 +6,7 @@ redirect_from:
  - /index.html
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/0.4.0)
 
 # Installation
 
@@ -15,7 +15,7 @@ The Arcus.WebApi library can be installed via NuGet.
 To install all Arcus.WebApi packages:
 
 ```shell
-PM > Install-Package Arcus.WebApi.All
+PM > Install-Package Arcus.WebApi.All -Version 0.4.0
 ```
 
 For more granular packages we recommend reading the documentation.
@@ -31,7 +31,7 @@ For more granular packages we recommend reading the documentation.
 - **Telemetry**
     - [Enrich with telemetry information](features/telemetry)
 - **Logging**
-    - [Logging unhandled exceptions](features/logging#logging-unhandled-exceptions)
+    - [Logging unhandled exceptions](features/logging)
 - **OpenAPI**
     - [Exposing security information in Swashbuckle documentation](features/openapi/security-definitions)
 

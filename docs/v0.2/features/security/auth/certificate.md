@@ -5,7 +5,7 @@ layout: default
 
 # Authentication with certificate
 
-![](https://img.shields.io/badge/Available%20starting-v0.2-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.2.0)
+![](https://img.shields.io/badge/Available%20starting-v0.1-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.2.0)
 
 The `Arcus.WebApi.Security` package provides a mechanism that uses the client certificate of the request to grant access to a web application.
 
@@ -24,7 +24,7 @@ The package allows two ways to configure this type of authentication mechanism i
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.Security.Authentication
+PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.2.0
 ```
 
 ## Globally enforce certificate authentication
@@ -114,5 +114,3 @@ public class MyApiController : ControllerBase
     }
 }
 ```
-
-[&larr; back](/)

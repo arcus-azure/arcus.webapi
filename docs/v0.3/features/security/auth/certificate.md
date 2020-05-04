@@ -24,7 +24,7 @@ The package allows two ways to configure this type of authentication mechanism i
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.Security.Authentication
+PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.4.0
 ```
 
 ## Globally enforce certificate authentication
@@ -114,5 +114,3 @@ public class MyApiController : ControllerBase
     }
 }
 ```
-
-[&larr; back](/)

@@ -15,7 +15,7 @@ The `OAuthAuthorizeOperationFilter` that is part of this package exposes this fu
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.OpenApi.Extensions
+PM > Install-Package Arcus.WebApi.OpenApi.Extensions -Version 0.3.0
 ```
 
 ## Usage
@@ -37,5 +37,3 @@ services.AddSwaggerGen(setupAction =>
    setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] {new [] {"myApiScope1", "myApiScope2"});
 });
 ```
-
-[&larr; back](/)

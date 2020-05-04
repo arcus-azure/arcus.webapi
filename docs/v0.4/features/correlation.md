@@ -24,7 +24,7 @@ Additional [configuration](#configuration) is available to tweak this functional
 This feature requires to install our NuGet package:
 
 ```shell
-PM > Install-Package Arcus.WebApi.Logging
+PM > Install-Package Arcus.WebApi.Correlation -Version 0.4.0
 ```
 
 ## Usage
@@ -34,12 +34,12 @@ To make sure the correlation is added to the HTTP response, following additions 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHttpCorrelation();
+    services.AddCorrelation();
 }
 
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
-    app.UseHttpCorrelation();
+    app.UseCorrelation();
 
     app.UseMvc();
 }
@@ -54,7 +54,7 @@ Some extra options are available to alter the functionality of the correlation:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHttpCorrelation(options =>
+    services.AddCorrelation(options =>
     {
         // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
         // ---------------------------------------------------------------------------------
@@ -91,22 +91,6 @@ public void ConfigureServices(IServiceCollection services)
         // (default: new `Guid`).
         options.Operation.GenerateId = () => $"Operation-{Guid.NewGuid()}";
     });
-}
-```
-
-## Logging
-
-As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration:
-
-```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    app.UseHttpCorrelation();
-    
-    Log.Logger = new LoggerConfiguration()
-        .Enrich.WithHttpCorrelationInfo()
-        .WriteTo.Console()
-        .CreateLogger();
 }
 ```
 
