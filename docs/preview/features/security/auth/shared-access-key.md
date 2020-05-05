@@ -5,8 +5,6 @@ layout: default
 
 # Authentication with shared access keys
 
-![](https://img.shields.io/badge/Available%20starting-v0.1-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.1.0)
-
 The `Arcus.WebApi.Security` package provides a mechanism that uses shared access keys to grant access to a web application.
 This authentication process consists of two parts:
 

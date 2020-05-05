@@ -22,8 +22,6 @@ PM > Install-Package Arcus.WebApi.Logging
 
 ## Logging unhandled exceptions
 
-![](https://img.shields.io/badge/Available%20starting-v0.1-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.1.0)
-
 The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
 The unhandled exceptions are caught by this middleware component and are logged through the `ILogger` implementations that are configured inside the project.
 

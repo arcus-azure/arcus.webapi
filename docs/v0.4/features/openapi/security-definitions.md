@@ -5,8 +5,6 @@ layout: default
 
 # Adding OAuth security definition to API operations
 
-![](https://img.shields.io/badge/Available%20starting-v0.2-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.2.0)
-
 When an API is secured via OAuth, it is helpful if the Open API documentation makes this clear via a security scheme and the API operations that require authorization automatically inform the consumer that it is possible that a 401 Unauthorized or 403 Forbidden response is returned.
 The `OAuthAuthorizeOperationFilter` that is part of this package exposes this functionality.
 

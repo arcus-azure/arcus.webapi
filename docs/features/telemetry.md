@@ -5,8 +5,6 @@ layout: default
 
 # Telemetry Enrichment
 
-![](https://img.shields.io/badge/Available%20starting-v0.4-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.4.0)
-
 ## Serilog Correlation Enrichment
 
 The `Arcus.WebApi.Telemetry.Serilog` library provides a [Serilog enricher](https://github.com/serilog/serilog/wiki/Enrichment) 

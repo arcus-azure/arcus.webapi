@@ -5,8 +5,6 @@ layout: default
 
 # Authentication with certificate
 
-![](https://img.shields.io/badge/Available%20starting-v0.2-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.2.0)
-
 The `Arcus.WebApi.Security` package provides a mechanism that uses the client certificate of the request to grant access to a web application.
 
 This authentication process consists of following parts:

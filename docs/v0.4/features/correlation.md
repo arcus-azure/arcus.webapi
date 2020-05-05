@@ -5,8 +5,6 @@ layout: default
 
 # Correlation Between HTTP Requests
 
-![](https://img.shields.io/badge/Available%20starting-v0.4-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.4.0)
-
 The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
 
 This correlation is based the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.

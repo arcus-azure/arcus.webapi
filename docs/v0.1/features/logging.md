@@ -5,8 +5,6 @@ layout: default
 
 ## Logging unhandled exceptions
 
-![](https://img.shields.io/badge/Available%20starting-v0.1-green?link=https://github.com/arcus-azure/arcus.webapi/releases/tag/v0.1.0)
-
 ### Introduction
 
 The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
