@@ -5,6 +5,9 @@ using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Arcus.WebApi.Tests.Unit.Hosting;
 using Bogus;
+using Microsoft.Azure.KeyVault.WebKey;
+using Microsoft.CodeAnalysis.Options;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,13 +36,14 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+                var jwtAuthOptions = Options.Create(new JwtTokenAuthorizationOptions());
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader, jwtAuthOptions));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -60,13 +64,14 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+                var jwtAuthOptions = Options.Create(new JwtTokenAuthorizationOptions());
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader, jwtAuthOptions));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
-                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -93,13 +98,14 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter (reader));
+                var jwtAuthOptions = Options.Create(new JwtTokenAuthorizationOptions());
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader, jwtAuthOptions));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(JwtTokenAuthorizationFilter.DefaultHeaderName, accessToken);
+                    request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -126,7 +132,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader));
+                var jwtAuthOptions = Options.Create(new JwtTokenAuthorizationOptions());
+                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader, jwtAuthOptions));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))

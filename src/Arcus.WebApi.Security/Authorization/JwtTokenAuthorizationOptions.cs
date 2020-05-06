@@ -4,7 +4,7 @@ namespace Arcus.WebApi.Security.Authorization
 {
     public class JwtTokenAuthorizationOptions
     {
-        private const string DefaultHeaderName = "x-identity-token";
+        public const string DefaultHeaderName = "x-identity-token";
 
         /// <summary>
         /// Gets the header name where the JWT token is expected in the HTTP request.
