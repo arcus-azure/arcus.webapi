@@ -3,6 +3,7 @@ using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authorization
@@ -12,22 +13,22 @@ namespace Arcus.WebApi.Security.Authorization
     /// </summary>
     public class JwtTokenAuthorizationFilter  : IAsyncAuthorizationFilter
     {
-        /// <summary>
-        /// Gets the default header name where the JWT token is expected in the HTTP request.
-        /// </summary>
-        public const string DefaultHeaderName = "x-managed-identity-token";
-
+        private readonly IOptions<JwtTokenAuthorizationOptions> _authorizationOptions;
         private readonly IJwtTokenReader _jwtTokenReader;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtTokenAuthorizationFilter"/> class.
         /// </summary>
         /// <param name="jwtTokenReader">The instance to read the JWT from the HTTP request header.</param>
-        public JwtTokenAuthorizationFilter (IJwtTokenReader jwtTokenReader)
+        /// <param name="authorizationOptions">Options for configuring how to authorize requests</param>
+        public JwtTokenAuthorizationFilter (IJwtTokenReader jwtTokenReader, IOptions<JwtTokenAuthorizationOptions> authorizationOptions)
         {
             Guard.NotNull(jwtTokenReader, nameof(jwtTokenReader));
+            Guard.NotNull(authorizationOptions, nameof(authorizationOptions));
+            Guard.NotNull(authorizationOptions.Value, nameof(authorizationOptions.Value));
 
             _jwtTokenReader = jwtTokenReader;
+            _authorizationOptions = authorizationOptions;
         }
 
         /// <summary>
@@ -39,7 +40,7 @@ namespace Arcus.WebApi.Security.Authorization
         /// </returns>
         public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
-            if (context.HttpContext.Request.Headers.TryGetValue(DefaultHeaderName, out StringValues jwtString))
+            if (context.HttpContext.Request.Headers.TryGetValue(_authorizationOptions.Value.HeaderName, out StringValues jwtString))
             {
                 bool isValidToken = await _jwtTokenReader.IsValidTokenAsync(jwtString);
                 if (string.IsNullOrWhiteSpace(jwtString) || isValidToken == false)
