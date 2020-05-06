@@ -12,7 +12,7 @@ jobs:
         shell: pwsh
         run: |
           Move-Item -Path .\docs\features .\docs\${{ env.GITHUB_REF }}\features
-          Move-Item -Path .\docs\index.md .\docs\${{ env.GITHUB_REF }}
+          Move-Item -Path .\docs\index.md .\docs\${{ env.GITHUB_REF }}\index.md
       - name: Move preview to current features folder
         shell: pwsh
         run: |
