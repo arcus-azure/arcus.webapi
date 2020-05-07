@@ -5,7 +5,7 @@ using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Arcus.WebApi.Tests.Unit.Hosting;
 using Bogus;
-using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 using Xunit.Abstractions;
@@ -61,8 +61,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                var jwtAuthOptions = Options.Create(new JwtTokenAuthorizationOptions());
-                testServer.AddFilter(new JwtTokenAuthorizationFilter(reader, jwtAuthOptions));
+                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))

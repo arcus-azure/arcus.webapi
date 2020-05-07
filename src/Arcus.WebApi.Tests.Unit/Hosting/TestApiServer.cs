@@ -35,7 +35,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         private readonly IDictionary<string, string> _configurationCollection;
         private readonly ICollection<Action<IServiceCollection>> _configureServices;
         private readonly ICollection<Action<IApplicationBuilder>> _configures;
-        private readonly ICollection<IFilterMetadata> _filters;
+        private readonly ICollection<Action<FilterCollection>> _filterActions;
 
         private X509Certificate2 _clientCertificate;
 
@@ -55,7 +55,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
             Guard.NotNull(configureServices, "Configure services cannot be 'null'");
 
             _configureServices = new Collection<Action<IServiceCollection>> { configureServices, services => services.AddSingleton(logSink) };
-            _filters = new Collection<IFilterMetadata>();
+            _filterActions = new Collection<Action<FilterCollection>>();
             _configures = new Collection<Action<IApplicationBuilder>>();
             _configurationCollection = new Dictionary<string, string>();
 
@@ -88,9 +88,9 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 services.AddHttpCorrelation();
                 services.AddMvc(options =>
                 {
-                    foreach (IFilterMetadata filter in _filters)
+                    foreach (Action<FilterCollection> filter in _filterActions)
                     {
-                        options.Filters.Add(filter);
+                        filter(options.Filters);
                     }
                 });
 
@@ -261,7 +261,19 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         {
             Guard.NotNull(filter, "Filter cannot be 'null'");
 
-            _filters.Add(filter);
+            _filterActions.Add(filters => filters.Add(filter));
+        }
+
+        /// <summary>
+        /// Adds a filter to the current MVC setup to run on every call in this hosted test server.
+        /// </summary>
+        /// <param name="filterAction">The filter to add.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="filterAction"/> is <c>null</c>.</exception>
+        public void AddFilter(Action<FilterCollection> filterAction)
+        {
+            Guard.NotNull(filterAction, "Filter action cannot be 'null'");
+
+            _filterActions.Add(filterAction);
         }
 
         /// <summary>
