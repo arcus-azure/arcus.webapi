@@ -5,7 +5,6 @@ layout: default
 
 [![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?packageVersion=0.2.0)](https://www.nuget.org/packages/Arcus.WebApi.All/0.2.0)
 
-
 # Installation
 
 The Arcus.WebApi library can be installed via NuGet.
