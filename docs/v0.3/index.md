@@ -1,7 +1,6 @@
 ---
 title: "Home"
 layout: default
-permalink: /
 ---
 
 [![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?packageVersion=0.3.0)](https://www.nuget.org/packages/Arcus.WebApi.All/0.3.0)
