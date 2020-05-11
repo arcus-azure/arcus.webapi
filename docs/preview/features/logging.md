@@ -35,7 +35,7 @@ To use this middleware, add the following line of code in the `Startup.Configure
 ```csharp
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-   app.UseMiddleware<Arcus.WebApi.Logging.ExceptionHandlingMiddleware>();
+   app.UseExceptionHandling();
 
    ...
    app.UseMvc();

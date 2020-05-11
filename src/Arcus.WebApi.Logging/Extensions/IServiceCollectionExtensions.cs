@@ -1,10 +1,11 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
 
-namespace Arcus.WebApi.Logging.Correlation 
+// ReSharper disable once CheckNamespace
+namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Adds operation and transaction correlation to the application.
