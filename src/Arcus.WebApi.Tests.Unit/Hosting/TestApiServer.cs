@@ -103,7 +103,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     Version = "v1"
                 };
 #endif
-#if NETCOREAPP3_0
+#if NETCOREAPP3_1
                 var openApiInformation = new OpenApiInfo
                 {
                     Title = assemblyName,
