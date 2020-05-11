@@ -32,7 +32,6 @@ For more granular packages we recommend reading the documentation.
     - [Enrich with telemetry information](features/telemetry)
 - **Logging**
     - [Logging unhandled exceptions](features/logging#logging-unhandled-exceptions)
-    - [Logging incoming requests](features/logging#logging-incoming-requests)
 - **OpenAPI**
     - [Exposing security information in Swashbuckle documentation](features/openapi/security-definitions)
 
@@ -43,8 +42,6 @@ This is licensed under The MIT License (MIT). Which means that you can use, copy
 
 # Older versions
 
-- [v1.0.1](v1.0.0)
-- [v0.4.0](v0.4.0)
 - [v0.3.0](v0.3.0)
 - [v0.2.0](v0.2.0)
 - [v0.1.0](v0.1.0)
