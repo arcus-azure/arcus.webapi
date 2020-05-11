@@ -1,9 +1,10 @@
 ﻿using System;
 using Arcus.WebApi.Logging;
+using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 
 // ReSharper disable once CheckNamespace
-namespace Microsoft.AspNetCore.Builder
+namespace Microsoft.AspNetCore.Builder 
 {
     /// <summary>
     /// Extra extensions on the <see cref="IApplicationBuilder"/> for logging.
@@ -11,6 +12,17 @@ namespace Microsoft.AspNetCore.Builder
     // ReSharper disable once InconsistentNaming
     public static class IApplicationBuilderExtensions
     {
+        /// <summary>
+        /// Adds the <see cref="ExceptionHandlingMiddleware"/> type to the application's request pipeline.
+        /// </summary>
+        /// <param name="app">The builder to configure the application's request pipeline.</param>
+        public static IApplicationBuilder UseExceptionHandling(this IApplicationBuilder app)
+        {
+            Guard.NotNull(app, nameof(app));
+
+            return app.UseMiddleware<ExceptionHandlingMiddleware>();
+        }
+
         /// <summary>
         /// Adds the <see cref="RequestTrackingMiddleware"/> type to the application's request pipeline.
         /// </summary>
@@ -41,6 +53,17 @@ namespace Microsoft.AspNetCore.Builder
             configureOptions?.Invoke(options);
 
             return app.UseMiddleware<TMiddleware>(options);
+        }
+
+        /// <summary>
+        /// Adds operation and transaction correlation to the application by using the <see cref="CorrelationMiddleware"/> in the request pipeline.
+        /// </summary>
+        /// <param name="app">The builder to configure the application's request pipeline.</param>
+        public static IApplicationBuilder UseHttpCorrelation(this IApplicationBuilder app)
+        {
+            Guard.NotNull(app, nameof(app));
+
+            return app.UseMiddleware<CorrelationMiddleware>();
         }
     }
 }

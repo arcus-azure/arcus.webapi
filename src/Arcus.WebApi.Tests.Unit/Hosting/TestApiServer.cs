@@ -126,7 +126,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     configure(app);
                 }
 
-                app.UseMiddleware<ExceptionHandlingMiddleware>();
+                app.UseExceptionHandling();
                 app.UseMiddleware<TraceIdentifierMiddleware>();
 
                 app.UseHttpCorrelation();
