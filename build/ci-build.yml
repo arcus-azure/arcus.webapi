@@ -42,7 +42,7 @@ stages:
         steps:
           - template: 'nuget/determine-pr-version.yml@templates'
             parameters:
-              manualTriggerVersion: ${{ parameters['Package.Version.ManualTrigger' }}
+              manualTriggerVersion: ${{ parameters['Package.Version.ManualTrigger'] }}
           - template: 'build/build-solution.yml@templates'
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
