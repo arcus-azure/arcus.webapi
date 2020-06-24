@@ -3,6 +3,10 @@ name: $(Package.Version)
 trigger: none
 pr: none
 
+parameters:
+  - name: 'Package.Version'
+    type: 'string'
+
 resources:
   repositories:
     - repository: templates
@@ -14,7 +18,6 @@ variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
   - template: ./variables/build.yml
-  # 'Package.Version' is added as queue-time variable on build in Azure DevOps
 
 stages:
   - stage: Build
@@ -85,7 +88,7 @@ stages:
 
   - stage: Release
     displayName: 'Release to NuGet.org'
-    dependsOn: [UnitTests,IntegrationTests]
+    dependsOn: [UnitTests, IntegrationTests]
     condition: succeeded()
     jobs:
       - job: PushToNuGet
