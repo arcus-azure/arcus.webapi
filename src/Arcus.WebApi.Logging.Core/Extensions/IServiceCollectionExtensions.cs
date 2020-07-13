@@ -1,6 +1,7 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
-using Arcus.WebApi.Logging.Correlation;
+using Arcus.WebApi.Logging.Core;
+using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 
@@ -28,6 +29,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddCorrelation(
                 serviceProvider => new HttpCorrelationInfoAccessor(serviceProvider.GetRequiredService<IHttpContextAccessor>()), 
                 configureOptions);
+            services.AddScoped<HttpCorrelationService>();
 
             return services;
         }

@@ -3,6 +3,7 @@ using Arcus.Observability.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 
+// ReSharper disable once CheckNamespace
 namespace Arcus.WebApi.Logging.Correlation
 {
     /// <summary>
@@ -38,7 +39,7 @@ namespace Arcus.WebApi.Logging.Correlation
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
             throw new NotSupportedException(
-                $"The correlation information is automatically set during the application middleware '{nameof(CorrelationMiddleware)}' and is not supported to be altered afterwards");
+                $"The correlation information is automatically set during the application middleware 'CorrelationMiddleware' and is not supported to be altered afterwards");
         }
     }
 }

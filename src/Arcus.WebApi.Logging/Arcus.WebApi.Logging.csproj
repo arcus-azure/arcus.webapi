@@ -34,4 +34,8 @@
     <PackageReference Include="Arcus.Observability.Correlation" Version="0.2.0" />
     <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="0.2.0" />
   </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Arcus.WebApi.Logging.Core\Arcus.WebApi.Logging.Core.csproj" />
+  </ItemGroup>
 </Project>

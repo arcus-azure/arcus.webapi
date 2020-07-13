@@ -108,4 +108,64 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 }
 ```
 
+## Using secret store within Azure Functions
+
+### Installation
+
+For this feature, the following package needs to be installed:
+
+```shell
+PM > Install-Package Arcus.WebApi.Logging.AzureFunctions
+```
+
+### Usage
+
+To make sure the correlation is added to the HTTP response, following additions have to be made in the `.Configure` methods of the function's startup:
+
+```csharp
+[assembly: FunctionsStartup(typeof(Startup))]
+
+namespace MyHttpAzureFunction
+{
+    public class Startup : FunctionsStartup
+    {
+        public override void Configure(IFunctionsHostBuilder builder)
+        {
+            builder.AddHttpCorrelation();
+        }
+    }
+}
+```
+
+When this addition is added, you can use the `HttpCorrelationService` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+
+```csharp
+public class MyHttpFunction
+{
+    private readonly HttpCorrelationService _correlationService;
+    private readonly ICorrelationInfoAccessor _correlationAccessor;
+
+    public MyHttpFunction(HttpCorrelationService correlationService, ICorrelationInfoAccessor correlationAccessor)
+    {
+        _correlationService = correlationService;
+        _correlationAccessor = correlationAccessor;
+    }
+
+    [FunctionName("Function1")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        ILogger log)
+    {
+        if (_correlationService.TryHttpCorrelate(out string errorMessage))
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            CorrelationInfo correlationInfo = _correlationAccessor.GetCorrelationInfo();
+            return new OkObjectResult("This HTTP triggered function executed successfully.");
+        }
+
+        return new ObjectResult(errorResult) { StatusCode = 400 };
+    }
+```
+
 [&larr; back](/)
