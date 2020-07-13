@@ -1,7 +1,6 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
-using Arcus.WebApi.Logging.Core;
-using Arcus.WebApi.Logging.Core.Correlation;
+using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 
