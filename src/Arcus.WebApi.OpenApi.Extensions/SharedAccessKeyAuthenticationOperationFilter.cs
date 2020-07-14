@@ -67,7 +67,6 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #else
                     operation.Responses.Add("401", new Response { Description = "Unauthorized" });
 #endif
-
                 }
 
                 if (operation.Responses.ContainsKey("403") == false)
