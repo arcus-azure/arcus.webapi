@@ -116,6 +116,8 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     swaggerGenerationOptions.SwaggerDoc("v1", openApiInformation);
                     swaggerGenerationOptions.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, assemblyName + ".Open-Api.xml"));
                     swaggerGenerationOptions.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] { new[] { "myApiScope" } });
+                    swaggerGenerationOptions.OperationFilter<SharedAccessKeyAuthenticationOperationFilter>(new object[] { new [] { "myApiScope" } });
+                    swaggerGenerationOptions.OperationFilter<CertificateAuthenticationOperationFilter>(new object[] { new [] { "myApiScope" } });
                 });
             });
 
