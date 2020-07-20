@@ -137,15 +137,15 @@ namespace MyHttpAzureFunction
 }
 ```
 
-When this addition is added, you can use the `HttpCorrelationService` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
 
 ```csharp
 public class MyHttpFunction
 {
-    private readonly HttpCorrelationService _correlationService;
+    private readonly HttpCorrelation _correlationService;
     private readonly ICorrelationInfoAccessor _correlationAccessor;
 
-    public MyHttpFunction(HttpCorrelationService correlationService, ICorrelationInfoAccessor correlationAccessor)
+    public MyHttpFunction(HttpCorrelation correlationService, ICorrelationInfoAccessor correlationAccessor)
     {
         _correlationService = correlationService;
         _correlationAccessor = correlationAccessor;

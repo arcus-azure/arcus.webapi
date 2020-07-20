@@ -38,8 +38,7 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <param name="correlationInfo">The correlation model to set.</param>
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
-            throw new NotSupportedException(
-                $"The correlation information is automatically set during the application middleware 'CorrelationMiddleware' and is not supported to be altered afterwards");
+            _httpContextAccessor.HttpContext?.Features?.Set(correlationInfo);
         }
     }
 }

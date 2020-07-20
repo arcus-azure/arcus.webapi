@@ -8,7 +8,8 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
     [ApiController]
     public class CorrelationController : ControllerBase
     {
-        public const string Route = "correlation";
+        public const string DefaultRoute = "correlation",
+                            SetCorrelationRoute = "correlation/set";
 
         private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
         private readonly DiagnosticContext _diagnosticContext;
@@ -23,9 +24,19 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
         }
 
         [HttpGet]
-        [Route(Route)]
+        [Route(DefaultRoute)]
         public IActionResult Get()
         {
+            string json = JsonConvert.SerializeObject(_correlationInfoAccessor.GetCorrelationInfo());
+            return Ok(json);
+        }
+
+        [HttpPost]
+        [Route(SetCorrelationRoute)]
+        public IActionResult Post([FromHeader(Name = "RequestId")] string operationId, [FromHeader(Name = "X-Transaction-ID")] string transactionId)
+        {
+            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
+
             string json = JsonConvert.SerializeObject(_correlationInfoAccessor.GetCorrelationInfo());
             return Ok(json);
         }

@@ -13,31 +13,36 @@ namespace Arcus.WebApi.Logging.Correlation
     /// <summary>
     /// Provides the functionality to correlate HTTP requests and responses according to configured options.
     /// </summary>
-    public class HttpCorrelationService
+    public class HttpCorrelation
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
         private readonly CorrelationInfoOptions _options;
-        private readonly ILogger<HttpCorrelationService> _logger;
+        private readonly ILogger<HttpCorrelation> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpCorrelationService"/> class.
+        /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
         /// </summary>
         /// <param name="options">The options controlling how the correlation should happen.</param>
+        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
         /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
         /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
         /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
-        public HttpCorrelationService(
+        public HttpCorrelation(
             IOptions<CorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
-            ILogger<HttpCorrelationService> logger)
+            ICorrelationInfoAccessor correlationInfoAccessor,
+            ILogger<HttpCorrelation> logger)
         {
-            Guard.NotNull(httpContextAccessor, nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
             Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
+            Guard.NotNull(httpContextAccessor, nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
+            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
             Guard.NotNull(logger, nameof(logger), "Requires a logger to write diagnostic messages during the correlation");
             Guard.NotNull(options.Value, nameof(options.Value), "Requires a value in the set of options to configure the correlation process");
             
             _httpContextAccessor = httpContextAccessor;
+            _correlationInfoAccessor = correlationInfoAccessor;
             _options = options.Value;
             _logger = logger;
         }
@@ -76,7 +81,7 @@ namespace Arcus.WebApi.Logging.Correlation
             var correlation = new CorrelationInfo(operationId, transactionId);
             httpContext.Features.Set(correlation);
 
-            AddCorrelationResponseHeaders(httpContext, operationId, transactionId);
+            AddCorrelationResponseHeaders(httpContext);
 
             errorMessage = null;
             return true;
@@ -121,13 +126,14 @@ namespace Arcus.WebApi.Logging.Correlation
             return transactionIds.ToString();
         }
 
-        private void AddCorrelationResponseHeaders(HttpContext httpContext, string operationId, string transactionId)
+        private void AddCorrelationResponseHeaders(HttpContext httpContext)
         {
             if (_options.Operation.IncludeInResponse)
             {
                 httpContext.Response.OnStarting(() =>
                 {
-                    AddResponseHeader(httpContext, _options.Operation.HeaderName, operationId);
+                    CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
+                    AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
                     return Task.CompletedTask;
                 });
             }
@@ -136,7 +142,8 @@ namespace Arcus.WebApi.Logging.Correlation
             {
                 httpContext.Response.OnStarting(() =>
                 {
-                    AddResponseHeader(httpContext, _options.Transaction.HeaderName, transactionId);
+                    CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
+                    AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
                     return Task.CompletedTask;
                 });
             }

@@ -11,7 +11,7 @@ namespace Arcus.WebApi.Logging.Correlation
     public class CorrelationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly HttpCorrelationService _service;
+        private readonly HttpCorrelation _service;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationMiddleware"/> class.
@@ -20,7 +20,7 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <param name="service">The service to run the correlation functionality.</param>
         public CorrelationMiddleware(
             RequestDelegate next,
-            HttpCorrelationService service)
+            HttpCorrelation service)
         {
             Guard.NotNull(next, nameof(next), "Requires a continuation delegate");
             Guard.NotNull(service, nameof(service), "Requires the HTTP correlation service");

@@ -28,7 +28,7 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddCorrelation(
                 serviceProvider => new HttpCorrelationInfoAccessor(serviceProvider.GetRequiredService<IHttpContextAccessor>()), 
                 configureOptions);
-            services.AddScoped<HttpCorrelationService>();
+            services.AddScoped<HttpCorrelation>();
 
             return services;
         }
