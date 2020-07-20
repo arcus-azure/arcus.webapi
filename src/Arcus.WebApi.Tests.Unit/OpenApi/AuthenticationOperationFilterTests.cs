@@ -101,18 +101,6 @@ namespace Arcus.WebApi.Tests.Unit.OpenApi
             Assert.Throws<ArgumentException>(() => new OAuthAuthorizeOperationFilter(scopes));
         }
 
-        [Fact]
-        public void SharedAccessKeyAuthenticationOperationFilter_ShouldFailWithInvalidScopeList()
-        {
-            Assert.Throws<ArgumentException>(() => new SharedAccessKeyAuthenticationOperationFilter());
-        }
-
-        [Fact]
-        public void CertificateAuthenticationOperationFilter_ShouldFailWithInvalidScopeList()
-        {
-            Assert.Throws<ArgumentException>(() => new CertificateAuthenticationOperationFilter());
-        }
-
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
