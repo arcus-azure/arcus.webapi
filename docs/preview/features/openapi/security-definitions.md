@@ -56,7 +56,7 @@ services.AddSwaggerGen(setupAction =>
         Type = SecuritySchemeType.ApiKey
      });
 
-     setupAction.OperationFilter<SharedAccessKeyAuthenticationOperationFilter>(new object[] { new[] { "myApiScope1", "myApiScope2" } });
+     setupAction.OperationFilter<SharedAccessKeyAuthenticationOperationFilter>();
 });
 ```
 
@@ -74,7 +74,7 @@ services.AddSwaggerGen(setupAction =>
         Type = SecuritySchemeType.ApiKey
      });
 
-     setupAction.OperationFilter<CertificateAuthenticationOperationFilter>(new object[] { new[] { "myApiScope1", "myApiScope2" } });
+     setupAction.OperationFilter<CertificateAuthenticationOperationFilter>();
 });
 ```
 

@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using GuardNet;
 #if NETCOREAPP3_1
 using Microsoft.OpenApi.Models;    
 #endif
@@ -18,23 +14,6 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class CertificateAuthenticationOperationFilter : IOperationFilter
     {
-        private readonly IEnumerable<string> _scopes;
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="CertificateAuthenticationOperationFilter"/> class.
-        /// </summary>
-        /// <param name="scopes">A list of API scopes that is defined for the API that must be documented.</param>
-        /// <remarks>It is not possible right now to document the scopes on a fine grained operation-level.</remarks>
-        /// <exception cref="ArgumentNullException">When the <paramref name="scopes"/> are <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="scopes"/> has any elements that are <c>null</c> or blank.</exception>
-        public CertificateAuthenticationOperationFilter(IEnumerable<string> scopes)
-        {
-            Guard.NotNull(scopes, nameof(scopes), "The sequence of scopes cannot be null");
-            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "The sequence of scopes cannot contain a scope that is null or blank");
-
-            _scopes = scopes;
-        }
-
         /// <summary>
         /// Applies the OperationFilter to the API <paramref name="operation"/>.
         /// </summary>
@@ -89,14 +68,11 @@ namespace Arcus.WebApi.OpenApi.Extensions
                 {
                     new OpenApiSecurityRequirement
                     {
-                        [scheme] = _scopes.ToList()
+                        [scheme] = new List<string>()
                     }
                 };
 #else
-                operation.Security = new List<IDictionary<string, IEnumerable<string>>>
-                {
-                    new Dictionary<string, IEnumerable<string>> { ["certificate"] = _scopes }
-                };
+                operation.Security = new List<IDictionary<string, IEnumerable<string>>>();
 #endif
             }
         }
