@@ -53,7 +53,9 @@ services.AddSwaggerGen(setupAction =>
 
     setupAction.AddSecurityDefinition("sharedaccesskey", new OpenApiSecurityScheme
     {
-        Type = SecuritySchemeType.ApiKey
+        Name = "X-API-Key",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header
      });
 
      setupAction.OperationFilter<SharedAccessKeyAuthenticationOperationFilter>();

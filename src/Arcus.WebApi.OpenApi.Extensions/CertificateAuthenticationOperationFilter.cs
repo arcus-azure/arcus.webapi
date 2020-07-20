@@ -2,7 +2,7 @@
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.Certificates;
 #if NETCOREAPP3_1
-using Microsoft.OpenApi.Models;    
+using Microsoft.OpenApi.Models;
 #endif
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
