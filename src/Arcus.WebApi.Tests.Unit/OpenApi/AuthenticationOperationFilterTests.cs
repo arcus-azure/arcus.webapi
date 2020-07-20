@@ -101,20 +101,16 @@ namespace Arcus.WebApi.Tests.Unit.OpenApi
             Assert.Throws<ArgumentException>(() => new OAuthAuthorizeOperationFilter(scopes));
         }
 
-        [Theory]
-        [InlineData(new object[] { new[] { "valid scope", "" } })]
-        [InlineData(new object[] { new[] { "valid scope", null, "another scope" } })]
-        public void SharedAccessKeyAuthenticationOperationFilter_ShouldFailWithInvalidScopeList(IEnumerable<string> scopes)
+        [Fact]
+        public void SharedAccessKeyAuthenticationOperationFilter_ShouldFailWithInvalidScopeList()
         {
-            Assert.Throws<ArgumentException>(() => new SharedAccessKeyAuthenticationOperationFilter(scopes));
+            Assert.Throws<ArgumentException>(() => new SharedAccessKeyAuthenticationOperationFilter());
         }
 
-        [Theory]
-        [InlineData(new object[] { new[] { "valid scope", "" } })]
-        [InlineData(new object[] { new[] { "valid scope", null, "another scope" } })]
-        public void CertificateAuthenticationOperationFilter_ShouldFailWithInvalidScopeList(IEnumerable<string> scopes)
+        [Fact]
+        public void CertificateAuthenticationOperationFilter_ShouldFailWithInvalidScopeList()
         {
-            Assert.Throws<ArgumentException>(() => new CertificateAuthenticationOperationFilter(scopes));
+            Assert.Throws<ArgumentException>(() => new CertificateAuthenticationOperationFilter());
         }
 
         /// <summary>
