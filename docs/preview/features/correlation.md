@@ -151,7 +151,7 @@ public class MyHttpFunction
         _correlationAccessor = correlationAccessor;
     }
 
-    [FunctionName("Function1")]
+    [FunctionName("HTTP-Correlation-Example")]
     public async Task<IActionResult> Run(
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
         ILogger log)
