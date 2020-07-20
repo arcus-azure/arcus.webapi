@@ -6,7 +6,7 @@ using Arcus.WebApi.Security.Authentication.Certificates;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using GuardNet;
 #if NETCOREAPP3_1
-using Microsoft.OpenApi.Models;    
+using Microsoft.OpenApi.Models;
 #endif
 using Swashbuckle.AspNetCore.Swagger;
 using Swashbuckle.AspNetCore.SwaggerGen;
