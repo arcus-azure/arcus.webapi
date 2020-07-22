@@ -78,6 +78,8 @@ stages:
     displayName: Integration Tests
     dependsOn: Build
     condition: succeeded()
+    variables:
+      ProjectName: '$(Project).Tests.Projects.AzureFunction'
     jobs:
       - job: IntegrationTests
         displayName: 'Run integration tests'
@@ -89,6 +91,18 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
+          - task: Docker@1
+            displayName: 'Build Docker image from newly created $(ProjectName) project from template'
+            inputs:
+              dockerFile: ./src/$(ProjectName)/Dockerfile
+              imageName: '$(ProjectName):$(Build.BuildId)'
+          - task: Docker@1
+            displayName: 'Run new  project Docker image'
+            inputs:
+              command: 'Run an image'
+              imageName: '$(ProjectName):$(Build.BuildId)'
+              containerName: '$(ProjectName)'
+              ports: '5000'
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
