@@ -206,7 +206,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
                 _testServer.LogSink.DequeueLogEvents()
                            .SelectMany(ev => ev.Properties);
 
-            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.EventTracking.EventContext);
+            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.TelemetryContext);
             (string key, LogEventPropertyValue eventContext) = Assert.Single(eventContexts);
             var dictionaryValue = Assert.IsType<DictionaryValue>(eventContext);
 
