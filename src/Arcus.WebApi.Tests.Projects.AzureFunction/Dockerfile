@@ -6,7 +6,7 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["Arcus.WebApi.Tests.Projects.AzureFunction/Arcus.WebApi.Tests.Projects.AzureFunction.csproj", ""]
+COPY ["Arcus.WebApi.Tests.Projects.AzureFunction/Arcus.WebApi.Tests.Projects.AzureFunction.csproj", "Arcus.WebApi.Tests.Projects.AzureFunction/"]
 RUN dotnet restore "Arcus.WebApi.Tests.Projects.AzureFunction/Arcus.WebApi.Tests.Projects.AzureFunction.csproj"
 COPY . .
 WORKDIR "/src/Arcus.WebApi.Tests.Projects.AzureFunction"

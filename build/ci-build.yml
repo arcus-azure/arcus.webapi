@@ -98,8 +98,10 @@ stages:
           - task: Docker@1
             displayName: 'Build Docker image from newly created $(ProjectName) project from template'
             inputs:
-              dockerFile: ./src/$(ProjectName)/Dockerfile
+              dockerFile: src/$(ProjectName)/Dockerfile
               imageName: '$(ProjectName):$(Build.BuildId)'
+              useDefaultContext: false
+              buildContext: src
           - task: Docker@1
             displayName: 'Run new  project Docker image'
             inputs:
