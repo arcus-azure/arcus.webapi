@@ -96,19 +96,19 @@ stages:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
           - task: Docker@1
-            displayName: 'Build Docker image from newly created $(ProjectName) project from template'
+            displayName: 'Build Docker image from $(ProjectName)'
             inputs:
               dockerFile: src/$(ProjectName)/Dockerfile
               imageName: '$(ProjectName):$(Build.BuildId)'
               useDefaultContext: false
               buildContext: src
           - task: Docker@1
-            displayName: 'Run new  project Docker image'
+            displayName: 'Run new  project Docker image from $(ProjectName)'
             inputs:
               command: 'Run an image'
               imageName: '$(ProjectName):$(Build.BuildId)'
               containerName: '$(ProjectName)'
-              ports: '5000'
+              ports: '5000:5000'
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
