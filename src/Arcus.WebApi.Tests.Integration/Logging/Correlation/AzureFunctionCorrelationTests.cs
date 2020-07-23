@@ -12,7 +12,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
     {
         private const string DefaultOperationId = "RequestId",
                              DefaultTransactionId = "X-Transaction-ID",
-                            DefaultRoute = "http://localhost:5000/";
+                            DefaultRoute = "http://localhost:5000/api/HttpTriggerFunction";
 
         private static readonly HttpClient HttpClient = new HttpClient();
 
