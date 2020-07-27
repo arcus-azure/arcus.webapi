@@ -38,12 +38,13 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
             using (HttpResponseMessage response = await HttpClient.GetAsync(DefaultRoute))
             {
                 // Assert
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                string json = await response.Content.ReadAsStringAsync();
+                Assert.True(HttpStatusCode.OK == response.StatusCode, json);
 
                 string correlationId = GetResponseHeader(response, DefaultTransactionId);
                 string requestId = GetResponseHeader(response, DefaultOperationId);
 
-                string json = await response.Content.ReadAsStringAsync();
+                
                 var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "" });
                 Assert.False(String.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
                 Assert.False(String.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
