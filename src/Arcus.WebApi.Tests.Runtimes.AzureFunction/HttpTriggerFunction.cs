@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
         
         [FunctionName("HttpTriggerFunction")]
         public async Task<IActionResult> Run(
-            [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+            [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
             if (_correlationService.TryHttpCorrelate(out string errorMessage))
