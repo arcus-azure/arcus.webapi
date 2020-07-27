@@ -3,9 +3,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
 {
@@ -15,15 +18,17 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
                              DefaultTransactionId = "X-Transaction-ID";
 
         private readonly TestConfig _config;
+        private readonly XunitTestLogger _logger;
 
         private static readonly HttpClient HttpClient = new HttpClient();
-        
+
         /// <summary>
         /// Initializes a new instance of the <see cref="AzureFunctionCorrelationTests"/> class.
         /// </summary>
-        public AzureFunctionCorrelationTests()
+        public AzureFunctionCorrelationTests(ITestOutputHelper outputWriter)
         {
             _config = TestConfig.Create();
+            _logger = new XunitTestLogger(outputWriter);
             
             int httpPort = _config.GetHttpPort();
             DefaultRoute = $"http://localhost:{httpPort}/api/HttpTriggerFunction";
@@ -35,16 +40,17 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
         public async Task SendRequest_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess()
         {
             // Act
+            _logger.LogInformation("GET -> '{Uri}'", DefaultRoute);
             using (HttpResponseMessage response = await HttpClient.GetAsync(DefaultRoute))
             {
                 // Assert
-                string json = await response.Content.ReadAsStringAsync();
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, DefaultRoute);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string correlationId = GetResponseHeader(response, DefaultTransactionId);
                 string requestId = GetResponseHeader(response, DefaultOperationId);
 
-                
+                string json = await response.Content.ReadAsStringAsync();
                 var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "" });
                 Assert.False(String.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
                 Assert.False(String.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
@@ -63,9 +69,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
             request.Headers.Add(DefaultTransactionId, expected);
 
             // Act
+            _logger.LogInformation("GET -> '{Uri}'", DefaultRoute);
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, DefaultRoute);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, DefaultTransactionId);
@@ -82,9 +90,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
             request.Headers.Add(DefaultOperationId, expected);
 
             // Act
+            _logger.LogInformation("GET -> '{Uri}'", DefaultRoute);
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, DefaultRoute);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, DefaultOperationId);
