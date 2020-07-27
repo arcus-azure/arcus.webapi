@@ -84,7 +84,7 @@ stages:
     dependsOn: Build
     condition: succeeded()
     variables:
-      Project.Name: '$(Project).Tests.Projects.AzureFunction'
+      Project.Name: '$(Project).Tests.Runtimes.AzureFunction'
     jobs:
       - job: IntegrationTests
         displayName: 'Run integration tests'
