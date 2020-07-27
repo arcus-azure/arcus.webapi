@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
-namespace Arcus.WebApi.Tests.Projects.AzureFunction
+namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
 {
     public class HttpTriggerFunction
     {

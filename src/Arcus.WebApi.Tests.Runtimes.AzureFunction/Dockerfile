@@ -6,14 +6,14 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY ["Arcus.WebApi.Tests.Projects.AzureFunction/Arcus.WebApi.Tests.Projects.AzureFunction.csproj", "Arcus.WebApi.Tests.Projects.AzureFunction/"]
-RUN dotnet restore "Arcus.WebApi.Tests.Projects.AzureFunction/Arcus.WebApi.Tests.Projects.AzureFunction.csproj"
+COPY ["Arcus.WebApi.Tests.Runtimes.AzureFunction/Arcus.WebApi.Tests.Runtimes.AzureFunction.csproj", "Arcus.WebApi.Tests.Runtimes.AzureFunction/"]
+RUN dotnet restore "Arcus.WebApi.Tests.Runtimes.AzureFunction/Arcus.WebApi.Tests.Runtimes.AzureFunction.csproj"
 COPY . .
-WORKDIR "/src/Arcus.WebApi.Tests.Projects.AzureFunction"
-RUN dotnet build "Arcus.WebApi.Tests.Projects.AzureFunction.csproj" -c Release -o /app/build
+WORKDIR "/src/Arcus.WebApi.Tests.Runtimes.AzureFunction"
+RUN dotnet build "Arcus.WebApi.Tests.Runtimes.AzureFunction.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "Arcus.WebApi.Tests.Projects.AzureFunction.csproj" -c Release -o /app/publish
+RUN dotnet publish "Arcus.WebApi.Tests.Runtimes.AzureFunction.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /home/site/wwwroot
