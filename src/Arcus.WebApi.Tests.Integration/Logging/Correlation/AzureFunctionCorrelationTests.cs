@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Arcus.WebApi.Tests.Integration.Fixture;
 using Newtonsoft.Json;
 using Xunit;
 
@@ -11,10 +12,24 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
     public class AzureFunctionCorrelationTests
     {
         private const string DefaultOperationId = "RequestId",
-                             DefaultTransactionId = "X-Transaction-ID",
-                            DefaultRoute = "http://localhost:5000/api/HttpTriggerFunction";
+                             DefaultTransactionId = "X-Transaction-ID";
+
+        private readonly TestConfig _config;
 
         private static readonly HttpClient HttpClient = new HttpClient();
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AzureFunctionCorrelationTests"/> class.
+        /// </summary>
+        public AzureFunctionCorrelationTests()
+        {
+            _config = TestConfig.Create();
+            
+            int httpPort = _config.GetHttpPort();
+            DefaultRoute = $"http://localhost:{httpPort}/api/HttpTriggerFunction";
+        }
+
+        public string DefaultRoute { get; }
 
         [Fact]
         public async Task SendRequest_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess()
@@ -39,7 +54,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
         }
 
         [Fact]
-        public async Task SendRequest_WithCorrelationHeader_ResponseWithSameCorrelationHeader()
+        public async Task SendRequest_WithTransactionIdHeader_ResponseWithSameCorrelationHeader()
         {
             // Arrange
             string expected = $"transaction-{Guid.NewGuid()}";

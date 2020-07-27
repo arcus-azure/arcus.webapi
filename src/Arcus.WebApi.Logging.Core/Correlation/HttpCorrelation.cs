@@ -16,7 +16,6 @@ namespace Arcus.WebApi.Logging.Correlation
     public class HttpCorrelation
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
-        private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
         private readonly CorrelationInfoOptions _options;
         private readonly ILogger<HttpCorrelation> _logger;
 
@@ -42,10 +41,16 @@ namespace Arcus.WebApi.Logging.Correlation
             Guard.NotNull(options.Value, nameof(options.Value), "Requires a value in the set of options to configure the correlation process");
             
             _httpContextAccessor = httpContextAccessor;
-            _correlationInfoAccessor = correlationInfoAccessor;
             _options = options.Value;
             _logger = logger;
+
+            CorrelationInfoAccessor = correlationInfoAccessor;
         }
+
+        /// <summary>
+        /// Gets the instance to set and retrieve the <see cref="CorrelationInfo"/> instance.
+        /// </summary>
+        public ICorrelationInfoAccessor CorrelationInfoAccessor { get; }
 
         /// <summary>
         /// Correlate the current HTTP request according to the previously configured correlation options; returning an <paramref name="errorMessage"/> when the correlation failed.
@@ -132,7 +137,7 @@ namespace Arcus.WebApi.Logging.Correlation
             {
                 httpContext.Response.OnStarting(() =>
                 {
-                    CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
+                    CorrelationInfo correlationInfo = CorrelationInfoAccessor.GetCorrelationInfo();
                     AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
                     return Task.CompletedTask;
                 });
@@ -142,7 +147,7 @@ namespace Arcus.WebApi.Logging.Correlation
             {
                 httpContext.Response.OnStarting(() =>
                 {
-                    CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
+                    CorrelationInfo correlationInfo = CorrelationInfoAccessor.GetCorrelationInfo();
                     AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
                     return Task.CompletedTask;
                 });

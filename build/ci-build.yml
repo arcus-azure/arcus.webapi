@@ -32,6 +32,7 @@ variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
   - template: ./variables/build.yml
+  - template: ./variables/test.yml
 
 stages:
   - stage: Build
@@ -83,7 +84,7 @@ stages:
     dependsOn: Build
     condition: succeeded()
     variables:
-      ProjectName: '$(Project).Tests.Projects.AzureFunction'
+      Project.Name: '$(Project).Tests.Projects.AzureFunction'
     jobs:
       - job: IntegrationTests
         displayName: 'Run integration tests'
@@ -96,23 +97,31 @@ stages:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
           - task: Docker@1
-            displayName: 'Build Docker image from $(ProjectName)'
+            displayName: 'Build Docker image from $(Project.Name)'
             inputs:
-              dockerFile: src/$(ProjectName)/Dockerfile
-              imageName: '$(ProjectName):$(Build.BuildId)'
+              dockerFile: src/$(Project.Name)/Dockerfile
+              imageName: '$(Project.Name):$(Build.BuildId)'
               useDefaultContext: false
               buildContext: src
           - task: Docker@1
-            displayName: 'Run new  project Docker image from $(ProjectName)'
+            displayName: 'Run new  project Docker image from $(Project.Name)'
             inputs:
               command: 'Run an image'
-              imageName: '$(ProjectName):$(Build.BuildId)'
-              containerName: '$(ProjectName)'
-              ports: '5000:5000'
+              imageName: '$(Project.Name):$(Build.BuildId)'
+              containerName: '$(Project.Name)'
+              ports: '$(Arcus.HttpPort):$(Arcus.HttpPort)'
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
               projectName: '$(Project).Tests.Integration'
+          - task: Bash@3
+            inputs:
+              targetType: 'inline'
+              script: |
+                docker logs $(Project.Name)
+              failOnStderr: true
+            displayName: Show $(Project.Name) logs
+            condition: always()
 
   - stage: ReleaseToMyget
     displayName: 'Release to MyGet'
