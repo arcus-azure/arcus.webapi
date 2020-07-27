@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Correlation
             {
                 // Assert
                 string json = await response.Content.ReadAsStringAsync();
-                Assert.True(HttpStatusCode.OK == response.StatusCode, json);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string correlationId = GetResponseHeader(response, DefaultTransactionId);
                 string requestId = GetResponseHeader(response, DefaultOperationId);
