@@ -31,16 +31,17 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
         {
             if (_correlationService.TryHttpCorrelate(out string errorMessage))
             {
-                return new BadRequestObjectResult(errorMessage);
+                CorrelationInfo correlationInfo = _correlationService.CorrelationInfoAccessor.GetCorrelationInfo();
+                _logger.LogInformation(
+                    "Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]",
+                    correlationInfo.OperationId,
+                    correlationInfo.TransactionId);
+
+                string json = JsonConvert.SerializeObject(correlationInfo);
+                return new OkObjectResult(json);
             }
 
-            CorrelationInfo correlationInfo = _correlationService.CorrelationInfoAccessor.GetCorrelationInfo();
-            _logger.LogInformation(
-                "Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]", 
-                correlationInfo.OperationId, correlationInfo.TransactionId);
-            
-            string json = JsonConvert.SerializeObject(correlationInfo);
-            return new OkObjectResult(json);
+            return new BadRequestObjectResult(errorMessage);
         }
     }
 }
