@@ -1,2 +1,2 @@
 variables:
-  Arcus.HttpPort: "5000"
+  Arcus.HttpPort: "80"
