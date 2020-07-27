@@ -62,7 +62,7 @@ services.AddSwaggerGen(setupAction =>
 });
 ```
 
-### Shared Access Key
+### Certificate
 
 To indicate that an API is protected by [Certificate authentication](../../features/security/auth/certificate), you need to add `CertificateAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
 
