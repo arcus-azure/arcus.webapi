@@ -109,7 +109,7 @@ stages:
               command: 'Run an image'
               imageName: '$(Project.Name):$(Build.BuildId)'
               containerName: '$(Project.Name)'
-              ports: '$(Arcus.HttpPort):$(Arcus.HttpPort)'
+              ports: '$(Arcus.HttpPort):80'
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
