@@ -143,12 +143,10 @@ When this addition is added, you can use the `HttpCorrelation` inside your funct
 public class MyHttpFunction
 {
     private readonly HttpCorrelation _correlationService;
-    private readonly ICorrelationInfoAccessor _correlationAccessor;
 
-    public MyHttpFunction(HttpCorrelation correlationService, ICorrelationInfoAccessor correlationAccessor)
+    public MyHttpFunction(HttpCorrelation correlationService)
     {
         _correlationService = correlationService;
-        _correlationAccessor = correlationAccessor;
     }
 
     [FunctionName("HTTP-Correlation-Example")]
@@ -160,12 +158,14 @@ public class MyHttpFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            CorrelationInfo correlationInfo = _correlationAccessor.GetCorrelationInfo();
+            CorrelationInfo correlationInfo = _correlationService.CorrelationInfoAccessor.GetCorrelationInfo();
             return new OkObjectResult("This HTTP triggered function executed successfully.");
         }
 
-        return new ObjectResult(errorResult) { StatusCode = 400 };
+        return new BadRequestObjectResult(errorMessage);
     }
 ```
+
+> Note that the `HttpCorrelation` already has the registered `ICorrelationInfoAccessor` embedded but nothing stops you from injecting the `ICorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
 
 [&larr; back](/)
