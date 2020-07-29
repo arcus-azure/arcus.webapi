@@ -2,12 +2,12 @@ parameters:
   dockerProjectName: ''
 
 steps:
-   - bash: |
+  - bash: |
       if [ -z "$PROJECT_NAME" ]; then
         echo "##vso[task.logissue type=error;]Missing template parameter \"dockerProjectName\""
         echo "##vso[task.complete result=Failed;]"
       fi
-     env:
+    env:
       PROJECT_NAME: ${{ parameters.dockerProjectName }}
   - task: Docker@1
     displayName: 'Build Docker image from ${{ parameters.dockerProjectName }}'
