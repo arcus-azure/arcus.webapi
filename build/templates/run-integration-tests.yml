@@ -9,11 +9,6 @@ steps:
       fi
      env:
       PROJECT_NAME: ${{ parameters.dockerProjectName }}
-  - task: DownloadPipelineArtifact@2
-    displayName: 'Download build artifacts'
-    inputs:
-      artifact: 'Build'
-      path: '$(Build.SourcesDirectory)'
   - task: Docker@1
     displayName: 'Build Docker image from ${{ parameters.dockerProjectName }}'
     inputs:
