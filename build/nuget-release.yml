@@ -84,10 +84,9 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - template: test/run-integration-tests.yml@templates
+          - template: templates/run-integration-tests.yml
             parameters:
-              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              projectName: '$(Project).Tests.Integration'
+              dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
 
   - stage: Release
     displayName: 'Release to NuGet.org'
