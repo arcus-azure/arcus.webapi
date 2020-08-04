@@ -158,6 +158,7 @@ public class MyHttpFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            // Easily access correlation information in your application
             CorrelationInfo correlationInfo = _correlationService.CorrelationInfoAccessor.GetCorrelationInfo();
             return new OkObjectResult("This HTTP triggered function executed successfully.");
         }
