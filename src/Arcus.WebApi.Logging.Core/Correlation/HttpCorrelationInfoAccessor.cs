@@ -19,6 +19,8 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpCorrelationInfoAccessor"/> class.
         /// </summary>
+        /// <param name="contextAccessor">The instance to access the current <see cref="HttpContext"/>.</param>
+        /// <param name="logger">The instance to log diagnostic messages during getting and settings of the <see cref="CorrelationInfo"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="contextAccessor"/> is <c>null</c>.</exception>
         public HttpCorrelationInfoAccessor(IHttpContextAccessor contextAccessor, ILogger<HttpCorrelationInfoAccessor> logger)
         {
