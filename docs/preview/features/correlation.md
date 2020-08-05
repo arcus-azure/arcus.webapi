@@ -32,12 +32,12 @@ To make sure the correlation is added to the HTTP response, following additions 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddCorrelationService();
+    services.AddHttpCorrelation();
 }
 
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
-    app.UseCorrelationService();
+    app.UseHttpCorrelation();
 
     app.UseMvc();
 }
@@ -52,7 +52,7 @@ Some extra options are available to alter the functionality of the correlation:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddCorrelationService(options =>
+    services.AddHttpCorrelation(options =>
     {
         // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
         // ---------------------------------------------------------------------------------
@@ -99,10 +99,10 @@ As an additional feature, we provide an extension to use the HTTP correlation di
 ```csharp
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-    app.UseCorrelationService();
+    app.UseHttpCorrelation();
     
     Log.Logger = new LoggerConfiguration()
-        .Enrich.WithCorrelationServiceInfo()
+        .Enrich.WithHttpCorrelationInfo()
         .WriteTo.Console()
         .CreateLogger();
 }
@@ -131,7 +131,7 @@ namespace MyHttpAzureFunction
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.AddCorrelationService();
+            builder.AddHttpCorrelation();
         }
     }
 }
@@ -158,6 +158,7 @@ public class MyHttpFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
+            // Easily access correlation information in your application
             CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
             return new OkObjectResult("This HTTP triggered function executed successfully.");
         }
