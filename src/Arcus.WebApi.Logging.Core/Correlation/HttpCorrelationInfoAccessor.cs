@@ -4,6 +4,7 @@ using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 
 // ReSharper disable once CheckNamespace
 namespace Arcus.WebApi.Logging.Correlation
@@ -29,6 +30,14 @@ namespace Arcus.WebApi.Logging.Correlation
 
             _httpContextAccessor = contextAccessor;
             _logger = logger;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpCorrelationInfoAccessor"/> class.
+        /// </summary>
+        public HttpCorrelationInfoAccessor(IHttpContextAccessor contextAccessor) 
+            : this(contextAccessor, NullLogger<HttpCorrelationInfoAccessor>.Instance)
+        {
         }
 
         /// <summary>
