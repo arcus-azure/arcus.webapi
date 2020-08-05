@@ -5,7 +5,6 @@ using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Serilog.Configuration
@@ -32,8 +31,7 @@ namespace Serilog.Configuration
 
             return enrichmentConfiguration.WithCorrelationInfo(
                 new HttpCorrelationInfoAccessor(
-                    serviceProvider.GetRequiredService<IHttpContextAccessor>(),
-                    serviceProvider.GetRequiredService<ILogger<HttpCorrelationInfoAccessor>>()));
+                    serviceProvider.GetRequiredService<IHttpContextAccessor>()));
         }
     }
 }

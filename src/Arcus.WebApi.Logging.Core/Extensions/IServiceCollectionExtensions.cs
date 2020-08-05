@@ -30,9 +30,8 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddCorrelation(
                 serviceProvider =>
                 {
-                    var logger = serviceProvider.GetRequiredService<ILogger<HttpCorrelationInfoAccessor>>();
                     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                    return new HttpCorrelationInfoAccessor(httpContextAccessor, logger);
+                    return new HttpCorrelationInfoAccessor(httpContextAccessor);
                 }, 
                 configureOptions);
             services.AddScoped<CorrelationService>();
