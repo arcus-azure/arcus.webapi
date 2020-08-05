@@ -15,15 +15,15 @@ namespace Arcus.WebApi.Logging.Correlation
     /// using the <see cref="ICorrelationInfoAccessor"/> to expose the result.
     /// </summary>
     /// <seealso cref="HttpCorrelationInfoAccessor"/>
-    public class CorrelationService : ICorrelationInfoAccessor
+    public class HttpCorrelation : ICorrelationInfoAccessor
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly CorrelationInfoOptions _options;
         private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
-        private readonly ILogger<CorrelationService> _logger;
+        private readonly ILogger<HttpCorrelation> _logger;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CorrelationService"/> class.
+        /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
         /// </summary>
         /// <param name="options">The options controlling how the correlation should happen.</param>
         /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
@@ -31,11 +31,11 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
         /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
-        public CorrelationService(
+        public HttpCorrelation(
             IOptions<CorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
             ICorrelationInfoAccessor correlationInfoAccessor,
-            ILogger<CorrelationService> logger)
+            ILogger<HttpCorrelation> logger)
         {
             Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
             Guard.NotNull(httpContextAccessor, nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");

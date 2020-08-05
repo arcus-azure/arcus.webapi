@@ -13,7 +13,7 @@ namespace Arcus.WebApi.Logging.Correlation
     public class CorrelationMiddleware
     {
         private readonly RequestDelegate _next;
-        private readonly CorrelationService _service;
+        private readonly HttpCorrelation _service;
         private readonly ILogger _logger;
 
         /// <summary>
@@ -25,7 +25,7 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="next"/> or <paramref name="service"/> is <c>null</c>.</exception>
         public CorrelationMiddleware(
             RequestDelegate next,
-            CorrelationService service,
+            HttpCorrelation service,
             ILogger<CorrelationMiddleware> logger)
         {
             Guard.NotNull(next, nameof(next), "Requires a continuation delegate");

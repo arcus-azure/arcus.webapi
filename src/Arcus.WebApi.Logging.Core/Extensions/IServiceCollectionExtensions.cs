@@ -34,7 +34,7 @@ namespace Microsoft.Extensions.DependencyInjection
                     return new HttpCorrelationInfoAccessor(httpContextAccessor);
                 }, 
                 configureOptions);
-            services.AddScoped<CorrelationService>();
+            services.AddScoped<HttpCorrelation>();
 
             return services;
         }

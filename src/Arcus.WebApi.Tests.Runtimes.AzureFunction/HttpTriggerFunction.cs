@@ -12,13 +12,13 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
 {
     public class HttpTriggerFunction
     {
-        private readonly CorrelationService _correlationService;
+        private readonly HttpCorrelation _correlationService;
         private readonly ILogger<HttpTriggerFunction> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpTriggerFunction"/> class.
         /// </summary>
-        public HttpTriggerFunction(CorrelationService correlationService, ILogger<HttpTriggerFunction> logger)
+        public HttpTriggerFunction(HttpCorrelation correlationService, ILogger<HttpTriggerFunction> logger)
         {
             _correlationService = correlationService;
             _logger = logger;
