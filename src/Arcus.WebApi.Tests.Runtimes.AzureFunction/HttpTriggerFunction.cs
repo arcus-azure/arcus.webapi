@@ -12,13 +12,13 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
 {
     public class HttpTriggerFunction
     {
-        private readonly HttpCorrelation _correlationService;
+        private readonly CorrelationService _correlationService;
         private readonly ILogger<HttpTriggerFunction> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpTriggerFunction"/> class.
         /// </summary>
-        public HttpTriggerFunction(HttpCorrelation correlationService, ILogger<HttpTriggerFunction> logger)
+        public HttpTriggerFunction(CorrelationService correlationService, ILogger<HttpTriggerFunction> logger)
         {
             _correlationService = correlationService;
             _logger = logger;
@@ -31,7 +31,7 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
         {
             if (_correlationService.TryHttpCorrelate(out string errorMessage))
             {
-                CorrelationInfo correlationInfo = _correlationService.CorrelationInfoAccessor.GetCorrelationInfo();
+                CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
                 _logger.LogInformation(
                     "Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]",
                     correlationInfo.OperationId,

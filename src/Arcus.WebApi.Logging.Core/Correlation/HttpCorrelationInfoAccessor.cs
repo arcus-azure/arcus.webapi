@@ -2,6 +2,8 @@
 using Arcus.Observability.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Arcus.WebApi.Logging.Correlation
@@ -12,15 +14,19 @@ namespace Arcus.WebApi.Logging.Correlation
     public class HttpCorrelationInfoAccessor : ICorrelationInfoAccessor
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpCorrelationInfoAccessor"/> class.
         /// </summary>
-        public HttpCorrelationInfoAccessor(IHttpContextAccessor contextAccessor)
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="contextAccessor"/> is <c>null</c>.</exception>
+        public HttpCorrelationInfoAccessor(IHttpContextAccessor contextAccessor, ILogger<HttpCorrelationInfoAccessor> logger)
         {
             Guard.NotNull(contextAccessor, nameof(contextAccessor));
+            Guard.NotNull(logger, nameof(logger));
 
             _httpContextAccessor = contextAccessor;
+            _logger = logger;
         }
 
         /// <summary>
@@ -28,7 +34,13 @@ namespace Arcus.WebApi.Logging.Correlation
         /// </summary>
         public CorrelationInfo GetCorrelationInfo()
         {
-            var correlationInfo = _httpContextAccessor.HttpContext?.Features?.Get<CorrelationInfo>();
+            IFeatureCollection features = _httpContextAccessor.HttpContext?.Features;
+            if (features is null)
+            {
+                _logger.LogWarning("No HTTP context features available to retrieve the 'CorrelationInfo'");
+            }
+
+            var correlationInfo = features?.Get<CorrelationInfo>();
             return correlationInfo;
         }
 
@@ -36,9 +48,17 @@ namespace Arcus.WebApi.Logging.Correlation
         /// Sets the current correlation information for this context.
         /// </summary>
         /// <param name="correlationInfo">The correlation model to set.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="correlationInfo"/> is <c>null</c>.</exception>
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
-            _httpContextAccessor.HttpContext?.Features?.Set(correlationInfo);
+            Guard.NotNull(correlationInfo, nameof(correlationInfo));
+            IFeatureCollection features = _httpContextAccessor.HttpContext?.Features;
+            if (features is null)
+            {
+                _logger.LogWarning("No HTTP context features available to set the 'CorrelationInfo'");
+            }
+
+            features?.Set(correlationInfo);
         }
     }
 }

@@ -32,12 +32,12 @@ To make sure the correlation is added to the HTTP response, following additions 
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHttpCorrelation();
+    services.AddCorrelationService();
 }
 
 public void Configure(IApplicationBuilder app, IHostingEnvironment env)
 {
-    app.UseHttpCorrelation();
+    app.UseCorrelationService();
 
     app.UseMvc();
 }
@@ -52,7 +52,7 @@ Some extra options are available to alter the functionality of the correlation:
 ```csharp
 public void ConfigureServices(IServiceCollection services)
 {
-    services.AddHttpCorrelation(options =>
+    services.AddCorrelationService(options =>
     {
         // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
         // ---------------------------------------------------------------------------------
@@ -99,10 +99,10 @@ As an additional feature, we provide an extension to use the HTTP correlation di
 ```csharp
 public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 {
-    app.UseHttpCorrelation();
+    app.UseCorrelationService();
     
     Log.Logger = new LoggerConfiguration()
-        .Enrich.WithHttpCorrelationInfo()
+        .Enrich.WithCorrelationServiceInfo()
         .WriteTo.Console()
         .CreateLogger();
 }
@@ -131,20 +131,20 @@ namespace MyHttpAzureFunction
     {
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.AddHttpCorrelation();
+            builder.AddCorrelationService();
         }
     }
 }
 ```
 
-When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+When this addition is added, you can use the `CorrelationService` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
 
 ```csharp
 public class MyHttpFunction
 {
-    private readonly HttpCorrelation _correlationService;
+    private readonly CorrelationService _correlationService;
 
-    public MyHttpFunction(HttpCorrelation correlationService)
+    public MyHttpFunction(CorrelationService correlationService)
     {
         _correlationService = correlationService;
     }
@@ -158,7 +158,7 @@ public class MyHttpFunction
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
-            CorrelationInfo correlationInfo = _correlationService.CorrelationInfoAccessor.GetCorrelationInfo();
+            CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
             return new OkObjectResult("This HTTP triggered function executed successfully.");
         }
 
@@ -166,6 +166,6 @@ public class MyHttpFunction
     }
 ```
 
-> Note that the `HttpCorrelation` already has the registered `ICorrelationInfoAccessor` embedded but nothing stops you from injecting the `ICorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
+> Note that the `CorrelationService` already has the registered `ICorrelationInfoAccessor` embedded but nothing stops you from injecting the `ICorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
 
 [&larr; back](/)

@@ -3,6 +3,7 @@ using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -18,6 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The services collection containing the dependency injection services.</param>
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         public static IServiceCollection AddHttpCorrelation(
             this IServiceCollection services, 
             Action<CorrelationInfoOptions> configureOptions = null)
@@ -26,9 +28,14 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddHttpContextAccessor();
             services.AddCorrelation(
-                serviceProvider => new HttpCorrelationInfoAccessor(serviceProvider.GetRequiredService<IHttpContextAccessor>()), 
+                serviceProvider =>
+                {
+                    var logger = serviceProvider.GetRequiredService<ILogger<HttpCorrelationInfoAccessor>>();
+                    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                    return new HttpCorrelationInfoAccessor(httpContextAccessor, logger);
+                }, 
                 configureOptions);
-            services.AddScoped<HttpCorrelation>();
+            services.AddScoped<CorrelationService>();
 
             return services;
         }
