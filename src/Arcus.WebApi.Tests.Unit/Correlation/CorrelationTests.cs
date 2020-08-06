@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Tests.Unit.Hosting;
@@ -26,7 +27,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             _testServer.AddServicesConfig(services => services.Configure<CorrelationInfoOptions>(options => options.Transaction.AllowInRequest = false));
             
             using (HttpClient client = _testServer.CreateClient())
-            using (var request = new HttpRequestMessage(HttpMethod.Get, Route))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, DefaultRoute))
             {
                 request.Headers.Add(DefaultTransactionId, Guid.NewGuid().ToString());
 
@@ -49,7 +50,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
 
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -66,7 +67,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -84,7 +85,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
 
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -103,7 +104,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             
             using (HttpClient client = _testServer.CreateClient()) 
             // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -118,7 +119,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             // Arrange
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -143,7 +144,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             string expected = $"transaction-{Guid.NewGuid()}";
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Route);
+                var request = new HttpRequestMessage(HttpMethod.Get, DefaultRoute);
                 request.Headers.Add(DefaultTransactionId, expected);
 
                 // Act
@@ -165,7 +166,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             string expected = $"operation-{Guid.NewGuid()}";
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, Route);
+                var request = new HttpRequestMessage(HttpMethod.Get, DefaultRoute);
                 request.Headers.Add(DefaultOperationId, expected);
 
                 // Act
@@ -190,7 +191,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
 
             using (HttpClient client = _testServer.CreateClient())
                 // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -198,6 +199,33 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
                 
                 string actualOperationId = GetResponseHeader(response, DefaultOperationId);
                 Assert.Equal(expectedOperationId, actualOperationId);
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestWithCorrelateInfo_SetsCorrelationInfo_ResponseWithUpdatedCorrelationInfo()
+        {
+            // Arrange
+            var correlationInfo = new CorrelationInfo($"operation-{Guid.NewGuid()}", $"transaction-{Guid.NewGuid()}");
+
+            using (HttpClient client = _testServer.CreateClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Post, SetCorrelationRoute))
+            {
+                request.Headers.Add(DefaultOperationId, correlationInfo.OperationId);
+                request.Headers.Add(DefaultTransactionId, correlationInfo.TransactionId);
+
+                // Act
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                    string actualOperationId = GetResponseHeader(response, DefaultOperationId);
+                    string actualTransactionId = GetResponseHeader(response, DefaultTransactionId);
+
+                    Assert.Equal(correlationInfo.OperationId, actualOperationId);
+                    Assert.Equal(correlationInfo.TransactionId, actualTransactionId);
+                }
             }
         }
 

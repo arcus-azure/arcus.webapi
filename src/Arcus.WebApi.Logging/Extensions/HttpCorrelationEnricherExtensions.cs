@@ -2,6 +2,7 @@
 using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Serilog.Enrichers;
 using Arcus.WebApi.Logging.Correlation;
+using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -22,9 +23,15 @@ namespace Serilog.Configuration
         /// <remarks>
         ///     In order to use the <see cref="HttpCorrelationInfoAccessor"/>, the <see cref="IServiceCollectionExtensions.AddHttpCorrelation"/> must be called first.
         /// </remarks>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="enrichmentConfiguration"/> or <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         public static LoggerConfiguration WithHttpCorrelationInfo(this LoggerEnrichmentConfiguration enrichmentConfiguration, IServiceProvider serviceProvider)
         {
-            return enrichmentConfiguration.WithCorrelationInfo(new HttpCorrelationInfoAccessor(serviceProvider.GetService<IHttpContextAccessor>()));
+            Guard.NotNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
+            Guard.NotNull(serviceProvider, nameof(serviceProvider));
+
+            return enrichmentConfiguration.WithCorrelationInfo(
+                new HttpCorrelationInfoAccessor(
+                    serviceProvider.GetRequiredService<IHttpContextAccessor>()));
         }
     }
 }

@@ -3,6 +3,7 @@ using Arcus.Observability.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 
+// ReSharper disable once CheckNamespace
 namespace Arcus.WebApi.Logging.Correlation
 {
     /// <summary>
@@ -15,6 +16,8 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpCorrelationInfoAccessor"/> class.
         /// </summary>
+        /// <param name="contextAccessor">The instance to access the current <see cref="HttpContext"/>.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="contextAccessor"/> is <c>null</c>.</exception>
         public HttpCorrelationInfoAccessor(IHttpContextAccessor contextAccessor)
         {
             Guard.NotNull(contextAccessor, nameof(contextAccessor));
@@ -35,10 +38,11 @@ namespace Arcus.WebApi.Logging.Correlation
         /// Sets the current correlation information for this context.
         /// </summary>
         /// <param name="correlationInfo">The correlation model to set.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="correlationInfo"/> is <c>null</c>.</exception>
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
-            throw new NotSupportedException(
-                $"The correlation information is automatically set during the application middleware '{nameof(CorrelationMiddleware)}' and is not supported to be altered afterwards");
+            Guard.NotNull(correlationInfo, nameof(correlationInfo));
+            _httpContextAccessor.HttpContext?.Features?.Set(correlationInfo);
         }
     }
 }

@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>    
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
     <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
-    <Description>Provides capabilities for easily integrating logging when building Web APIs running in Azure.</Description>
+    <Description>Provides core capabilities for easily integrating logging when building applications running in Azure.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
@@ -21,21 +21,14 @@
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'netcoreapp3.1'">
-    <PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Server.Kestrel.Core" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Http" Version="2.2.2" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="0.3.0" />
+    <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="Arcus.Observability.Correlation" Version="0.3.0" />
-    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="0.3.0" />
   </ItemGroup>
 
-   <ItemGroup>
-    <ProjectReference Include="..\Arcus.WebApi.Logging.Core\Arcus.WebApi.Logging.Core.csproj" />
-  </ItemGroup>
 </Project>

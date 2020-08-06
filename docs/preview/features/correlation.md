@@ -108,4 +108,65 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 }
 ```
 
+## Using secret store within Azure Functions
+
+### Installation
+
+For this feature, the following package needs to be installed:
+
+```shell
+PM > Install-Package Arcus.WebApi.Logging.AzureFunctions
+```
+
+### Usage
+
+To make sure the correlation is added to the HTTP response, following additions have to be made in the `.Configure` methods of the function's startup:
+
+```csharp
+[assembly: FunctionsStartup(typeof(Startup))]
+
+namespace MyHttpAzureFunction
+{
+    public class Startup : FunctionsStartup
+    {
+        public override void Configure(IFunctionsHostBuilder builder)
+        {
+            builder.AddHttpCorrelation();
+        }
+    }
+}
+```
+
+When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+
+```csharp
+public class MyHttpFunction
+{
+    private readonly HttpCorrelation _httpCorrelation;
+
+    public MyHttpFunction(HttpCorrelation httpCorrelation)
+    {
+        _httpCorrelation = httpCorrelation;
+    }
+
+    [FunctionName("HTTP-Correlation-Example")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        ILogger log)
+    {
+        if (_httpCorrelation.TryHttpCorrelate(out string errorMessage))
+        {
+            log.LogInformation("C# HTTP trigger function processed a request.");
+
+            // Easily access correlation information in your application
+            CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
+            return new OkObjectResult("This HTTP triggered function executed successfully.");
+        }
+
+        return new BadRequestObjectResult(errorMessage);
+    }
+```
+
+> Note that the `HttpCorrelation` already has the registered `ICorrelationInfoAccessor` embedded but nothing stops you from injecting the `ICorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
+
 [&larr; back](/)

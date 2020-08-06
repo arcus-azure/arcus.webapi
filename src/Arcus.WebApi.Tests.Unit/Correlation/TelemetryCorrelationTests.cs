@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             // Arrange
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage response = await client.GetAsync(Route))
+            using (HttpResponseMessage response = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -41,14 +41,14 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             // Arrange
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage firstResponse = await client.GetAsync(Route))
+            using (HttpResponseMessage firstResponse = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
                 CorrelationInfo firstCorrelationInfo = await AssertAppCorrelationInfoAsync(firstResponse);
                 AssertLoggedCorrelationProperties(firstCorrelationInfo);
 
-                var request = new HttpRequestMessage(HttpMethod.Get, Route);
+                var request = new HttpRequestMessage(HttpMethod.Get, DefaultRoute);
                 request.Headers.Add("X-Transaction-ID", firstCorrelationInfo.TransactionId);
                 
                 using (HttpResponseMessage secondResponse = await client.SendAsync(request))
@@ -69,14 +69,14 @@ namespace Arcus.WebApi.Tests.Unit.Correlation
             // Arrange
             using (HttpClient client = _testServer.CreateClient())
             // Act
-            using (HttpResponseMessage firstResponse = await client.GetAsync(Route))
+            using (HttpResponseMessage firstResponse = await client.GetAsync(DefaultRoute))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.OK, firstResponse.StatusCode);
                 CorrelationInfo firstCorrelationInfo = await AssertAppCorrelationInfoAsync(firstResponse);
                 AssertLoggedCorrelationProperties(firstCorrelationInfo);
 
-                using (HttpResponseMessage secondResponse = await client.GetAsync(Route))
+                using (HttpResponseMessage secondResponse = await client.GetAsync(DefaultRoute))
                 {
                     Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
                     CorrelationInfo secondCorrelationInfo = await AssertAppCorrelationInfoAsync(secondResponse);

@@ -32,6 +32,7 @@ variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
   - template: ./variables/build.yml
+  - template: ./variables/test.yml
 
 stages:
   - stage: Build
@@ -93,10 +94,9 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - template: test/run-integration-tests.yml@templates
+          - template: templates/run-integration-tests.yml
             parameters:
-              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              projectName: '$(Project).Tests.Integration'
+              dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
 
   - stage: ReleaseToMyget
     displayName: 'Release to MyGet'

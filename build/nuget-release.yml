@@ -18,6 +18,7 @@ variables:
   - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
   - template: ./variables/build.yml
+  - template: ./variables/test.yml
   - name: 'Package.Version'
     value: ${{ parameters['Package.Version'] }}
 
@@ -83,10 +84,9 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - template: test/run-integration-tests.yml@templates
+          - template: templates/run-integration-tests.yml
             parameters:
-              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              projectName: '$(Project).Tests.Integration'
+              dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
 
   - stage: Release
     displayName: 'Release to NuGet.org'
