@@ -142,11 +142,11 @@ When this addition is added, you can use the `HttpCorrelation` inside your funct
 ```csharp
 public class MyHttpFunction
 {
-    private readonly HttpCorrelation _correlationService;
+    private readonly HttpCorrelation _httpCorrelation;
 
-    public MyHttpFunction(HttpCorrelation correlationService)
+    public MyHttpFunction(HttpCorrelation httpCorrelation)
     {
-        _correlationService = correlationService;
+        _httpCorrelation = httpCorrelation;
     }
 
     [FunctionName("HTTP-Correlation-Example")]
@@ -154,12 +154,12 @@ public class MyHttpFunction
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
         ILogger log)
     {
-        if (_correlationService.TryHttpCorrelate(out string errorMessage))
+        if (_httpCorrelation.TryHttpCorrelate(out string errorMessage))
         {
             log.LogInformation("C# HTTP trigger function processed a request.");
 
             // Easily access correlation information in your application
-            CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
+            CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
             return new OkObjectResult("This HTTP triggered function executed successfully.");
         }
 
