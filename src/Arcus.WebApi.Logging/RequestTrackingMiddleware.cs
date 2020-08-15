@@ -87,7 +87,7 @@ namespace Arcus.WebApi.Logging
                     }
                 }
 
-                Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object) kv.Value);
+                Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object)kv.Value);
                 _logger.LogRequest(httpContext.Request, httpContext.Response, duration, logContext);
             }
             catch (Exception exception)
@@ -112,10 +112,12 @@ namespace Arcus.WebApi.Logging
                 return null;
             }
 
+            long originalPosition = 0;
             if (requestStream.CanSeek)
             {
                 if (requestStream.Position != 0)
                 {
+                    originalPosition = requestStream.Position;
                     requestStream.Position = 0;
                 }
             }
@@ -134,11 +136,22 @@ namespace Arcus.WebApi.Logging
                 }
             }
 
-            using (var reader = new StreamReader(requestStream))
+            var reader = new StreamReader(requestStream);
+            string contents = await reader.ReadToEndAsync();
+
+            try
             {
-                string contents = await reader.ReadToEndAsync();
-                return contents;
+                if (requestStream.CanSeek)
+                {
+                    requestStream.Seek(originalPosition, SeekOrigin.Begin);
+                }
             }
+            catch
+            {
+                // Nothing to do here, we want to ensure the value is always returned.
+            }
+
+            return contents;
         }
     }
 }
