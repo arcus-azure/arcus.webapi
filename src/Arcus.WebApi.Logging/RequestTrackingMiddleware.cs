@@ -105,35 +105,24 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private static async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
+        private async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
             {
+                _logger.LogWarning("Request body could not be tracked because stream is not readable");
                 return null;
             }
 
-            long originalPosition = 0;
-            if (requestStream.CanSeek)
+            if (!requestStream.CanSeek)
             {
-                if (requestStream.Position != 0)
-                {
-                    originalPosition = requestStream.Position;
-                    requestStream.Position = 0;
-                }
+                _logger.LogWarning("Request body could not be tracked because stream is not seekable");
+                return null;
             }
-            else
+
+            long originalPosition = requestStream.Position;
+            if (requestStream.Position != 0)
             {
-                try
-                {
-                    if (requestStream.Position != 0)
-                    {
-                        return null;
-                    }
-                }
-                catch
-                {
-                    return null;
-                }
+                requestStream.Seek(0, SeekOrigin.Begin);
             }
 
             var reader = new StreamReader(requestStream);
@@ -141,10 +130,7 @@ namespace Arcus.WebApi.Logging
 
             try
             {
-                if (requestStream.CanSeek)
-                {
-                    requestStream.Seek(originalPosition, SeekOrigin.Begin);
-                }
+                requestStream.Seek(originalPosition, SeekOrigin.Begin);
             }
             catch
             {
