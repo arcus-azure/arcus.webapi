@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Logging
@@ -109,14 +108,12 @@ namespace Arcus.WebApi.Logging
         {
             if (!requestStream.CanRead)
             {
-                _logger.LogWarning("Request body could not be tracked because stream is not readable");
-                return null;
+                return "Request body could not be tracked because stream is not readable";
             }
 
             if (!requestStream.CanSeek)
             {
-                _logger.LogWarning("Request body could not be tracked because stream is not seekable");
-                return null;
+                return "Request body could not be tracked because stream is not seekable";
             }
 
             long originalPosition = requestStream.Position;
