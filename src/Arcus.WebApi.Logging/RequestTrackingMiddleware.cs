@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Logging
@@ -87,7 +86,7 @@ namespace Arcus.WebApi.Logging
                     }
                 }
 
-                Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object) kv.Value);
+                Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object)kv.Value);
                 _logger.LogRequest(httpContext.Request, httpContext.Response, duration, logContext);
             }
             catch (Exception exception)
@@ -105,40 +104,37 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private static async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
+        private async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
             {
-                return null;
+                return "Request body could not be tracked because stream is not readable";
             }
 
-            if (requestStream.CanSeek)
+            if (!requestStream.CanSeek)
             {
-                if (requestStream.Position != 0)
-                {
-                    requestStream.Position = 0;
-                }
-            }
-            else
-            {
-                try
-                {
-                    if (requestStream.Position != 0)
-                    {
-                        return null;
-                    }
-                }
-                catch
-                {
-                    return null;
-                }
+                return "Request body could not be tracked because stream is not seekable";
             }
 
-            using (var reader = new StreamReader(requestStream))
+            long originalPosition = requestStream.Position;
+            if (requestStream.Position != 0)
             {
-                string contents = await reader.ReadToEndAsync();
-                return contents;
+                requestStream.Seek(0, SeekOrigin.Begin);
             }
+
+            var reader = new StreamReader(requestStream);
+            string contents = await reader.ReadToEndAsync();
+
+            try
+            {
+                requestStream.Seek(originalPosition, SeekOrigin.Begin);
+            }
+            catch
+            {
+                // Nothing to do here, we want to ensure the value is always returned.
+            }
+
+            return contents;
         }
     }
 }
