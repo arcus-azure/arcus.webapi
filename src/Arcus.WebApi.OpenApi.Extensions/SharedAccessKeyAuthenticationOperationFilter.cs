@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using GuardNet;
 #if NETCOREAPP3_1
 using Microsoft.OpenApi.Models;    
 #endif
@@ -14,6 +16,20 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class SharedAccessKeyAuthenticationOperationFilter : IOperationFilter
     {
+        private readonly string _securitySchemaName;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationOperationFilter"/> class.
+        /// </summary>
+        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"oauth2"</c>.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="securitySchemaName"/> is blank.</exception>
+        public SharedAccessKeyAuthenticationOperationFilter(string securitySchemaName = "sharedaccesskey")
+        {
+            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the shared access key security scheme");
+
+            _securitySchemaName = securitySchemaName;
+        }
+
         /// <summary>
         /// Applies the OperationFilter to the API <paramref name="operation"/>.
         /// </summary>
@@ -60,7 +76,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #if NETCOREAPP3_1
                 var scheme = new OpenApiSecurityScheme
                 {
-                    Scheme = "sharedaccesskey",
+                    Scheme = _securitySchemaName,
                     Type = SecuritySchemeType.ApiKey
                 };
 
@@ -72,7 +88,10 @@ namespace Arcus.WebApi.OpenApi.Extensions
                     }
                 };
 #else
-                operation.Security = new List<IDictionary<string, IEnumerable<string>>>();
+                operation.Security = new List<IDictionary<string, IEnumerable<string>>>
+                {
+                    new Dictionary<string, IEnumerable<string>> { [_securitySchemaName] = Enumerable.Empty<string>() }
+                };
 #endif
             }
         }

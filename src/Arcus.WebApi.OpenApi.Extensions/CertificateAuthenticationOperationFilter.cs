@@ -1,6 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.Certificates;
+using GuardNet;
 #if NETCOREAPP3_1
 using Microsoft.OpenApi.Models;
 #endif
@@ -14,6 +16,20 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class CertificateAuthenticationOperationFilter : IOperationFilter
     {
+        private readonly string _securitySchemaName;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationOperationFilter"/> class.
+        /// </summary>
+        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"sharedaccesskey"</c>.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="securitySchemaName"/> is blank.</exception>
+        public CertificateAuthenticationOperationFilter(string securitySchemaName = "certificate")
+        {
+            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the certificate security schema");
+
+            _securitySchemaName = securitySchemaName;
+        }
+
         /// <summary>
         /// Applies the OperationFilter to the API <paramref name="operation"/>.
         /// </summary>
@@ -60,8 +76,9 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #if NETCOREAPP3_1
                 var scheme = new OpenApiSecurityScheme
                 {
-                    Scheme = "certificate",
-                    Type = SecuritySchemeType.ApiKey
+                    Scheme = _securitySchemaName,
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Header
                 };
 
                 operation.Security = new List<OpenApiSecurityRequirement>
@@ -72,7 +89,10 @@ namespace Arcus.WebApi.OpenApi.Extensions
                     }
                 };
 #else
-                operation.Security = new List<IDictionary<string, IEnumerable<string>>>();
+                operation.Security = new List<IDictionary<string, IEnumerable<string>>>
+                {
+                    new Dictionary<string, IEnumerable<string>> { [_securitySchemaName] = Enumerable.Empty<string>() }
+                };
 #endif
             }
         }
