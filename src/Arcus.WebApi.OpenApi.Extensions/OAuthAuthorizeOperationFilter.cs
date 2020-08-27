@@ -22,18 +22,18 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// <summary>
         /// Initializes a new instance of the <see cref="OAuthAuthorizeOperationFilter"/> class.
         /// </summary>
-        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"oauth2"</c>.</param>
         /// <param name="scopes">A list of API scopes that is defined for the API that must be documented.</param>
+        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"oauth2"</c>.</param>
         /// <remarks>It is not possible right now to document the scopes on a fine grained operation-level.</remarks>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="scopes"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">
-        ///     Thrown when the <paramref name="securitySchemaName"/> is blank or the <paramref name="scopes"/> has any elements that are <c>null</c> or blank.
+        ///     Thrown when the <paramref name="scopes"/> has any elements that are <c>null</c> or blank or the <paramref name="securitySchemaName"/> is blank.
         /// </exception>
-        public OAuthAuthorizeOperationFilter(string securitySchemaName, IEnumerable<string> scopes)
+        public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes, string securitySchemaName = "oauth2")
         {
-            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the OAuth2 security scheme");
             Guard.NotNull(scopes, nameof(scopes), "Requires a list of API scopes");
             Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "Requires a list of non-blank API scopes");
+            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the OAuth2 security scheme");
 
             _securitySchemaName = securitySchemaName;
             _scopes = scopes;

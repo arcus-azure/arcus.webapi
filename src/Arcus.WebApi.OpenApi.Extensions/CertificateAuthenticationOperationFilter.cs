@@ -16,18 +16,42 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class CertificateAuthenticationOperationFilter : IOperationFilter
     {
-        private readonly string _securitySchemaName;
+        private const string DefaultSecuritySchemeName = "certificate";
+
+        private readonly string _securitySchemeName;
+#if NETCOREAPP3_1
+        private readonly SecuritySchemeType _securitySchemeType;
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationOperationFilter"/> class.
         /// </summary>
-        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"sharedaccesskey"</c>.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="securitySchemaName"/> is blank.</exception>
-        public CertificateAuthenticationOperationFilter(string securitySchemaName = "certificate")
+        /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"certificate"</c>.</param>
+#if NETCOREAPP3_1
+        /// <param name="securitySchemeType">The type of the security scheme. Default value is <c>ApiKey</c>.</param>
+#endif
+        public CertificateAuthenticationOperationFilter(
+#if NETCOREAPP3_1
+            string securitySchemeName = DefaultSecuritySchemeName,
+            SecuritySchemeType securitySchemeType = SecuritySchemeType.ApiKey
+#else
+            string securitySchemeName = DefaultSecuritySchemeName
+#endif
+        )
         {
-            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the certificate security schema");
+            Guard.NotNullOrWhitespace(securitySchemeName,
+                                      nameof(securitySchemeName),
+                                      "Requires a name for the Certificate security scheme");
 
-            _securitySchemaName = securitySchemaName;
+            _securitySchemeName = securitySchemeName;
+
+#if NETCOREAPP3_1
+            Guard.For<ArgumentException>(
+                () => !Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType), 
+                "Requires a security scheme type for the Certificate authentication that is within the bounds of the enumeration");
+
+            _securitySchemeType = securitySchemeType;
+#endif
         }
 
         /// <summary>
@@ -73,11 +97,12 @@ namespace Arcus.WebApi.OpenApi.Extensions
                     operation.Responses.Add("403", new Response { Description = "Forbidden" });
 #endif
                 }
+
 #if NETCOREAPP3_1
                 var scheme = new OpenApiSecurityScheme
                 {
-                    Scheme = _securitySchemaName,
-                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = _securitySchemeName,
+                    Type = _securitySchemeType,
                     In = ParameterLocation.Header
                 };
 
@@ -91,7 +116,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #else
                 operation.Security = new List<IDictionary<string, IEnumerable<string>>>
                 {
-                    new Dictionary<string, IEnumerable<string>> { [_securitySchemaName] = Enumerable.Empty<string>() }
+                    new Dictionary<string, IEnumerable<string>> { [_securitySchemeName] = Enumerable.Empty<string>() }
                 };
 #endif
             }

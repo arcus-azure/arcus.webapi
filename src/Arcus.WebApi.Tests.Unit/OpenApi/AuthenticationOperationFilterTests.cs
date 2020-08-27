@@ -93,14 +93,6 @@ namespace Arcus.WebApi.Tests.Unit.OpenApi
             }
         }
 
-        [Theory]
-        [InlineData(new object[] { new[] { "valid scope", "" } })]
-        [InlineData(new object[] { new[] { "valid scope", null, "another scope" } })]
-        public void OAuthAuthorizeOperationFilter_ShouldFailWithInvalidScopeList(IEnumerable<string> scopes)
-        {
-            Assert.Throws<ArgumentException>(() => new OAuthAuthorizeOperationFilter(scopes));
-        }
-
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>

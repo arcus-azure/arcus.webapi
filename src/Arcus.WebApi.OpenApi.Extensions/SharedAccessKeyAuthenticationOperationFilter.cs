@@ -16,18 +16,40 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class SharedAccessKeyAuthenticationOperationFilter : IOperationFilter
     {
-        private readonly string _securitySchemaName;
+        private const string DefaultSecuritySchemeName = "sharedaccesskey";
+
+        private readonly string _securitySchemeName;
+#if NETCOREAPP3_1
+        private readonly SecuritySchemeType _securitySchemeType;
+#endif
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationOperationFilter"/> class.
         /// </summary>
-        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"oauth2"</c>.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="securitySchemaName"/> is blank.</exception>
-        public SharedAccessKeyAuthenticationOperationFilter(string securitySchemaName = "sharedaccesskey")
+        /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"sharedaccesskey"</c>.</param>
+#if NETCOREAPP3_1
+        /// <param name="securitySchemeType">The type of the security scheme. Default value is <c>ApiKey</c>.</param>
+#endif
+        public SharedAccessKeyAuthenticationOperationFilter(
+#if NETCOREAPP3_1
+            string securitySchemeName = DefaultSecuritySchemeName,
+            SecuritySchemeType securitySchemeType = SecuritySchemeType.ApiKey
+#else
+            string securitySchemeName = DefaultSecuritySchemeName
+#endif
+        )
         {
-            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the shared access key security scheme");
+            Guard.NotNullOrWhitespace(securitySchemeName, nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
 
-            _securitySchemaName = securitySchemaName;
+            _securitySchemeName = securitySchemeName;
+
+#if NETCOREAPP3_1
+            Guard.For<ArgumentException>(
+                () => !Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType), 
+                "Requires a security scheme type for the Shared Access Key authentication that is within the bounds of the enumeration");
+
+            _securitySchemeType = securitySchemeType;
+#endif
         }
 
         /// <summary>
@@ -76,8 +98,8 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #if NETCOREAPP3_1
                 var scheme = new OpenApiSecurityScheme
                 {
-                    Scheme = _securitySchemaName,
-                    Type = SecuritySchemeType.ApiKey
+                    Scheme = _securitySchemeName,
+                    Type = _securitySchemeType
                 };
 
                 operation.Security = new List<OpenApiSecurityRequirement>
@@ -90,7 +112,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #else
                 operation.Security = new List<IDictionary<string, IEnumerable<string>>>
                 {
-                    new Dictionary<string, IEnumerable<string>> { [_securitySchemaName] = Enumerable.Empty<string>() }
+                    new Dictionary<string, IEnumerable<string>> { [_securitySchemeName] = Enumerable.Empty<string>() }
                 };
 #endif
             }
