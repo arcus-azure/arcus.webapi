@@ -16,20 +16,26 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class OAuthAuthorizeOperationFilter : IOperationFilter
     {
+        private readonly string _securitySchemaName;
         private readonly IEnumerable<string> _scopes;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OAuthAuthorizeOperationFilter"/> class.
         /// </summary>
         /// <param name="scopes">A list of API scopes that is defined for the API that must be documented.</param>
+        /// <param name="securitySchemaName">The name of the security schema. Default value is <c>"oauth2"</c>.</param>
         /// <remarks>It is not possible right now to document the scopes on a fine grained operation-level.</remarks>
-        /// <exception cref="ArgumentNullException">When the <paramref name="scopes"/> are <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="scopes"/> has any elements that are <c>null</c> or blank.</exception>
-        public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes)
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="scopes"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when the <paramref name="scopes"/> has any elements that are <c>null</c> or blank or the <paramref name="securitySchemaName"/> is blank.
+        /// </exception>
+        public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes, string securitySchemaName = "oauth2")
         {
-            Guard.NotNull(scopes, nameof(scopes), "The sequence of scopes cannot be null");
-            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "The sequence of scopes cannot contain a scope that is null or blank");
-            
+            Guard.NotNull(scopes, nameof(scopes), "Requires a list of API scopes");
+            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "Requires a list of non-blank API scopes");
+            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the OAuth2 security scheme");
+
+            _securitySchemaName = securitySchemaName;
             _scopes = scopes;
         }
 
@@ -44,12 +50,24 @@ namespace Arcus.WebApi.OpenApi.Extensions
         public void Apply(Operation operation, OperationFilterContext context)
 #endif
         {
-            var hasAuthorize = context.MethodInfo.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() ||
-                               (
-                                    context.MethodInfo.DeclaringType != null &&
-                                    context.MethodInfo.DeclaringType.GetCustomAttributes(true).OfType<AuthorizeAttribute>().Any() &&
-                                    context.MethodInfo.GetCustomAttributes(false).OfType<AllowAnonymousAttribute>().Any() == false
-                               );
+            bool operationHasAuthorizeAttribute = 
+                context.MethodInfo.GetCustomAttributes(inherit: true)
+                       .OfType<AuthorizeAttribute>()
+                       .Any();
+
+            bool controllerHasAuthorizeAttribute = 
+                context.MethodInfo.DeclaringType != null 
+                && context.MethodInfo.DeclaringType.GetCustomAttributes(inherit: true)
+                          .OfType<AuthorizeAttribute>()
+                          .Any();
+
+            bool operationHasAllowAnonymousAttribute = 
+                context.MethodInfo.GetCustomAttributes(inherit: false)
+                       .OfType<AllowAnonymousAttribute>().Any();
+            
+            bool hasAuthorize =
+                operationHasAuthorizeAttribute
+                || (controllerHasAuthorizeAttribute && !operationHasAllowAnonymousAttribute);
 
             if (hasAuthorize)
             {
@@ -74,7 +92,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #if NETCOREAPP3_1
                 var oauth2Scheme = new OpenApiSecurityScheme
                 {
-                    Scheme = "oauth2",
+                    Scheme = _securitySchemaName,
                     Type = SecuritySchemeType.OAuth2
                 };
 
@@ -88,7 +106,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #else
                 operation.Security = new List<IDictionary<string, IEnumerable<string>>>
                 { 
-                    new Dictionary<string, IEnumerable<string>> { ["oauth2"] = _scopes }
+                    new Dictionary<string, IEnumerable<string>> { [_securitySchemaName] = _scopes }
                 };
 #endif
             }

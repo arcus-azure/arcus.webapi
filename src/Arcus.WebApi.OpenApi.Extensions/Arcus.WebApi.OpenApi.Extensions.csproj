@@ -23,5 +23,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" Condition="'$(TargetFramework)' == 'netcoreapp3.1'" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
+  </ItemGroup>
+
   <Target Name="GenerateOpenApiDocuments" />
 </Project>
