@@ -29,13 +29,11 @@ namespace Arcus.WebApi.Tests.Unit.OpenApi
                 () => new CertificateAuthenticationOperationFilter(securitySchemeName: securitySchemeName));
         }
 
-        [Theory]
-        [InlineData(SecuritySchemeType.Http | SecuritySchemeType.OAuth2)]
-        [InlineData((SecuritySchemeType) 4)]
-        public void OperationFilterNetCore31_WithOutOfBoundsSecuritySchemeType_Throws(SecuritySchemeType securitySchemeType)
+        [Fact]
+        public void OperationFilterNetCore31_WithOutOfBoundsSecuritySchemeType_Throws()
         {
             Assert.ThrowsAny<ArgumentException>(
-                () => new CertificateAuthenticationOperationFilter(securitySchemeType: securitySchemeType));
+                () => new CertificateAuthenticationOperationFilter(securitySchemeType: (SecuritySchemeType) 12));
         }
 #endif
     }

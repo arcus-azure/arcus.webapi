@@ -30,13 +30,11 @@ namespace Arcus.WebApi.Tests.Unit.OpenApi
                 () => new SharedAccessKeyAuthenticationOperationFilter(securitySchemeName: securitySchemeName));
         }
 
-        [Theory]
-        [InlineData(SecuritySchemeType.Http | SecuritySchemeType.OAuth2)]
-        [InlineData((SecuritySchemeType) 4)]
-        public void OperationFilterNetCore31_WithOutOfBoundsSecuritySchemeType_Throws(SecuritySchemeType securitySchemeType)
+        [Fact]
+        public void OperationFilterNetCore31_WithOutOfBoundsSecuritySchemeType_Throws()
         {
             Assert.ThrowsAny<ArgumentException>(
-                () => new SharedAccessKeyAuthenticationOperationFilter(securitySchemeType: securitySchemeType));
+                () => new SharedAccessKeyAuthenticationOperationFilter(securitySchemeType: (SecuritySchemeType) 12));
         }
 #endif
     }
