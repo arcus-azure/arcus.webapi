@@ -67,7 +67,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
             
             bool hasAuthorize =
                 operationHasAuthorizeAttribute
-                || controllerHasAuthorizeAttribute && !operationHasAllowAnonymousAttribute;
+                || (controllerHasAuthorizeAttribute && !operationHasAllowAnonymousAttribute);
 
             if (hasAuthorize)
             {
