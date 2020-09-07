@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
+using Arcus.Testing.Logging;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.Correlation;
 using Arcus.WebApi.OpenApi.Extensions;
@@ -16,6 +17,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using Serilog.Configuration;
@@ -24,6 +26,8 @@ using Serilog.Events;
 using Serilog.Extensions.Hosting;
 using Serilog.Extensions.Logging;
 using Swashbuckle.AspNetCore.Swagger;
+using Xunit.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Unit.Hosting
 {
@@ -36,28 +40,52 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         private readonly ICollection<Action<IServiceCollection>> _configureServices;
         private readonly ICollection<Action<IApplicationBuilder>> _configures;
         private readonly ICollection<Action<FilterCollection>> _filterActions;
+        private readonly ILogger _logger;
 
         private X509Certificate2 _clientCertificate;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestApiServer"/> class.
         /// </summary>
-        public TestApiServer() : this(new InMemorySink(), services => { }) { }
+        public TestApiServer() : this(new InMemorySink(), services => { }, outputWriter: null) { }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TestApiServer"/> class.
+        /// </summary>
+        /// <param name="outputWriter">The logger instance to write log messages during the lifetime of the test server.</param>
+        public TestApiServer(ITestOutputHelper outputWriter) : this(new InMemorySink(), configureServices: null, outputWriter)
+        {
+        }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="TestApiServer"/> class.
         /// </summary>
         /// <param name="logSink">The Serilog destination logging sink.</param>
         /// <param name="configureServices">The action to populate the required services in the current hosted test server.</param>
-        /// <exception cref="ArgumentNullException">When the <paramref name="configureServices"/> is <c>null</c>.</exception>
-        public TestApiServer(InMemorySink logSink, Action<IServiceCollection> configureServices)
+        /// <param name="outputWriter">The logger instance to write log messages during the lifetime of the test server.</param>
+        /// <exception cref="ArgumentNullException">When the <paramref name="logSink"/> is <c>null</c>.</exception>
+        public TestApiServer(InMemorySink logSink, Action<IServiceCollection> configureServices, ITestOutputHelper outputWriter)
         {
-            Guard.NotNull(configureServices, "Configure services cannot be 'null'");
+            Guard.NotNull(logSink, nameof(logSink), "Requires a log sink to write the log messages to");
 
-            _configureServices = new Collection<Action<IServiceCollection>> { configureServices, services => services.AddSingleton(logSink) };
+            _configureServices = new Collection<Action<IServiceCollection>> { services => services.AddSingleton(logSink) };
             _filterActions = new Collection<Action<FilterCollection>>();
             _configures = new Collection<Action<IApplicationBuilder>>();
             _configurationCollection = new Dictionary<string, string>();
+
+            if (configureServices != null)
+            {
+                _configureServices.Add(configureServices);
+            }
+
+            if (outputWriter is null)
+            {
+                _logger = NullLogger.Instance;
+            }
+            else
+            {
+                _logger = new XunitTestLogger(outputWriter);
+            }
 
             LogSink = logSink;
         }
@@ -163,12 +191,11 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 collection.AddSingleton<ILoggerFactory>(services =>
                 {
                     logger = new LoggerConfiguration()
-                        .MinimumLevel.Debug()
-                        .MinimumLevel.Override("Microsoft", LogEventLevel.Information)
                         .Enrich.FromLogContext()
                         .Enrich.WithHttpCorrelationInfo(services)
                         .WriteTo.Console()
                         .WriteTo.Sink(LogSink)
+                        .WriteTo.Sink(new MicrosoftILoggerLogSink(_logger))
                         .CreateLogger();
 
                     return new SerilogLoggerFactory(logger, dispose: false);

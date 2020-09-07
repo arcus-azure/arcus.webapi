@@ -7,20 +7,32 @@ using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Arcus.WebApi.Tests.Unit.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authentication
 {
     public class SharedAccessKeyAuthenticationAttributeTests : IDisposable
     {
         private const string HeaderName = "x-shared-access-key",
+                             HeaderNameUpper = "X-SHARED-ACCESS-KEY",
                              SecretName = "custom-access-key-name",
                              AuthorizedRoute = "/authz/shared-access-key",
                              AuthorizedRouteHeader = "/authz/shared-access-key-header",
                              AuthorizedRouteQueryString = "/authz/shared-access-key-querystring",
-                             ParameterName = "api-key";
+                             ParameterName = "api-key",
+                             ParameterNameUpper = "API-KEY";
 
-        private readonly TestApiServer _testServer = new TestApiServer();
+        private readonly TestApiServer _testServer;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttributeTests"/> class.
+        /// </summary>
+        public SharedAccessKeyAuthenticationAttributeTests(ITestOutputHelper outputWriter)
+        {
+            _testServer = new TestApiServer(outputWriter);
+        }
 
         [Theory]
         [InlineData(null, null, "not empty or whitespace")]
@@ -68,91 +80,36 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             }
         }
 
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedAndHeaderValueMatchesSecretValue()
+        [Theory]
+        [InlineData(typeof(ISecretProvider), HeaderName)]
+        [InlineData(typeof(ISecretProvider), HeaderNameUpper)]
+        [InlineData(typeof(ICachedSecretProvider), HeaderName)]
+        [InlineData(typeof(ICachedSecretProvider), HeaderNameUpper)]
+        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized(Type secretProviderType, string headerName)
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+            _testServer.AddServicesConfig(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider((SecretName, secretValue))));
 
             // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName, headerValue: secretValue, parameterName: null, parameterValue: null))
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName, secretValue))
             {
                 // Assert
                 Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         }
 
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedInUpperCaseAndHeaderValueMatchesSecretValue()
+        [Theory]
+        [InlineData(HeaderName, "some header value")]
+        [InlineData("some.header.name", "some header value")]
+        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized(string headerName, string headerValue)
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
 
             // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName.ToUpper(), headerValue: secretValue, parameterName: null, parameterValue: null))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedAndHeaderValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName, headerValue: secretValue, parameterName: null, parameterValue: null))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyHeaderProvidedInUpperCaseAndHeaderValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName.ToUpper(), headerValue: secretValue, parameterName: null, parameterValue: null))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenHeaderValueNotMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: HeaderName, headerValue: $"something else then {nameof(secretValue)}"))
-            {
-                // Assert
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenHeaderIsNotPresent()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName: $"something-else-then-{nameof(HeaderName)}", headerValue: "some header value"))
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteHeader, headerName, headerValue))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
@@ -175,165 +132,75 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             }
         }
 
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedAndQueryStringValueMatchesSecretValue()
+        [Theory]
+        [InlineData(typeof(ISecretProvider), ParameterName)]
+        [InlineData(typeof(ISecretProvider), ParameterNameUpper)]
+        [InlineData(typeof(ICachedSecretProvider), ParameterName)]
+        [InlineData(typeof(ICachedSecretProvider), ParameterNameUpper)]
+        public async Task AuthorizedRoute_WithSharedAccessKeyOnQueryParameter_RegisteredWIthSecretProvider_ShouldNotFailWithUnauthorized(Type secretProviderType, string parameterName)
+        {
+            // Arrange
+            string secretValue = $"secret-{Guid.NewGuid()}";
+            _testServer.AddServicesConfig(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider((SecretName, secretValue))));
+
+            // Act
+            using (HttpResponseMessage response = 
+                await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: parameterName, parameterValue: secretValue))
+            {
+                // Assert
+                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
+            }
+        }
+
+        [Theory]
+        [InlineData(ParameterName, "some parameter value")]
+        [InlineData("some parameter name", "some parameter value")]
+        public async Task AuthorizedRoute_WithSharedAccessKeyOnQueryParameter_ShouldFailWithUnauthorized(string parameterName, string parameterValue)
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
 
             // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName, parameterValue: secretValue))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedInUppercaseAndQueryStringValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName.ToUpper(), parameterValue: secretValue))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedAndQueryStringValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName, parameterValue: secretValue))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenOnlyQueryStringProvidedInUpperCaseAndQueryStringValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName.ToUpper(), parameterValue: secretValue))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQueryStringValueNotMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: ParameterName, parameterValue: $"something else then {nameof(secretValue)}"))
+            using (HttpResponseMessage response = 
+                await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: parameterName, parameterValue: parameterValue))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         }
 
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQueryStringParameterIsNotPresent()
+        [Theory]
+        [InlineData(typeof(ISecretProvider))]
+        [InlineData(typeof(ICachedSecretProvider))]
+        public async Task AuthorizedRoute_WithSharedAccessKeyOnBothHeaderAndQueryParameter_ShouldNotFailWithUnauthorized(Type secretProviderType)
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
+            _testServer.AddServicesConfig(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider((SecretName, secretValue))));
 
             // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRouteQueryString, headerName: null, headerValue: null, parameterName: $"something-else-then-{nameof(ParameterName)}", parameterValue: "some parameter value"))
-            {
-                // Assert
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithSecretProvider_ShouldNotFailWithUnauthorized_WhenBothHeaderAndQueryStringValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue, parameterName: ParameterName, parameterValue: secretValue))
+            using (HttpResponseMessage response =
+                await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue, parameterName: ParameterName, parameterValue: secretValue))
             {
                 // Assert
                 Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
             }
         }
 
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_RegisteredWithCachedSecretProvider_ShouldNotFailWithUnauthorized_WhenBothHeaderAndQueryStringValueMatchesSecretValue()
+        [Theory]
+        [InlineData("some header value", "some parameter value")]
+        [InlineData("some header value", "secret")]
+        [InlineData("secret", "some parameter value")]
+        public async Task AuthorizedRoute_WithSharedAccessKeyOnBothHeaderAndQueryParameter_ShouldFailWithUnauthorized(string headerValue, string parameterValue)
         {
             // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ICachedSecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue, parameterName: ParameterName, parameterValue: secretValue))
-            {
-                // Assert
-                Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenBothHeaderValueAndQueryStringValueNotMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
+            string secretValue = "secret";
             _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
 
             // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: $"something else then {nameof(secretValue)}", parameterName: ParameterName, parameterValue: $"something else then {nameof(secretValue)}"))
-            {
-                // Assert
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenHeaderValueNotMatchesSecretValueAndQueryStringValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: $"something else then {nameof(secretValue)}", parameterName: ParameterName, parameterValue: secretValue))
-            {
-                // Assert
-                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithSharedAccessKey_ShouldFailWithUnauthorized_WhenQueryStringValueNotMatchesSecretValueAndHeaderValueMatchesSecretValue()
-        {
-            // Arrange
-            string secretValue = $"secret-{Guid.NewGuid()}";
-            _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((SecretName, secretValue)));
-
-            // Act
-            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: secretValue, parameterName: ParameterName, parameterValue: $"something else then {nameof(secretValue)}"))
+            using (HttpResponseMessage response = 
+                await SendAuthorizedHttpRequest(AuthorizedRoute, headerName: HeaderName, headerValue: headerValue, parameterName: ParameterName, parameterValue: parameterValue))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);

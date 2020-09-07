@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
@@ -8,7 +9,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
@@ -21,6 +21,10 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// </remarks>
     public class CertificateAuthenticationFilter : IAsyncAuthorizationFilter
     {
+        private const string HeaderName = "X-ARR-ClientCert";
+        private const string Base64Pattern = @"^[a-zA-Z0-9\+/]*={0,3}$";
+        private static readonly Regex Base64Regex = new Regex(Base64Pattern, RegexOptions.Compiled);
+
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
@@ -33,71 +37,75 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
             IServiceProvider services = context.HttpContext.RequestServices;
-            ILogger logger = GetLoggerOrDefault(services);
+            ILogger logger = services.GetLoggerOrDefault<CertificateAuthenticationFilter>();
 
-            X509Certificate2 clientCertificate = GetOrLoadClientCertificateFromRequest(context.HttpContext, logger);
-            if (clientCertificate == null)
+            var validator = services.GetService<CertificateAuthenticationValidator>();
+            if (validator is null)
             {
-                
-                logger.LogWarning(
-                    "No client certificate was specified in the HTTP request while this authentication filter "
-                    + "requires a certificate to validate on the configured validation requirements");
-
-                context.Result = new UnauthorizedResult();
+                throw new KeyNotFoundException(
+                    $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
+                    + "Please configure such an instance (ex. in the Startup) of your application");
             }
-            else
-            {
-                var validator = services.GetService<CertificateAuthenticationValidator>();
-                if (validator == null)
-                {
-                    throw new KeyNotFoundException(
-                        $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
-                        + "Please configure such an instance (ex. in the Startup) of your application");
-                }
 
+            if (TryGetClientCertificateFromRequest(context.HttpContext, logger, out X509Certificate2 clientCertificate))
+            {
                 bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
                 if (!isCertificateAllowed)
                 {
-                    context.Result = new UnauthorizedResult();
+                    logger.LogError("Client certificate in request was not considered allowed according to the configured validation requirements, returning unauthorized");
+                    context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
                 }
+                else
+                {
+                    logger.LogTrace("Client certificate in request was considered allowed according to configured validation requirements");
+                }
+            }
+            else
+            {
+                logger.LogError("No client certificate was specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements, returning unauthorized");
+                context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
         }
 
-        private static X509Certificate2 GetOrLoadClientCertificateFromRequest(HttpContext context, ILogger logger)
+        private static bool TryGetClientCertificateFromRequest(HttpContext context, ILogger logger, out X509Certificate2 clientCertificate)
         {
-            if (context.Connection.ClientCertificate is null)
+            if (context.Connection.ClientCertificate != null)
             {
-                const string headerName = "X-ARR-ClientCert";
-
-                try
-                {
-                    if (context.Request.Headers.TryGetValue(headerName, out StringValues headerValue))
-                    {
-                        byte[] rawData = Convert.FromBase64String(headerValue);
-                        return new X509Certificate2(rawData);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    logger.LogError(exception, "Cannot load client certificate from {headerName} header", headerName);
-                }
+                clientCertificate = context.Connection.ClientCertificate;
+                return clientCertificate != null;
             }
 
-            return context.Connection.ClientCertificate;
-        }
-
-        private static ILogger GetLoggerOrDefault(IServiceProvider services)
-        {
-            ILogger logger = 
-                services.GetService<ILoggerFactory>()
-                        ?.CreateLogger<CertificateAuthenticationFilter>();
-
-            if (logger != null)
+            if (!context.Request.Headers.TryGetValue(HeaderName, out StringValues headerValues))
             {
-                return logger;
+                logger.LogError("Cannot load client certificate because request header {HeaderName} was not found", HeaderName);
+
+                clientCertificate = null;
+                return false;
             }
 
-            return NullLogger.Instance;
+            try
+            {
+                var headerValue = headerValues.ToString();
+                if (!String.IsNullOrWhiteSpace(headerValue) 
+                    && headerValue.Trim().Length % 4 == 0 
+                    && Base64Regex.IsMatch(headerValue))
+                {
+                    byte[] rawData = Convert.FromBase64String(headerValue);
+                    clientCertificate = new X509Certificate2(rawData);
+                    return true;
+                }
+
+                logger.LogError(
+                    "Cannot load client certificate from request header {HeaderName} because the header value is not a valid base64 encoded string",
+                    HeaderName);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Cannot load client certificate from {HeaderName} header due to an unexpected exception", HeaderName);
+            }
+
+            clientCertificate = null;
+            return false;
         }
     }
 }

@@ -4,10 +4,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.Certificates;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
@@ -32,8 +35,11 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName)
         {
-            Guard.For<ArgumentException>(() => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), "Either header name or query parameter name must be supplied.");
-            Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
+            Guard.For<ArgumentException>(
+                () => String.IsNullOrWhiteSpace(headerName) 
+                      && String.IsNullOrWhiteSpace(queryParameterName), 
+                "Requires either a header name or query parameter name");
+            Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Requires a non-blank secret name");
 
             _headerName = headerName;
             _queryParameterName = queryParameterName;
@@ -51,59 +57,105 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         {
             Guard.NotNull(context, nameof(context));
             Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
-            Guard.For<ArgumentException>(() => context.HttpContext.Request == null, "Invalid action context given without any HTTP request");
-            Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers == null, "Invalid action context given without any HTTP request headers");
-            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices == null, "Invalid action context given without any HTTP request services");
+            Guard.For<ArgumentException>(() => context.HttpContext.Request is null, "Invalid action context given without any HTTP request");
+            Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers is null, "Invalid action context given without any HTTP request headers");
+            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
+            ILogger logger = context.HttpContext.RequestServices.GetLoggerOrDefault<SharedAccessKeyAuthenticationFilter>();
             string foundSecret = await GetAuthorizationSecretAsync(context);
 
-            if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+            if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) 
+                && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
+                logger.LogError("Cannot verify shared access key because neither a request header or query parameter was found in the incoming request that was configured for shared access authentication");
                 context.Result = new UnauthorizedResult();
             }
             else
             {
-                if (!String.IsNullOrWhiteSpace(_headerName) && context.HttpContext.Request.Headers
-                       .TryGetValue(_headerName, out StringValues requestSecretHeaders))
-                {
-
-                    if (requestSecretHeaders.Any(headerValue => String.Equals(headerValue, foundSecret) == false))
-                    {
-                        context.Result = new UnauthorizedResult();
-                    }
-                }
-
-                if (!String.IsNullOrWhiteSpace(_queryParameterName) && context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
-                {
-                    if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
-                    {
-                        context.Result = new UnauthorizedResult();
-                    }
-                }
-
+                ValidateSharedAccessKeyInRequestHeader(context, foundSecret, logger);
+                ValidateSharedAccessKeyInQueryParameter(context, foundSecret, logger);
             }
         }
 
         private async Task<string> GetAuthorizationSecretAsync(AuthorizationFilterContext context)
         {
             ISecretProvider userDefinedSecretProvider =
-                                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
-                                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
+                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
+                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
 
-            if (userDefinedSecretProvider == null)
+            if (userDefinedSecretProvider is null)
             {
                 throw new KeyNotFoundException(
                     $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
                     + "Please configure such an implementation (ex. in the Startup) of your application");
             }
 
-            string foundSecret = await userDefinedSecretProvider.GetRawSecretAsync(_secretName);
-            if (foundSecret == null)
+            Task<string> rawSecretAsync = userDefinedSecretProvider.GetRawSecretAsync(_secretName);
+            if (rawSecretAsync is null)
+            {
+                throw new InvalidOperationException(
+                    $"Configured {nameof(ISecretProvider)} is not implemented correctly as it returns 'null' for a {nameof(Task)} value when calling {nameof(ISecretProvider.GetRawSecretAsync)}");
+            }
+
+            string foundSecret = await rawSecretAsync;
+            if (foundSecret is null)
             {
                 throw new SecretNotFoundException(_secretName);
             }
 
             return foundSecret;
+        }
+
+        private void ValidateSharedAccessKeyInRequestHeader(AuthorizationFilterContext context, string foundSecret, ILogger logger)
+        {
+            if (String.IsNullOrWhiteSpace(_headerName))
+            {
+                return;
+            }
+
+            if (context.HttpContext.Request.Headers.TryGetValue(_headerName, out StringValues requestSecretHeaders))
+            {
+                if (requestSecretHeaders.Any(headerValue => headerValue != foundSecret))
+                {
+                    logger.LogError("Shared access key in request header {HeaderName} doesn't match expected access key, returning unauthorized", _headerName);
+                    context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
+                }
+                else
+                {
+                    logger.LogTrace("Shared access key in request header {HeaderName} matches expected access key", _headerName);
+                }
+            }
+            else
+            {
+                logger.LogTrace("No shared access key found in request header {HeaderName}, returning unauthorized", _headerName);
+                context.Result = new UnauthorizedObjectResult("No shared access key found in request");
+            }
+        }
+
+        private void ValidateSharedAccessKeyInQueryParameter(AuthorizationFilterContext context, string foundSecret, ILogger logger)
+        {
+            if (String.IsNullOrWhiteSpace(_queryParameterName))
+            {
+                return;
+            }
+
+            if (context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+            {
+                if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
+                {
+                    logger.LogError("Shared access key in query parameter {QueryParameter} doesn't match expected access key, returning unauthorized", _queryParameterName);
+                    context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
+                }
+                else
+                {
+                    logger.LogTrace("Shared access key in query parameter {QueryParameter} matches expected access key", _queryParameterName);
+                }
+            }
+            else
+            {
+                logger.LogError("No shared access key found in query parameter {QueryParameter}, returning unauthorized", _queryParameterName);
+                context.Result = new UnauthorizedObjectResult("No shared access key found in request");
+            }
         }
     }
 }

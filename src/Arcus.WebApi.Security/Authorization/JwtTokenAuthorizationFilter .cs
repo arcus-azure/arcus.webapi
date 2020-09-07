@@ -1,8 +1,12 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
+using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.Options;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authorization
@@ -12,15 +16,20 @@ namespace Arcus.WebApi.Security.Authorization
     /// </summary>
     public class JwtTokenAuthorizationFilter  : IAsyncAuthorizationFilter
     {
+        private const string JwtPattern = "^(Bearer )?[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$";
+        private static readonly Regex JwtRegex = new Regex(JwtPattern, RegexOptions.Compiled);
+
         private readonly JwtTokenAuthorizationOptions _authorizationOptions;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtTokenAuthorizationFilter"/> class.
         /// </summary>
-        /// <param name="authorizationOptions">Options for configuring how to authorize requests</param>
+        /// <param name="authorizationOptions">The options for configuring how to authorize requests.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="authorizationOptions"/> is <c>null</c>.</exception>
         public JwtTokenAuthorizationFilter(JwtTokenAuthorizationOptions authorizationOptions)
         {
-            Guard.NotNull(authorizationOptions, nameof(authorizationOptions));
+            Guard.NotNull(authorizationOptions, nameof(authorizationOptions), 
+                "Requires a set of options to configure how the JWT authorization filter should authorize requests");
 
             _authorizationOptions = authorizationOptions;
         }
@@ -34,17 +43,59 @@ namespace Arcus.WebApi.Security.Authorization
         /// </returns>
         public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
+            Guard.NotNull(context, nameof(context));
+            Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
+            Guard.For<ArgumentException>(() => context.HttpContext.Request == null, "Invalid action context given without any HTTP request");
+            Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers == null, "Invalid action context given without any HTTP request headers");
+            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices == null, "Invalid action context given without any HTTP request services");
+
+            ILogger logger = context.HttpContext.RequestServices.GetLoggerOrDefault<JwtTokenAuthorizationFilter>();
+            IJwtTokenReader reader = _authorizationOptions.GetOrCreateJwtTokenReader(context.HttpContext.RequestServices);
+            
+            if (reader is null)
+            {
+                logger.LogError("Cannot validate JWT MSI token because no '{Type}' was registered in the options of the JWT authorization filter", nameof(IJwtTokenReader));
+                throw new InvalidOperationException("Cannot validate JWT MSI token because the registered JWT options were invalid");
+            }
+
             if (context.HttpContext.Request.Headers.TryGetValue(_authorizationOptions.HeaderName, out StringValues jwtString))
             {
-                bool isValidToken = await _authorizationOptions.JwtTokenReader.IsValidTokenAsync(jwtString);
-                if (string.IsNullOrWhiteSpace(jwtString) || isValidToken == false)
-                {
-                    context.Result = new UnauthorizedObjectResult("Unauthorized because of wrong JWT MSI token.");
-                }
+                await ValidateJwtTokenAsync(reader, context, jwtString, logger);
             }
             else
             {
-                context.Result = new UnauthorizedObjectResult("Unauthorized because of missing JWT MSI token header.");
+                logger.LogError("No JWT MSI token was specified in the request, returning unauthorized");
+                context.Result = new UnauthorizedObjectResult("No JWT MSI token header found in request");
+            }
+        }
+
+        private static async Task ValidateJwtTokenAsync(IJwtTokenReader reader, AuthorizationFilterContext context, StringValues jwtString, ILogger logger)
+        {
+            if (String.IsNullOrWhiteSpace(jwtString))
+            {
+                logger.LogError("Cannot validate JWT MSI token because the token is blank, returning unauthorized");
+                context.Result = new UnauthorizedObjectResult("Blank JWT MSI token");
+                
+                return;
+            }
+
+            if (!JwtRegex.IsMatch(jwtString))
+            {
+                logger.LogError("Cannot validate JWT MSI token because the token had an invalid format, returning unauthorized");
+                context.Result = new UnauthorizedObjectResult("Invalid JWT MSI token format");
+                
+                return;
+            }
+
+            bool isValidToken = await reader.IsValidTokenAsync(jwtString);
+            if (isValidToken)
+            {
+                logger.LogTrace("Request JWT MSI token was valid");
+            }
+            else
+            {
+                logger.LogTrace("Invalid JWT MSI token was, returning unauthorized");
+                context.Result = new UnauthorizedObjectResult("Wrong JWT MSI token");
             }
         }
     }
