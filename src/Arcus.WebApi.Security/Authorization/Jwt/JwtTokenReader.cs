@@ -112,8 +112,12 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         {
             try
             {
-                _logger.LogTrace("Verifying request JWT...");
                 TokenValidationParameters validationParameters = await DetermineTokenValidationParametersAsync();
+
+                _logger.LogTrace(
+                    "Verifying request JWT (ValidateAudience={ValidateAudience}, ValidateIssuer={ValidateIssuer}, ValidateIssuerSigningKey={ValidateIssuerSigningKey}, ValidateLifetime={ValidateLifetime}, ValidateTokenReplay={ValidateTokenReplay}, ValidateActor={ValidateActor})...",
+                    validationParameters.ValidateAudience, validationParameters.ValidateIssuer, validationParameters.ValidateIssuerSigningKey, validationParameters.ValidateLifetime, validationParameters.ValidateTokenReplay, validationParameters.ValidateActor);
+                
                 _handler.ValidateToken(token, validationParameters, out SecurityToken jwtToken);
                 _logger.LogTrace("Request JWT is considered valid!");
             }
