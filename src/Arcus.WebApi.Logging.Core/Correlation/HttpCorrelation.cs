@@ -152,7 +152,7 @@ namespace Arcus.WebApi.Logging.Correlation
                     return newlyGeneratedTransactionId;
                 }
 
-                _logger.LogWarning(
+                _logger.LogTrace(
                     "No transactional correlation ID found in request header '{HeaderName}' but since the correlation options specifies that no transactional ID should be generated, there will be no ID present", 
                     _options.Transaction.HeaderName);
                 
