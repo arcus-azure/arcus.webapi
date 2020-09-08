@@ -64,7 +64,7 @@ namespace Arcus.WebApi.Security.Authorization
             }
             else
             {
-                logger.LogError("No JWT MSI token was specified in the request, returning unauthorized");
+                logger.LogError("No JWT MSI token was specified in the request, returning 401 Unauthorized");
                 context.Result = new UnauthorizedObjectResult("No JWT MSI token header found in request");
             }
         }
@@ -73,7 +73,7 @@ namespace Arcus.WebApi.Security.Authorization
         {
             if (String.IsNullOrWhiteSpace(jwtString))
             {
-                logger.LogError("Cannot validate JWT MSI token because the token is blank, returning unauthorized");
+                logger.LogError("Cannot validate JWT MSI token because the token is blank, returning 401 Unauthorized");
                 context.Result = new UnauthorizedObjectResult("Blank JWT MSI token");
                 
                 return;
@@ -81,7 +81,7 @@ namespace Arcus.WebApi.Security.Authorization
 
             if (!JwtRegex.IsMatch(jwtString))
             {
-                logger.LogError("Cannot validate JWT MSI token because the token had an invalid format, returning unauthorized");
+                logger.LogError("Cannot validate JWT MSI token because the token had an invalid format, returning 401 Unauthorized");
                 context.Result = new UnauthorizedObjectResult("Invalid JWT MSI token format");
                 
                 return;
@@ -94,7 +94,7 @@ namespace Arcus.WebApi.Security.Authorization
             }
             else
             {
-                logger.LogTrace("Invalid JWT MSI token was, returning unauthorized");
+                logger.LogTrace("Invalid JWT MSI token was, returning 401 Unauthorized");
                 context.Result = new UnauthorizedObjectResult("Wrong JWT MSI token");
             }
         }

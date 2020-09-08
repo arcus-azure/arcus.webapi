@@ -52,7 +52,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
                 if (!isCertificateAllowed)
                 {
-                    logger.LogError("Client certificate in request was not considered allowed according to the configured validation requirements, returning unauthorized");
+                    logger.LogError("Client certificate in request was not considered allowed according to the configured validation requirements, returning 401 Unauthorized");
                     context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
                 }
                 else
@@ -62,7 +62,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             }
             else
             {
-                logger.LogError("No client certificate was specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements, returning unauthorized");
+                logger.LogError("No client certificate was specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements, returning 401 Unauthorized");
                 context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
         }

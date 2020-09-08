@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) 
                 && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
-                logger.LogError("Cannot verify shared access key because neither a request header or query parameter was found in the incoming request that was configured for shared access authentication");
+                logger.LogError("Cannot verify shared access key because neither a request header or query parameter was found in the incoming request that was configured for shared access authentication, returning 401 Unauthorized");
                 context.Result = new UnauthorizedResult();
             }
             else
@@ -117,7 +117,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             {
                 if (requestSecretHeaders.Any(headerValue => headerValue != foundSecret))
                 {
-                    logger.LogError("Shared access key in request header {HeaderName} doesn't match expected access key, returning unauthorized", _headerName);
+                    logger.LogError("Shared access key in request header {HeaderName} doesn't match expected access key, returning 401 Unauthorized", _headerName);
                     context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
                 else
@@ -127,7 +127,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
             else
             {
-                logger.LogTrace("No shared access key found in request header {HeaderName}, returning unauthorized", _headerName);
+                logger.LogTrace("No shared access key found in request header {HeaderName}, returning 401 Unauthorized", _headerName);
                 context.Result = new UnauthorizedObjectResult("No shared access key found in request");
             }
         }
@@ -143,7 +143,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             {
                 if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
                 {
-                    logger.LogError("Shared access key in query parameter {QueryParameter} doesn't match expected access key, returning unauthorized", _queryParameterName);
+                    logger.LogError("Shared access key in query parameter {QueryParameter} doesn't match expected access key, returning 401 Unauthorized", _queryParameterName);
                     context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
                 else
@@ -153,7 +153,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
             else
             {
-                logger.LogError("No shared access key found in query parameter {QueryParameter}, returning unauthorized", _queryParameterName);
+                logger.LogError("No shared access key found in query parameter {QueryParameter}, returning 401 Unauthorized", _queryParameterName);
                 context.Result = new UnauthorizedObjectResult("No shared access key found in request");
             }
         }
