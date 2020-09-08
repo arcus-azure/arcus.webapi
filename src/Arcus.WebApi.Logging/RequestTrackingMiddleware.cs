@@ -67,23 +67,12 @@ namespace Arcus.WebApi.Logging
         {
             try
             {
-                IDictionary<string, StringValues> telemetryContext = new Dictionary<string, StringValues>();
-                if (_options.IncludeRequestHeaders)
-                {
-                    IDictionary<string, StringValues> sanitizedHeaders = SanitizeRequestHeaders(httpContext.Request.Headers);
-                    if (sanitizedHeaders != null)
-                    {
-                        telemetryContext = sanitizedHeaders;
-                    }
-                }
+                IDictionary<string, StringValues> telemetryContext = GetRequestHeaders(httpContext);
 
-                if (_options.IncludeRequestBody)
+                string requestBody = await GetRequestBodyAsync(httpContext);
+                if (requestBody != null)
                 {
-                    string sanitizedBody = await SanitizeRequestBodyAsync(httpContext.Request.Body);
-                    if (sanitizedBody != null)
-                    {
-                        telemetryContext.Add("Body", sanitizedBody);
-                    }
+                    telemetryContext.Add("Body", requestBody);
                 }
 
                 Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object)kv.Value);
@@ -95,6 +84,44 @@ namespace Arcus.WebApi.Logging
             }
         }
 
+        private IDictionary<string, StringValues> GetRequestHeaders(HttpContext httpContext)
+        {
+            if (_options.IncludeRequestHeaders)
+            {
+                _logger.LogTrace("Prepare for the request headers to be tracked...");
+                IDictionary<string, StringValues> sanitizedHeaders = SanitizeRequestHeaders(httpContext.Request.Headers);
+                if (sanitizedHeaders != null && sanitizedHeaders.Count > 0)
+                {
+                    string headerNames = String.Join(", ", sanitizedHeaders.Keys.Select(k => $"'{k}'"));
+                    _logger.LogTrace("Found {RequestHeaders} request headers to be tracked", headerNames);
+
+                    return sanitizedHeaders;
+                }
+
+                _logger.LogWarning("No request headers were found to be tracked");
+            }
+
+            return new Dictionary<string, StringValues>();
+        }
+
+        private async Task<string> GetRequestBodyAsync(HttpContext httpContext)
+        {
+            if (_options.IncludeRequestBody)
+            {
+                _logger.LogTrace("Prepare for the request body to be tracked...");
+                string sanitizedBody = await SanitizeRequestBodyAsync(httpContext.Request.Body);
+                if (sanitizedBody != null)
+                {
+                    _logger.LogTrace("Found request body to be tracked");
+                    return sanitizedBody;
+                }
+
+                _logger.LogWarning("No request body was found to be tracked");
+            }
+
+            return null;
+        }
+
         /// <summary>
         /// Extracts information from the given HTTP <paramref name="requestHeaders"/> to include in the request tracking context.
         /// </summary>
@@ -104,7 +131,7 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
+        private static async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
             {
