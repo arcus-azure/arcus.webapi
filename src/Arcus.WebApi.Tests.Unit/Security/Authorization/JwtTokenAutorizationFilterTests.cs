@@ -1,15 +1,16 @@
-﻿using System.Net;
+﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Arcus.WebApi.Tests.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Security.Extension;
 using Bogus;
+using IdentityModel;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Azure.KeyVault.WebKey;
-using Microsoft.CodeAnalysis.Options;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
 using Xunit.Abstractions;
@@ -33,17 +34,57 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
+            string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";
+            string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
+
+            RSA rsa = new RSACryptoServiceProvider(512);
+            string privateKey = rsa.ToCustomXmlString(true);
+
             using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
-                TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
-                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
+                TokenValidationParameters tokenValidationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
+                var reader = new JwtTokenReader(tokenValidationParameters, testOpenIdServer.OpenIdAddressConfiguration);
                 testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
-                    string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
+                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, 7);
+                    request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
+
+                    // Act
+                    using (HttpResponseMessage response = await client.SendAsync(request))
+                    {
+                        // Assert
+                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    }
+                }
+            }
+        }
+
+        [Fact]
+        public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorizationAndCustomClaims_ReturnsOk()
+        {
+            // Arrange
+            string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";
+            string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
+
+            RSA rsa = new RSACryptoServiceProvider(512);
+            string privateKey = rsa.ToCustomXmlString(true);
+
+            using (var testServer = new TestApiServer())
+            using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
+            {
+                TokenValidationParameters tokenValidationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
+                var reader = new JwtTokenReader(tokenValidationParameters, testOpenIdServer.OpenIdAddressConfiguration);
+                Dictionary<string, string> claimCheck = new Dictionary<string, string> {{ JwtClaimTypes.Audience, Guid.NewGuid().ToString() } };
+                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader, claimCheck));
+
+                using (HttpClient client = testServer.CreateClient())
+                using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
+                {
+                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, 7, claimCheck);
                     request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
@@ -87,6 +128,12 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithIncorrectAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
+            string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";
+            string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
+
+            RSA rsa = new RSACryptoServiceProvider(512);
+            string privateKey = rsa.ToCustomXmlString(true);
+
             using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
@@ -97,13 +144,14 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true
                 };
+
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
                 testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
-                    string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
+                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, 7);
                     request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act

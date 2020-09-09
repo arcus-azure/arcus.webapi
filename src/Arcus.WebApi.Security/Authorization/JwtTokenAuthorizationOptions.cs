@@ -1,4 +1,5 @@
-﻿using Arcus.WebApi.Security.Authorization.Jwt;
+﻿using System.Collections.Generic;
+using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
 using Microsoft.IdentityModel.Tokens;
 
@@ -33,6 +34,15 @@ namespace Arcus.WebApi.Security.Authorization
         /// </summary>
         public JwtTokenAuthorizationOptions()
             : this(new JwtTokenReader(new TokenValidationParameters()))
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtTokenAuthorizationOptions"/> class.
+        /// </summary>
+        /// <param name="claimCheck">Custom claims key-value pair to validate against.</param>
+        public JwtTokenAuthorizationOptions(IDictionary<string, string> claimCheck)
+            : this(new JwtTokenReader(new TokenValidationParameters(), claimCheck))
         {
         }
 

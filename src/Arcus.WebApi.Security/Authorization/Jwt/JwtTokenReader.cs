@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
+using System.Linq;
 using System.Threading.Tasks;
 using GuardNet;
+using IdentityModel;
 using Microsoft.IdentityModel.Protocols;
 using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Tokens;
@@ -16,7 +19,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         private const string MicrosoftDiscoveryEndpoint =
             "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
-        private readonly string _applicationId;
+        private readonly IDictionary<string, string> _claimCheck;
         private readonly TokenValidationParameters _tokenValidationParameters;
         private readonly JwtSecurityTokenHandler _handler = new JwtSecurityTokenHandler();
         private readonly ConfigurationManager<OpenIdConnectConfiguration> _configManager;
@@ -25,12 +28,13 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         ///     Constructor
         /// </summary>
         /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
-        /// <param name="applicationId">Azure AD Application used as audience to validate against</param>
-        public JwtTokenReader(string applicationId)
+        /// <param name="claimCheck">Azure AD Application used as audience to validate against</param>
+        public JwtTokenReader(IDictionary<string, string> claimCheck)
         {
-            Guard.NotNullOrWhitespace(applicationId, nameof(applicationId));
+            Guard.NotAny(claimCheck, nameof(claimCheck));
 
-            _applicationId = applicationId;
+            _claimCheck = claimCheck;
+
             _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(MicrosoftDiscoveryEndpoint, new OpenIdConnectConfigurationRetriever());
         }
 
@@ -41,6 +45,25 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <param name="tokenValidationParameters">Collection of parameters to influence how the token validation is done</param>
         public JwtTokenReader(TokenValidationParameters tokenValidationParameters) : this(tokenValidationParameters, MicrosoftDiscoveryEndpoint)
         {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
+        /// <param name="tokenValidationParameters">Collection of parameters to influence how the token validation is done</param>
+        /// <param name="claimCheck">Custom claims key-value pair to validate against</param>
+        public JwtTokenReader(TokenValidationParameters tokenValidationParameters, IDictionary<string, string> claimCheck) : this(tokenValidationParameters, MicrosoftDiscoveryEndpoint, claimCheck)
+        {
+        }
+
+        /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="applicationId">Azure AD Application used as audience to validate against</param>
+        public JwtTokenReader(string applicationId) : this(new Dictionary<string, string> {{ JwtClaimTypes.Audience, applicationId}})
+        {
+            Guard.NotNullOrWhitespace(applicationId, nameof(applicationId));
         }
 
         /// <summary>
@@ -58,22 +81,71 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         }
 
         /// <summary>
+        ///     Constructor
+        /// </summary>
+        /// <param name="openIdConnectDiscoveryUri">Uri of an OpenId connect endpoint for discovering the configuration</param>
+        /// <param name="tokenValidationParameters">Collection of parameters to influence how the token validation is done</param>
+        /// <param name="claimCheck">Custom claims key-value pair to validate against</param>
+        public JwtTokenReader(TokenValidationParameters tokenValidationParameters, string openIdConnectDiscoveryUri, IDictionary<string, string> claimCheck)
+        {
+            Guard.NotNullOrWhitespace(openIdConnectDiscoveryUri, nameof(openIdConnectDiscoveryUri));
+            Guard.NotNull(tokenValidationParameters, nameof(tokenValidationParameters));
+            Guard.NotAny(claimCheck, nameof(claimCheck));
+
+            _tokenValidationParameters = tokenValidationParameters;
+            _claimCheck = claimCheck;
+            _configManager = new ConfigurationManager<OpenIdConnectConfiguration>(openIdConnectDiscoveryUri, new OpenIdConnectConfigurationRetriever());
+        }
+
+        /// <summary>
         ///     Verify if the token is considered valid.
         /// </summary>
         /// <param name="token">The JWT token.</param>
         public async Task<bool> IsValidTokenAsync(string token)
         {
+            bool result;
+
             try
             {
                 TokenValidationParameters validationParameters = await DetermineTokenValidationParametersAsync();
-                _handler.ValidateToken(token, validationParameters, out SecurityToken jwtToken);
+                _handler.ValidateToken(token, validationParameters, out var validatedToken);
+                result = ValidateClaimCheck(validatedToken);
             }
-            catch (Exception exception)
+            catch
             {
                 return false;
             }
 
-            return true;
+            return result;
+        }
+
+        /// <summary>
+        /// Verifies if the claims coming in ClaimCheck object vs the claims in the jwt object based on the claim name and value are valid
+        /// </summary>
+        /// <param name="validatedToken">Security token which contains the jwt claims</param>
+        /// <returns></returns>
+        public bool ValidateClaimCheck(SecurityToken validatedToken)
+        {
+            if (_claimCheck == null || !_claimCheck.Any())
+            {
+                return true;
+            }
+
+            try
+            {
+                JwtSecurityToken jwtToken = (JwtSecurityToken)validatedToken;
+
+                int validClaims = (from c in jwtToken.Claims
+                    join m in _claimCheck on c.Type equals m.Key
+                    where c.Value == m.Value
+                    select c).Distinct().Count();
+
+                return _claimCheck.Count == validClaims;
+            }
+            catch
+            {
+                return false;
+            }
         }
 
         private async Task<TokenValidationParameters> DetermineTokenValidationParametersAsync()
@@ -81,11 +153,11 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             if (_tokenValidationParameters is null)
             {
                 OpenIdConnectConfiguration config = await _configManager.GetConfigurationAsync();
-                
-                var validationParameters = new TokenValidationParameters
+
+                TokenValidationParameters validationParameters = new TokenValidationParameters
                 {
-                    ValidateAudience = false,
-                    ValidAudience = _applicationId,
+                    ValidateAudience = _claimCheck.ContainsKey(JwtClaimTypes.Audience),
+                    ValidAudience = _claimCheck.ContainsKey(JwtClaimTypes.Audience) ? _claimCheck[JwtClaimTypes.Audience] : null,
                     ValidateIssuer = false,
                     ValidateIssuerSigningKey = true,
                     IssuerSigningKeys = config.SigningKeys,
