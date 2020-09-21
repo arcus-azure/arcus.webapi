@@ -50,19 +50,22 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             if (TryGetClientCertificateFromRequest(context.HttpContext, logger, out X509Certificate2 clientCertificate))
             {
                 bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
-                if (!isCertificateAllowed)
+                if (isCertificateAllowed)
                 {
-                    logger.LogError("Client certificate in request was not considered allowed according to the configured validation requirements, returning 401 Unauthorized");
-                    context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
+                    LogSecurityEvent(logger, SecurityResult.Success, "Client certificate in request is allowed");
+                    logger.LogTrace("Client certificate in request is considered allowed according to configured validation requirements");
                 }
                 else
                 {
-                    logger.LogTrace("Client certificate in request was considered allowed according to configured validation requirements");
+                    LogSecurityEvent(logger, SecurityResult.Failure, "Client certificate in request is not allowed");
+                    logger.LogError("Client certificate in request is not considered allowed according to the configured validation requirements, returning 401 Unauthorized");
+                    context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
                 }
             }
             else
             {
-                logger.LogError("No client certificate was specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements, returning 401 Unauthorized");
+                LogSecurityEvent(logger, SecurityResult.Failure, "No client certificate was specified in the request");
+                logger.LogError("No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements, returning 401 Unauthorized");
                 context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
         }
@@ -106,6 +109,19 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
             clientCertificate = null;
             return false;
+        }
+
+        private static void LogSecurityEvent(ILogger logger, SecurityResult result, string message)
+        {
+            /* TODO: use 'Arcus.Observability.Telemetry.Core' 'LogSecurityEvent' instead once the SQL dependency is moved
+                       -> https://github.com/arcus-azure/arcus.observability/issues/131 */
+            logger.LogInformation("Events {EventName} (Context: {@EventContext})", "Authentication", new Dictionary<string, object>
+            {
+                ["EventType"] = "Security",
+                ["AuthenticationType"] = "Certificate",
+                ["Result"] = result.ToString(),
+                ["Description"] = message
+            });
         }
     }
 }
