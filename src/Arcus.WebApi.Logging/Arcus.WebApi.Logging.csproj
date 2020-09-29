@@ -30,9 +30,9 @@
 
   <ItemGroup>
     <PackageReference Include="Guard.Net" Version="1.2.0" />
-    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="0.3.0" />
-    <PackageReference Include="Arcus.Observability.Correlation" Version="0.3.0" />
-    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="0.3.0" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="0.4.0" />
+    <PackageReference Include="Arcus.Observability.Correlation" Version="0.4.0" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="0.4.0" />
   </ItemGroup>
 
    <ItemGroup>
