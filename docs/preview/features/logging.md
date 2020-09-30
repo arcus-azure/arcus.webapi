@@ -9,6 +9,7 @@ The `Arcus.WebApi.Logging` package provides a way to log several kinds of inform
 
 - [Logging unhandled exceptions](#logging-unhandled-exceptions)
 - [Logging incoming requests](#logging-incoming-requests)
+- [Tracking application version](#tracking-application-version)
 
 To send the logging information to Application Insights, see [this explanation](#application-insights).
 
@@ -137,6 +138,33 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 So the resulting log message becomes:
 
 `HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [X-Api-Key,])`
+
+## Tracking application version
+
+The `Arcus.WebApi.Logging` library allows you to add application version tracking to your <span>ASP.NET</span> application which will include your application version to a configurable response header.
+
+This functionality uses the `IAppVersion`, available in the [Arcus.Observability]() library, for retrieving the current application version.
+Such an instance **needs** to be registered in order for the version tracking to work correctly.
+
+<div markdown="span" class="alert alert-danger" role="alert"><i class="fa fa-exclamation-circle"></i> <b>WARNING:</b> only use the version tracking for non-public endpoints otherwise can the leakage of the application version be used in unintended malicious purposes.</div>
+
+Adding the version tracking can be done by the following:
+
+```csharp
+public void ConfigureServices(IServcieCollection services)
+{
+    services.AddSingleton<IAppVersion, MyAppVersion>();
+}
+
+public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+{
+    // Uses the previously registered `IAppVersion` service to include the application to the default `X-Version` response header.
+    app.UseVersionTracking();
+
+    // Uses the previously registered `IAppVersion` service to include the application to the custom `X-My-Version` response header.
+    app.UseVersionTracking(options => options.Header = "X-My-Version");
+}
+```
 
 ## Application Insights
 
