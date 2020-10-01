@@ -115,45 +115,59 @@ namespace Arcus.WebApi.Logging.Correlation
         {
             if (String.IsNullOrWhiteSpace(httpContext.TraceIdentifier))
             {
+                _logger.LogTrace("No unique trace identifier ID was found in the request, generating one...");
                 string operationId = _options.Operation.GenerateId();
+                
                 if (String.IsNullOrWhiteSpace(operationId))
                 {
                     throw new InvalidOperationException(
                         $"Correlation cannot use '{nameof(_options.Operation.GenerateId)}' to generate an operation ID because the resulting ID value is blank");
                 }
 
+                _logger.LogTrace("Generated '{OperationId}' as unique operation correlation ID", operationId);
                 return operationId;
             }
 
+            _logger.LogTrace("Found unique trace identifier ID '{TraceIdentifier}' for operation correlation ID", httpContext.TraceIdentifier);
             return httpContext.TraceIdentifier;
         }
 
         private string DetermineTransactionId(StringValues transactionIds)
         {
-            if (String.IsNullOrWhiteSpace(transactionIds.ToString()))
+            var alreadyPresentTransactionId = transactionIds.ToString();
+            if (String.IsNullOrWhiteSpace(alreadyPresentTransactionId))
             {
                 if (_options.Transaction.GenerateWhenNotSpecified)
                 {
-                    string transactionId = _options.Transaction.GenerateId();
-                    if (String.IsNullOrWhiteSpace(transactionId))
+                    _logger.LogTrace("No transactional ID was found in the request, generating one...");
+                    string newlyGeneratedTransactionId = _options.Transaction.GenerateId();
+
+                    if (String.IsNullOrWhiteSpace(newlyGeneratedTransactionId))
                     {
                         throw new InvalidOperationException(
                             $"Correlation cannot use function '{nameof(_options.Transaction.GenerateId)}' to generate an transaction ID because the resulting ID value is blank");
                     }
 
-                    return transactionId;
+                    _logger.LogTrace("Generated '{TransactionId}' as transactional correlation ID", newlyGeneratedTransactionId);
+                    return newlyGeneratedTransactionId;
                 }
 
+                _logger.LogTrace(
+                    "No transactional correlation ID found in request header '{HeaderName}' but since the correlation options specifies that no transactional ID should be generated, there will be no ID present", 
+                    _options.Transaction.HeaderName);
+                
                 return null;
             }
 
-            return transactionIds.ToString();
+            _logger.LogTrace("Found transactional correlation ID '{TransactionId}' in request header '{HeaderName}'", alreadyPresentTransactionId, _options.Transaction.HeaderName);
+            return alreadyPresentTransactionId;
         }
 
         private void AddCorrelationResponseHeaders(HttpContext httpContext)
         {
             if (_options.Operation.IncludeInResponse)
             {
+                _logger.LogTrace("Prepare for the operation correlation ID to be included in the response...");
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
@@ -164,6 +178,7 @@ namespace Arcus.WebApi.Logging.Correlation
 
             if (_options.Transaction.IncludeInResponse)
             {
+                _logger.LogTrace("Prepare for the transactional correlation ID to be included in the response...");
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
