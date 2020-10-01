@@ -144,7 +144,7 @@ So the resulting log message becomes:
 The `Arcus.WebApi.Logging` library allows you to add application version tracking to your <span>ASP.NET</span> application which will include your application version to a configurable response header.
 
 This functionality uses the `IAppVersion`, available in the [Arcus.Observability](https://observability.arcus-azure.net/features/telemetry-enrichment#version-enricher) library, for retrieving the current application version.
-Such an instance **needs** to be registered in order for the version tracking to work correctly.
+Such an instance **must** be registered in order for the version tracking to work correctly.
 
 > ⚠ **Warning:** only use the version tracking for non-public endpoints otherwise can the leakage of the application version be used in unintended malicious purposes.
 
