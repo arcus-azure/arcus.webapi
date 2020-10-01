@@ -75,7 +75,7 @@ namespace Microsoft.AspNetCore.Builder
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="app"/> is <c>null</c>.</exception>
         /// <remarks>
-        ///     WARNING: only use in non-publicly endpoints so the application version is not leaked and can be used for malicious purposes.
+        ///     WARNING: Only use the version tracking for non-public endpoints otherwise the version information is leaked and it can be used for unintended malicious purposes.
         /// </remarks>
         public static IApplicationBuilder UseVersionTracking(this IApplicationBuilder app, Action<VersionTrackingOptions> configureOptions = null)
         {
