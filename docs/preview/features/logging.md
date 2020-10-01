@@ -146,7 +146,7 @@ The `Arcus.WebApi.Logging` library allows you to add application version trackin
 This functionality uses the `IAppVersion`, available in the [Arcus.Observability](https://observability.arcus-azure.net/features/telemetry-enrichment#version-enricher) library, for retrieving the current application version.
 Such an instance **needs** to be registered in order for the version tracking to work correctly.
 
-<div markdown="span" class="alert alert-danger" role="alert"><i class="fa fa-exclamation-circle"></i> <b>WARNING:</b> only use the version tracking for non-public endpoints otherwise can the leakage of the application version be used in unintended malicious purposes.</div>
+> ⚠ **Warning:** only use the version tracking for non-public endpoints otherwise can the leakage of the application version be used in unintended malicious purposes.
 
 Adding the version tracking can be done by the following:
 
