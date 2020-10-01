@@ -12,7 +12,7 @@ namespace Arcus.WebApi.Logging
     /// Version tracking middleware component to automatically add the version of the application to the response.
     /// </summary>
     /// <remarks>
-    ///     WARNING: only use in non-publicly endpoints so the application version is not leaked and can be used for malicious purposes.
+    ///     WARNING: Only use the version tracking for non-public endpoints otherwise the version information is leaked and it can be used for unintended malicious purposes.
     /// </remarks>
     public class VersionTrackingMiddleware
     {
@@ -55,8 +55,7 @@ namespace Arcus.WebApi.Logging
         {
             Guard.NotNull(context, nameof(context), "Requires a HTTP context to add the application version to the response");
             Guard.For(() => context.Response is null, new ArgumentException("Requires a HTTP context with a response to add the application version", nameof(context)));
-            
-            _logger.LogTrace("Prepare for adding current application version to response");
+
             context.Response.OnStarting(() =>
             {
                 string version = _appVersion.GetVersion();
