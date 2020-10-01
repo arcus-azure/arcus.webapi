@@ -151,7 +151,7 @@ Such an instance **needs** to be registered in order for the version tracking to
 Adding the version tracking can be done by the following:
 
 ```csharp
-public void ConfigureServices(IServcieCollection services)
+public void ConfigureServices(IServiceCollection services)
 {
     services.AddSingleton<IAppVersion, MyAppVersion>();
 }
