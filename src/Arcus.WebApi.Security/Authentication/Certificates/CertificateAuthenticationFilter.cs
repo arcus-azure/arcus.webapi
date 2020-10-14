@@ -57,7 +57,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 }
                 else
                 {
-                    LogSecurityEvent(logger, LogLevel.Error, "Client certificate in request is not considered allowed according to the configured validation requirements", HttpStatusCode.Unauthorized);
+                    LogSecurityEvent(logger, LogLevel.Trace, "Client certificate in request is not considered allowed according to the configured validation requirements", HttpStatusCode.Unauthorized);
                     context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
                 }
             }
