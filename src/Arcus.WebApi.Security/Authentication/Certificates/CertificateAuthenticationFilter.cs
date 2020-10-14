@@ -96,7 +96,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                     return true;
                 }
 
-                logger.LogError(
+                logger.LogTrace(
                     "Cannot load client certificate from request header {HeaderName} because the header value is not a valid base64 encoded string",
                     HeaderName);
             }
