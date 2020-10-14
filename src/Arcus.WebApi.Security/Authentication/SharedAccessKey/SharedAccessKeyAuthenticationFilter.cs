@@ -128,7 +128,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Error, $"No shared access key found in request header '{_headerName}'", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, $"No shared access key found in request header '{_headerName}'", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No shared access key found in request");
             }
         }
