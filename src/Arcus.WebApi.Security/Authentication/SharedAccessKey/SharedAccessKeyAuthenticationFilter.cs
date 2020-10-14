@@ -68,7 +68,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) 
                 && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
-                LogSecurityEvent(logger, LogLevel.Error, $"Cannot verify shared access key because neither a request header '{_headerName}' or query parameter '{_queryParameterName}' was found in the incoming request that was configured for shared access authentication", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, $"Cannot verify shared access key because neither a request header '{_headerName}' or query parameter '{_queryParameterName}' was found in the incoming request that was configured for shared access authentication", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedResult();
             }
             else
