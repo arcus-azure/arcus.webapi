@@ -63,7 +63,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Error, "No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, "No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
         }
