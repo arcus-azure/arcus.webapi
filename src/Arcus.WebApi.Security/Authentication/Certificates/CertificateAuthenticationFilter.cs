@@ -53,7 +53,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
                 if (isCertificateAllowed)
                 {
-                    LogSecurityEvent(logger, LogLevel.Information, "Client certificate in request is considered allowed according to configured validation requirements");
+                    LogSecurityEvent(logger, LogLevel.Trace, "Client certificate in request is considered allowed according to configured validation requirements");
                 }
                 else
                 {
