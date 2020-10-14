@@ -92,7 +92,7 @@ namespace Arcus.WebApi.Security.Authorization
             bool isValidToken = await reader.IsValidTokenAsync(jwtString);
             if (isValidToken)
             {
-                LogSecurityEvent(logger, LogLevel.Error, "JWT MSI token is valid");
+                LogSecurityEvent(logger, LogLevel.Trace, "JWT MSI token is valid");
             }
             else
             {
