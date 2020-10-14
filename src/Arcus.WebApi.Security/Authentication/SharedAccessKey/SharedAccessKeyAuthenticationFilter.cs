@@ -123,7 +123,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                 }
                 else
                 {
-                    LogSecurityEvent(logger, LogLevel.Information, $"Shared access key in request header '{_headerName}' matches expected access key");
+                    LogSecurityEvent(logger, LogLevel.Trace, $"Shared access key in request header '{_headerName}' matches expected access key");
                 }
             }
             else
