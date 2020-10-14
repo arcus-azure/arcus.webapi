@@ -78,7 +78,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
             if (!context.Request.Headers.TryGetValue(HeaderName, out StringValues headerValues))
             {
-                logger.LogError("Cannot load client certificate because request header {HeaderName} was not found", HeaderName);
+                logger.LogTrace("Cannot load client certificate because request header {HeaderName} was not found", HeaderName);
 
                 clientCertificate = null;
                 return false;
