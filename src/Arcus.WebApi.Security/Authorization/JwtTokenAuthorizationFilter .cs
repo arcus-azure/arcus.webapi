@@ -96,7 +96,7 @@ namespace Arcus.WebApi.Security.Authorization
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Error, "JWT MSI token is invalid", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, "JWT MSI token is invalid", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("Wrong JWT MSI token");
             }
         }
