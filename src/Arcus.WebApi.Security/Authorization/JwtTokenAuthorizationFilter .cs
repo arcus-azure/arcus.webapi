@@ -75,7 +75,7 @@ namespace Arcus.WebApi.Security.Authorization
         {
             if (String.IsNullOrWhiteSpace(jwtString))
             {
-                LogSecurityEvent(logger, LogLevel.Error, "Cannot validate JWT MSI token because the token is blank", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, "Cannot validate JWT MSI token because the token is blank", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("Blank JWT MSI token");
                 
                 return;
