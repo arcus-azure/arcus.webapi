@@ -83,7 +83,7 @@ namespace Arcus.WebApi.Security.Authorization
 
             if (!JwtRegex.IsMatch(jwtString))
             {
-                LogSecurityEvent(logger, LogLevel.Error, "Cannot validate JWT MSI token because the token is in an invalid format", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, "Cannot validate JWT MSI token because the token is in an invalid format", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("Invalid JWT MSI token format");
                 
                 return;
