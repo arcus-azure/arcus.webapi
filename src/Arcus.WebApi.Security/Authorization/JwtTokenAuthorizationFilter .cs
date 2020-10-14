@@ -66,7 +66,7 @@ namespace Arcus.WebApi.Security.Authorization
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Error, "No JWT MSI token was specified in the request", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, LogLevel.Trace, "No JWT MSI token was specified in the request", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No JWT MSI token header found in request");
             }
         }
