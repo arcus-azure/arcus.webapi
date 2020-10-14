@@ -144,7 +144,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             {
                 if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
                 {
-                    LogSecurityEvent(logger, LogLevel.Error, $"Shared access key in query parameter '{_queryParameterName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
+                    LogSecurityEvent(logger, LogLevel.Trace, $"Shared access key in query parameter '{_queryParameterName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
                     context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
                 else
