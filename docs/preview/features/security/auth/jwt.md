@@ -80,11 +80,11 @@ This works with adding one of these attributes to the respectively endpoint:
 
 ```csharp
 [ApiController]
-public class MyController : ControllerBase
+public class SystemController : ControllerBase
 {
-    [HttpGet]
+    [HttpGet('api/v1/health')]
     [BypassJwtAuthorization]
-    public IActionResult Get()
+    public IActionResult GetHealth()
     {
         return Ok();
     }
