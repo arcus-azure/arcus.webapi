@@ -125,11 +125,11 @@ This works with adding one of these attributes to the respectively endpoint:
 ```csharp
 [ApiController]
 [SharedAccessKeyAuthentication("MySecret", "MyHeader")]
-public class MyController : ControllerBase
+public class SystemController : ControllerBase
 {
-    [HttpGet]
+    [HttpGet('api/v1/health')]
     [BypassSharedAccessKeyAuthentication]
-    public IActionResult Get()
+    public IActionResult GetHealth()
     {
         return Ok();
     }
