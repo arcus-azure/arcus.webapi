@@ -126,7 +126,7 @@ This works with adding one of these attributes to the respectively endpoint:
 ```csharp
 [ApiController]
 [CertificateAuthentication]
-public class MyController : ControllerBase
+public class SystemController : ControllerBase
 {
     [HttpGet]
     [BypassCertificateAuthentication]
