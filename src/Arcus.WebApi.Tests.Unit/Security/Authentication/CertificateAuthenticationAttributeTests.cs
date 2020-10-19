@@ -218,6 +218,34 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             }
         }
 
+        [Theory]
+        [InlineData(BypassOnMethodController.CertificateRoute)]
+        [InlineData(BypassCertificateController.BypassOverAuthenticationRoute)]
+        [InlineData(AllowAnonymousCertificateController.Route)]
+        public async Task CertificateAuthorizedRoute_WithBypassAttribute_SkipsAuthentication(string route)
+        {
+            // Arrange
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("issuer", "subject"))
+            {
+                _testServer.SetClientCertificate(clientCertificate);
+                _testServer.AddFilter(new CertificateAuthenticationFilter());
+                _testServer.AddService<ISecretProvider>(new InMemorySecretProvider((IssuerKey, "CN=issuer")));
+                _testServer.AddService(
+                    new CertificateAuthenticationValidator(
+                        new CertificateAuthenticationConfigBuilder()
+                            .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
+                            .Build()));
+
+                using (HttpClient client = _testServer.CreateClient())
+                // Act
+                using (HttpResponseMessage response = await client.GetAsync(route))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
+            }
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>

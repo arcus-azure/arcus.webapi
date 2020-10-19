@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization;
@@ -16,8 +17,9 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
-    public class JwtTokenAutorizationFilterTests
+    public class JwtTokenAutorizationFilterTests : IDisposable
     {
+        private readonly TestApiServer _testServer = new TestApiServer();
         private readonly ITestOutputHelper _outputWriter;
         private readonly Faker _bogusGenerator = new Faker();
 
@@ -33,14 +35,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
-            using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
+                _testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
-                using (HttpClient client = testServer.CreateClient())
+                using (HttpClient client = _testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
@@ -60,14 +61,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithIncorrectBearerToken_WithAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
-            using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
+                _testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
-                using (HttpClient client = testServer.CreateClient())
+                using (HttpClient client = _testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
@@ -87,7 +87,6 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithIncorrectAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
-            using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 var validationParameters = new TokenValidationParameters
@@ -98,9 +97,9 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
+                _testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
-                using (HttpClient client = testServer.CreateClient())
+                using (HttpClient client = _testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
@@ -120,7 +119,6 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithoutBearerToken_WithIncorrectAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
-            using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
                 var validationParameters = new TokenValidationParameters
@@ -131,9 +129,9 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateLifetime = true
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
+                _testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
-                using (HttpClient client = testServer.CreateClient())
+                using (HttpClient client = _testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
                     // Act
@@ -144,6 +142,31 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     }
                 }
             }
+        }
+
+        [Theory]
+        [InlineData(BypassOnMethodController.JwtRoute)]
+        [InlineData(BypassJwtTokenAuthorizationController.BypassOverAuthorizationRoute)]
+        [InlineData(BypassOnMethodController.AllowAnonymousRoute)]
+        public async Task JwtAuthorizedRoute_WithBypassAttribute_SkipsAuthorization(string route)
+        {
+            // Arrange
+            _testServer.AddFilter(filters => filters.AddJwtTokenAuthorization());
+
+            using (HttpClient client = _testServer.CreateClient()) 
+            // Act
+            using (HttpResponseMessage response = await client.GetAsync(route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
         }
     }
 }

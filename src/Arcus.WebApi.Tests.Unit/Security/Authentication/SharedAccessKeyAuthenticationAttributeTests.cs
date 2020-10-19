@@ -340,6 +340,23 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             }
         }
 
+        [Theory]
+        [InlineData(BypassOnMethodController.SharedAccessKeyRoute)]
+        [InlineData(BypassSharedAccessKeyController.BypassOverAuthenticationRoute)]
+        [InlineData(AllowAnonymousSharedAccessKeyController.Route)]
+        public async Task SharedAccessKeyAuthorizedRoute_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
+        {
+            // Arrange
+            _testServer.AddFilter(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName));
+            
+            // Act
+            using (HttpResponseMessage response = await SendAuthorizedHttpRequest(route, headerValue: null))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
         private async Task<HttpResponseMessage> SendAuthorizedHttpRequest(string route, string headerName = null, string headerValue = null, string parameterName = null, string parameterValue = null)
         {
             return await SendAuthorizedHttpRequest(route, headerName, new[] { headerValue }, parameterName, parameterValue);

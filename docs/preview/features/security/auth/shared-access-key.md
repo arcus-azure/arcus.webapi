@@ -14,6 +14,8 @@ This authentication process consists of two parts:
 The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
 - [Global Shared access key authentication](#globally-enforce-shared-access-key-authentication)
 - [Shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
+- [Behavior in validating shared access key parameter](#behavior-in-validating-shared-access-key-parameter)
+- [Bypassing authentication](#bypassing-authentication)
 
 ## Installation
 
@@ -111,5 +113,27 @@ public void ConfigureServices(IServiceCollections services)
 ```
 If both header and query parameter are specified, they must both be valid or an `Unauthorized` will be returned.
 <br/>
+
+## Bypassing authentication
+The package supports a way to bypass the shared access key authentication for certain endponts.
+This works with adding one of these attributes to the respectively endpoint:
+- `BypassSharedAccessKeyAuthentication`
+- `AllowAnonymous`
+
+> Works on both method and controller level, using either the shared access key filter or attribute.
+
+```csharp
+[ApiController]
+[SharedAccessKeyAuthentication("MySecret", "MyHeader")]
+public class MyController : ControllerBase
+{
+    [HttpGet]
+    [BypassSharedAccessKeyAuthentication]
+    public IActionResult Get()
+    {
+        return Ok();
+    }
+}
+```
 
 [&larr; back](/)

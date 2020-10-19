@@ -16,6 +16,7 @@ This authentication process consists of following parts:
 The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
 - [Globally enforce certificate authentication](#Globally-enforce-certificate-authentication)
 - [Enforce certificate authentication per controller or operation](#Enforce-certificate-authentication-per-controller-or-operation)
+- [Bypassing authentication](#bypassing-authentication)
 
 ## Installation
 
@@ -112,5 +113,29 @@ public class MyApiController : ControllerBase
     }
 }
 ```
+
+## Bypassing authentication
+
+The package supports a way to bypass the certificate authentication for certain endponts.
+This works with adding one of these attributes to the respectively endpoint:
+- `BypassCertificateAuthentication`
+- `AllowAnonymous`
+
+> Works on both method and controller level, using either the certificate filter or attribute.
+
+```csharp
+[ApiController]
+[CertificateAuthentication]
+public class MyController : ControllerBase
+{
+    [HttpGet]
+    [BypassCertificateAuthentication]
+    public IActionResult Get()
+    {
+        return Ok();
+    }
+}
+```
+
 
 [&larr; back](/)

@@ -11,7 +11,12 @@ This authorization process consists of the following parts:
 1. Find the OpenID server endpoint to request the correct access token
 2. Determine the request header name you want to use where the access token should be available
 
-## Installation
+- [Globally enforce JWT authorization](#globally-enforce-jwt-authorization)
+- [Bypassing authorization](#bypassing-authorization)
+
+## Globally enforce JWT authorization
+
+### Installation
 
 This feature requires to install our NuGet package:
 
@@ -19,7 +24,7 @@ This feature requires to install our NuGet package:
 PM > Install-Package Arcus.WebApi.Security
 ```
 
-## Usage
+### Usage
 
 The `JwtTokenAuthorizationFilter` can be added to the request filters in an <span>ASP.NET</span> Core application.
 This filter will then add authorization to all endpoints via the configured properties on the filter itself.
@@ -60,6 +65,28 @@ public class Startup
             string endpoint = "https://localhost:5000/.well-known/openid-configuration";
             mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters, endpoint));
         });
+    }
+}
+```
+
+## Bypassing authentication
+
+The package supports a way to bypass the JWT authorization for certain endponts.
+This works with adding one of these attributes to the respectively endpoint:
+- `BypassJwtAuthorization`
+- `AllowAnonymous`
+
+> Works on both method and controller level.
+
+```csharp
+[ApiController]
+public class MyController : ControllerBase
+{
+    [HttpGet]
+    [BypassJwtAuthorization]
+    public IActionResult Get()
+    {
+        return Ok();
     }
 }
 ```
