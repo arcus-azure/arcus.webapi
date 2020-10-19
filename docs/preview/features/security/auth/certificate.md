@@ -128,7 +128,7 @@ This works with adding one of these attributes to the respectively endpoint:
 [CertificateAuthentication]
 public class SystemController : ControllerBase
 {
-    [HttpGet]
+    [HttpGet('api/v1/health')]
     [BypassCertificateAuthentication]
     public IActionResult GetHealth()
     {
