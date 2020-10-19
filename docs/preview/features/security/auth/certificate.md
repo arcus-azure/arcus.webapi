@@ -130,7 +130,7 @@ public class SystemController : ControllerBase
 {
     [HttpGet]
     [BypassCertificateAuthentication]
-    public IActionResult Get()
+    public IActionResult GetHealth()
     {
         return Ok();
     }
