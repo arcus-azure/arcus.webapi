@@ -18,7 +18,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         private readonly Faker _bogusGenerator = new Faker();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="JwtTokenAutorizationFilterTests"/> class.
+        /// Initializes a new instance of the <see cref="JwtTokenAuthorizationFilterTests"/> class.
         /// </summary>
         public AzureManagedIdentityAuthorizationFilterTests(ITestOutputHelper outputWriter)
         {

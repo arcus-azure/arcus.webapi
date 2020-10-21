@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Authorization;
@@ -10,7 +12,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
@@ -23,6 +24,10 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// </remarks>
     public class CertificateAuthenticationFilter : IAsyncAuthorizationFilter
     {
+        private const string HeaderName = "X-ARR-ClientCert";
+        private const string Base64Pattern = @"^[a-zA-Z0-9\+/]*={0,3}$";
+        private static readonly Regex Base64Regex = new Regex(Base64Pattern, RegexOptions.Compiled);
+
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
@@ -35,7 +40,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
             IServiceProvider services = context.HttpContext.RequestServices;
-            ILogger logger = GetLoggerOrDefault(services);
+            ILogger logger = services.GetLoggerOrDefault<CertificateAuthenticationFilter>();
 
             if (context.ActionDescriptor?.EndpointMetadata?.Any(m => m is BypassCertificateAuthenticationAttribute || m is AllowAnonymousAttribute) == true)
             {
@@ -43,69 +48,93 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 return;
             }
 
-            X509Certificate2 clientCertificate = GetOrLoadClientCertificateFromRequest(context.HttpContext, logger);
-            if (clientCertificate == null)
+            var validator = services.GetService<CertificateAuthenticationValidator>();
+            if (validator is null)
             {
-                
-                logger.LogWarning(
-                    "No client certificate was specified in the HTTP request while this authentication filter "
-                    + "requires a certificate to validate on the configured validation requirements");
+                throw new KeyNotFoundException(
+                    $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
+                    + "Please configure such an instance (ex. in the Startup) of your application");
+            }
 
-                context.Result = new UnauthorizedResult();
+            if (TryGetClientCertificateFromRequest(context.HttpContext, logger, out X509Certificate2 clientCertificate))
+            {
+                bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
+                if (isCertificateAllowed)
+                {
+                    LogSecurityEvent(logger, LogLevel.Trace, "Client certificate in request is considered allowed according to configured validation requirements");
+                }
+                else
+                {
+                    LogSecurityEvent(logger, LogLevel.Trace, "Client certificate in request is not considered allowed according to the configured validation requirements", HttpStatusCode.Unauthorized);
+                    context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
+                }
             }
             else
             {
-                var validator = services.GetService<CertificateAuthenticationValidator>();
-                if (validator == null)
-                {
-                    throw new KeyNotFoundException(
-                        $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
-                        + "Please configure such an instance (ex. in the Startup) of your application");
-                }
-
-                bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
-                if (!isCertificateAllowed)
-                {
-                    context.Result = new UnauthorizedResult();
-                }
+                LogSecurityEvent(logger, LogLevel.Trace, "No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements", HttpStatusCode.Unauthorized);
+                context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
         }
 
-        private static X509Certificate2 GetOrLoadClientCertificateFromRequest(HttpContext context, ILogger logger)
+        private static bool TryGetClientCertificateFromRequest(HttpContext context, ILogger logger, out X509Certificate2 clientCertificate)
         {
-            if (context.Connection.ClientCertificate is null)
+            if (context.Connection.ClientCertificate != null)
             {
-                const string headerName = "X-ARR-ClientCert";
-
-                try
-                {
-                    if (context.Request.Headers.TryGetValue(headerName, out StringValues headerValue))
-                    {
-                        byte[] rawData = Convert.FromBase64String(headerValue);
-                        return new X509Certificate2(rawData);
-                    }
-                }
-                catch (Exception exception)
-                {
-                    logger.LogError(exception, "Cannot load client certificate from {headerName} header", headerName);
-                }
+                clientCertificate = context.Connection.ClientCertificate;
+                return clientCertificate != null;
             }
 
-            return context.Connection.ClientCertificate;
+            if (!context.Request.Headers.TryGetValue(HeaderName, out StringValues headerValues))
+            {
+                logger.LogTrace("Cannot load client certificate because request header {HeaderName} was not found", HeaderName);
+
+                clientCertificate = null;
+                return false;
+            }
+
+            try
+            {
+                var headerValue = headerValues.ToString();
+                if (!String.IsNullOrWhiteSpace(headerValue) 
+                    && headerValue.Trim().Length % 4 == 0 
+                    && Base64Regex.IsMatch(headerValue))
+                {
+                    byte[] rawData = Convert.FromBase64String(headerValue);
+                    clientCertificate = new X509Certificate2(rawData);
+                    return true;
+                }
+
+                logger.LogTrace(
+                    "Cannot load client certificate from request header {HeaderName} because the header value is not a valid base64 encoded string",
+                    HeaderName);
+            }
+            catch (Exception exception)
+            {
+                logger.LogError(exception, "Cannot load client certificate from {HeaderName} header due to an unexpected exception", HeaderName);
+            }
+
+            clientCertificate = null;
+            return false;
         }
 
-        private static ILogger GetLoggerOrDefault(IServiceProvider services)
+        private static void LogSecurityEvent(ILogger logger, LogLevel level, string description, HttpStatusCode? responseStatusCode = null)
         {
-            ILogger logger = 
-                services.GetService<ILoggerFactory>()
-                        ?.CreateLogger<CertificateAuthenticationFilter>();
-
-            if (logger != null)
+            /* TODO: use 'Arcus.Observability.Telemetry.Core' 'LogSecurityEvent' instead once the SQL dependency is moved
+                       -> https://github.com/arcus-azure/arcus.observability/issues/131 */
+            
+            var telemetryContext = new Dictionary<string, object>
             {
-                return logger;
+                ["EventType"] = "Security",
+                ["AuthenticationType"] = "Certificate",
+                ["Description"] = description
+            };
+
+            if (responseStatusCode != null)
+            {
+                telemetryContext["StatusCode"] = responseStatusCode.ToString(); 
             }
 
-            return NullLogger.Instance;
+            logger.Log(level, "Events {EventName} (Context: {@EventContext})", "Authentication", telemetryContext);
         }
     }
 }
