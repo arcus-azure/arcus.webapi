@@ -1,9 +1,11 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Arcus.WebApi.Tests.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Security.Extension;
 using Bogus;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.IdentityModel.Tokens;
@@ -29,18 +31,24 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
+            string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";
+            string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
+
+            RSA rsa = new RSACryptoServiceProvider(512);
+            string privateKey = rsa.ToCustomXmlString(true);
+
             using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
-                TokenValidationParameters validationParameters = await testOpenIdServer.GenerateTokenValidationParametersAsync();
-                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
+                TokenValidationParameters tokenValidationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
+                var reader = new JwtTokenReader(tokenValidationParameters, testOpenIdServer.OpenIdAddressConfiguration);
+                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
-                    string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
+                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, 7);
+                    request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -83,6 +91,12 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithIncorrectAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
+            string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";
+            string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
+
+            RSA rsa = new RSACryptoServiceProvider(512);
+            string privateKey = rsa.ToCustomXmlString(true);
+
             using (var testServer = new TestApiServer())
             using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_outputWriter))
             {
@@ -93,14 +107,15 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true
                 };
+
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
+                testServer.AddFilter(filters => filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = reader));
 
                 using (HttpClient client = testServer.CreateClient())
                 using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
                 {
-                    string accessToken = await testOpenIdServer.RequestAccessTokenAsync();
-                    request.Headers.Add(AzureManagedIdentityAuthorizationFilter.DefaultHeaderName, accessToken);
+                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, 7);
+                    request.Headers.Add(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await client.SendAsync(request))
@@ -126,6 +141,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true
                 };
+
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
                 testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
 

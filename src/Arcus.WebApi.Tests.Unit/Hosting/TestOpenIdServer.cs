@@ -1,5 +1,8 @@
 ﻿using System;
+using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http;
+using System.Security.Claims;
+using System.Text;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
@@ -18,6 +21,7 @@ using Serilog;
 using Xunit;
 using Xunit.Abstractions;
 using Secret = IdentityServer4.Models.Secret;
+using System.Collections.Generic;
 
 namespace Arcus.WebApi.Tests.Unit.Hosting
 {
@@ -69,11 +73,27 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         }
 
         /// <summary>
+        /// Generates a valid set of validation parameters to use in combination with <see cref="JwtTokenReader"/> to validate the JWT bearer token.
+        /// </summary>
+        public TokenValidationParameters GenerateTokenValidationParametersWithValidAudience(string issuer, string authority, string symSec)
+        {
+            return new TokenValidationParameters
+            {
+                ValidateIssuerSigningKey = true,
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidIssuer = issuer,
+                ValidAudience = authority,
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.ASCII.GetBytes(symSec))
+            };
+        }
+
+        /// <summary>
         /// Requests a JWT bearer access token to send authorized HTTP requests.
         /// </summary>
         public async Task<string> RequestAccessTokenAsync()
         {
-            DiscoveryResponse disco = await HttpClient.GetDiscoveryDocumentAsync(_address);
+            DiscoveryDocumentResponse disco = await HttpClient.GetDiscoveryDocumentAsync(_address);
 
             var tokenResponse = await HttpClient.RequestClientCredentialsTokenAsync(new ClientCredentialsTokenRequest
             {
@@ -83,8 +103,47 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 Scope = "api1"
             });
 
-            Assert.False(String.IsNullOrWhiteSpace(tokenResponse.AccessToken), "Access token is blank");
+            Assert.False(string.IsNullOrWhiteSpace(tokenResponse.AccessToken), "Access token is blank");
             return tokenResponse.AccessToken;
+        }
+
+        /// <summary>
+        /// Requests a JWT bearer access token to send authorized HTTP requests.
+        /// </summary>
+        public string RequestSecretToken(string issuer, string authority, string symSec, int daysValid, IDictionary<string, string> claims = null)
+        {
+            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
+            ClaimsIdentity claimsIdentity = null;
+
+            if (claims != null)
+            {
+                claimsIdentity = CreateClaimsIdentities(claims);
+            }
+
+            var tokenDescriptor = new SecurityTokenDescriptor
+            {
+                Subject = claimsIdentity,
+                Expires = DateTime.UtcNow.AddDays(daysValid),
+                Audience = authority,
+                Issuer = issuer,
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(Encoding.Default.GetBytes(symSec)), SecurityAlgorithms.HmacSha256Signature)
+            };
+
+            JwtSecurityToken token = tokenHandler.CreateJwtSecurityToken(tokenDescriptor);
+
+            return tokenHandler.WriteToken(token);
+        }
+
+        private static ClaimsIdentity CreateClaimsIdentities(IDictionary<string, string> claims)
+        {
+            ClaimsIdentity claimsIdentity = new ClaimsIdentity();
+
+            foreach (var (key, value) in claims)
+            {
+                claimsIdentity.AddClaim(new Claim(key, value));
+            }
+
+            return claimsIdentity;
         }
 
         /// <summary>
@@ -104,17 +163,17 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     .Configure(Configure)
                     .Build();
 
-            Task.Run(async () =>
-            {
-                try
-                {
-                    await host.RunAsync();
-                }
-                catch (Exception exception)
-                {
-                    outputWriter.WriteLine(exception.Message);
-                }
-            });
+            _ = Task.Run(async () =>
+              {
+                  try
+                  {
+                      await host.RunAsync();
+                  }
+                  catch (Exception exception)
+                  {
+                      outputWriter.WriteLine(exception.Message);
+                  }
+              });
             await WaitUntilAvailableAsync(address);
 
             return new TestOpenIdServer(address, host);
@@ -137,8 +196,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                             },
                             AllowedScopes = { "api1" }
                         }
-                    })
-                    .AddDeveloperSigningCredential();
+                    });
         }
 
         private static void Configure(IApplicationBuilder app)
