@@ -141,6 +141,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
                     ValidateIssuerSigningKey = true,
                     ValidateLifetime = true
                 };
+
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
                 testServer.AddFilter(new AzureManagedIdentityAuthorizationFilter(reader));
 
