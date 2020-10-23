@@ -196,9 +196,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                             },
                             AllowedScopes = { "api1" }
                         }
-                    })
-                    //.AddDeveloperSigningCredential()
-                    ;
+                    });
         }
 
         private static void Configure(IApplicationBuilder app)
