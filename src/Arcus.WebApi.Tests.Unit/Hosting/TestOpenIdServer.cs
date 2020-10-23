@@ -197,7 +197,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                             AllowedScopes = { "api1" }
                         }
                     })
-                    //.AddDeveloperSigningCredential()
                     ;
         }
 
