@@ -26,7 +26,23 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             var claimCheck = new Dictionary<string, string>();
 
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => new JwtTokenReader(claimCheck));
+            Assert.ThrowsAny<ArgumentException>(() => new JwtTokenReader(claimCheck));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithBlankKeyInClaimCheck_Fails(string key)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(new Dictionary<string, string> { [key ?? ""] = "some value" }));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithBlankValueInClaimCheck_Fails(string value)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(new Dictionary<string, string> { ["some key"] = value }));
         }
 
         [Fact]
@@ -36,20 +52,18 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             string applicationId = Guid.NewGuid().ToString();
 
             // Act
-            JwtTokenReader jwtTokenReader = new JwtTokenReader(applicationId);
+            var jwtTokenReader = new JwtTokenReader(applicationId);
 
             // Assert
             Assert.NotNull(jwtTokenReader);
         }
-        
-        [Fact]
-        public void Constructor_WithEmptyApplicationId_Succeeds()
-        {
-            // Arrange
-            string applicationId = string.Empty;
 
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithEmptyApplicationId_Fails(string applicationId)
+        {
             // Act & Assert
-            Assert.Throws<ArgumentException>(() => new JwtTokenReader(applicationId));
+            Assert.ThrowsAny<ArgumentException>(() => new JwtTokenReader(applicationId));
         }
 
         [Fact]
@@ -194,7 +208,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         }
 
         [Fact]
-        public async Task IsValidToken_WithTokenValidationParametersAndClaimCheck_EmptyClaims_ThrowsException()
+        public void IsValidToken_WithTokenValidationParametersAndClaimCheck_EmptyClaims_ThrowsException()
         {
             // Arrange
             string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
@@ -300,12 +314,10 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         public void Constructor_WithoutTokenValidationParametersAndClaimCheck_Succeeds()
         {
             // Arrange
-            TokenValidationParameters tokenValidationParameters = null;
-
             var claimCheck = new Dictionary<string, string>();
 
             // Act & Assert
-            Assert.Throws<ArgumentNullException>(() => new JwtTokenReader(tokenValidationParameters, claimCheck));
+            Assert.Throws<ArgumentNullException>(() => new JwtTokenReader(tokenValidationParameters: null, claimCheck: claimCheck));
         }
 
         [Fact]
@@ -313,10 +325,9 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         {
             // Arrange
             TokenValidationParameters tokenValidationParameters = new TokenValidationParameters();
-            string openIdConnectDiscoveryUri = "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
             // Act
-            var jwtTokenReader = new JwtTokenReader(tokenValidationParameters, openIdConnectDiscoveryUri);
+            var jwtTokenReader = new JwtTokenReader(tokenValidationParameters, MicrosoftDiscoveryEndpoint);
 
             // Assert
             Assert.NotNull(jwtTokenReader);
@@ -331,7 +342,6 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             string aad = Util.GetRandomString(10);
 
             TokenValidationParameters tokenValidationParameters = new TokenValidationParameters();
-            string openIdConnectDiscoveryUri = "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>
             {
@@ -341,14 +351,14 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             };
 
             // Act
-            var jwtTokenReader = new JwtTokenReader(tokenValidationParameters, openIdConnectDiscoveryUri, claimCheck);
+            var jwtTokenReader = new JwtTokenReader(tokenValidationParameters, MicrosoftDiscoveryEndpoint, claimCheck);
 
             // Assert
             Assert.NotNull(jwtTokenReader);
         }
 
         [Fact]
-        public async Task Constructor_ValidateClaimCheck_Succeeds()
+        public void Constructor_ValidateClaimCheck_Succeeds()
         {
             // Arrange
             string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";
@@ -380,7 +390,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         }
 
         [Fact]
-        public async Task Constructor_ValidateClaimCheck_Not_In_Jwt_Claims()
+        public void Constructor_ValidateClaimCheck_Not_In_Jwt_Claims()
         {
             // Arrange
             string issuer = $"http://{Util.GetRandomString(10).ToLower()}.com";

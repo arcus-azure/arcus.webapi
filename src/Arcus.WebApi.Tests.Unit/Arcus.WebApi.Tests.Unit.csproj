@@ -4,6 +4,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <DocumentationFile>Arcus.WebApi.Tests.Unit.Open-Api.xml</DocumentationFile>
+    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
@@ -19,6 +20,7 @@
     <PackageReference Include="IdentityServer4" Version="2.5.4" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Arcus.Testing.Logging" Version="0.1.0" />
     <PackageReference Include="Bogus" Version="29.0.2" />
     <PackageReference Include="BouncyCastle" Version="1.8.5" />
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
