@@ -81,7 +81,7 @@ public class Startup
             {
                 {"aud", Issuer}
             };
-            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(claimCheck));
+            mvcOptions.Filters.AddJwtTokenAuthorization(options => { }, claimCheck);
         });
 
         // Custom OpenID endpoint:
@@ -93,7 +93,7 @@ public class Startup
                 {"aud", Issuer},
                 {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
             };
-            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters, endpoint, claimCheck));
+            mvcOptions.Filters.AddJwtTokenAuthorization(options => { }, claimCheck);
         });
 
         // Default configuration with validation parameters:
@@ -108,7 +108,7 @@ public class Startup
                 {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
             };
 
-            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters, claimCheck));
+            mvcOptions.Filters.AddJwtTokenAuthorization(options => { }, claimCheck);
         });
 
     }
