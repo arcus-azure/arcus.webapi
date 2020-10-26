@@ -42,6 +42,27 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             return filters;
         }
+        /// <summary>
+        /// Adds JWT token authorization
+        /// </summary>
+        /// <param name="filters">All filters that are being applied to the request pipeline</param>
+        /// <param name="claimCheck">Custom claims key-value pair to validate against</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="claimCheck"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
+        public static FilterCollection AddJwtTokenAuthorization(
+            this FilterCollection filters,
+            IDictionary<string, string> claimCheck)
+        {
+            Guard.NotNull(filters, nameof(filters), "Requires a filter collection to add the JWT token authorization filter");
+            Guard.NotNull(claimCheck, nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
+            Guard.NotAny(claimCheck, nameof(claimCheck), "Requires at least one entry in the set of claim checks to verify the claims in the request JWT");
+            Guard.For<ArgumentException>(() => claimCheck.Any(item => String.IsNullOrWhiteSpace(item.Key) || String.IsNullOrWhiteSpace(item.Value)), 
+                "Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+
+            AddJwtTokenAuthorization(filters, configureOptions: null, claimCheck: claimCheck);
+
+            return filters;
+        }
 
         /// <summary>
         /// Adds JWT token authorization
