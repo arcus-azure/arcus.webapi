@@ -63,3 +63,54 @@ public class Startup
     }
 }
 ```
+
+### Custom Claim validation
+
+It allows validating not only on the audience claim in the JWT token, but any type of custom claim that needs to be verified
+
+```csharp
+public class Startup
+{
+    public void ConfigureServices(IServiceCollection services)
+    {
+        // Default configuration with issuer:
+        // One can use the Microsoft OpenID endpoint and provide just the issuer as input for the validation parameters.         
+        services.AddMvc(mvcOptions => 
+        {
+            var claimCheck = new Dictionary<string, string>
+            {
+                {"aud", Issuer}
+            };
+            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(claimCheck));
+        });
+
+        // Custom OpenID endpoint:
+        // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters and custom claims to manipulate how the JWT token should be validated.
+        services.AddMvc(mvcOptions => 
+        {
+            var claimCheck = new Dictionary<string, string>
+            {
+                {"aud", Issuer},
+                {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
+            };
+            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters, endpoint, claimCheck));
+        });
+
+        // Default configuration with validation parameters:
+        // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters and custom claims to manipulate how the JWT token should be validated.
+        services.AddMvc(mvcOptions => 
+        {
+            var parameters = new TokenValidationParameters();
+
+            var claimCheck = new Dictionary<string, string>
+            {
+                {"aud", Issuer},
+                {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
+            };
+
+            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters, claimCheck));
+        });
+
+    }
+}
+```
