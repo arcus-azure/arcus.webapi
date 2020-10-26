@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Arcus.WebApi.Tests.Unit.Security.Extension;
 using IdentityModel;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Xunit;
@@ -43,6 +44,85 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
         {
             Assert.ThrowsAny<ArgumentException>(
                 () => new JwtTokenReader(new Dictionary<string, string> { ["some key"] = value }));
+        }
+
+        [Fact]
+        public void Constructor_WithTokenValidationParametersWithoutClaims_Fails()
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(new TokenValidationParameters(), claimCheck: null));
+        }
+
+        [Fact]
+        public void Constructor_WithTokenValidationParametersWithEmptyClaims_ThrowsException()
+        {
+            // Arrange
+            var claimCheck = new Dictionary<string, string>();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => new JwtTokenReader(new TokenValidationParameters(), claimCheck));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithTokenValidationParametersBlankKeyInClaimCheck_Fails(string key)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(
+                    new TokenValidationParameters(),
+                    new Dictionary<string, string> { [key ?? ""] = "some value" }));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithTokenValidationParametersBlankValueInClaimCheck_Fails(string value)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(
+                    new TokenValidationParameters(),
+                    new Dictionary<string, string> { ["some key"] = value }));
+        }
+
+        [Fact]
+        public void Constructor_WithTokenValidationParametersLoggerWithoutClaims_Fails()
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(
+                    new TokenValidationParameters(),
+                    claimCheck: null,
+                    logger: NullLogger<JwtTokenReader>.Instance));
+        }
+
+        [Fact]
+        public void Constructor_WithTokenValidationParametersLoggerWithEmptyClaims_ThrowsException()
+        {
+            // Arrange
+            var claimCheck = new Dictionary<string, string>();
+
+            // Act & Assert
+            Assert.ThrowsAny<ArgumentException>(() => new JwtTokenReader(new TokenValidationParameters(), claimCheck, logger: null));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithTokenValidationParametersLoggerBlankKeyInClaimCheck_Fails(string key)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(
+                    new TokenValidationParameters(),
+                    new Dictionary<string, string> { [key ?? ""] = "some value" },
+                    logger: null));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void Constructor_WithTokenValidationParametersLoggerBlankValueInClaimCheck_Fails(string value)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenReader(
+                    new TokenValidationParameters(),
+                    new Dictionary<string, string> { ["some key"] = value },
+                    logger: null));
         }
 
         [Fact]
