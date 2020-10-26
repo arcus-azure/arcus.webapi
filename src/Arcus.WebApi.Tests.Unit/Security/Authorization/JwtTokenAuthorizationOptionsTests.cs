@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Moq;
@@ -63,6 +64,42 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() => options.JwtTokenReader = null);
+        }
+
+        [Fact]
+        public void CreateOptions_WithEmptyClaims_Fails()
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenAuthorizationOptions(new Dictionary<string, string>()));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void CreateOptions_WithBlankKeyInClaims_Fails(string key)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenAuthorizationOptions(new Dictionary<string, string> { [key] = "some value" }));
+        }
+
+        [Theory]
+        [ClassData(typeof(Blanks))]
+        public void CreateOptions_WithBlankValueInClaims_Fails(string value)
+        {
+            Assert.ThrowsAny<ArgumentException>(
+                () => new JwtTokenAuthorizationOptions(new Dictionary<string, string> { ["some key"] = value }));
+        }
+
+        [Fact]
+        public void CreateOptions_WithFilledClaims_Succeeds()
+        {
+            // Arrange
+            var claimCheck = new Dictionary<string, string> { ["some key"] = "some value" };
+
+            // Act
+            var options = new JwtTokenAuthorizationOptions(claimCheck);
+
+            // Assert
+            Assert.NotNull(options);
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
@@ -36,6 +37,17 @@ namespace Arcus.WebApi.Security.Authorization
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="reader"/> is <c>null</c>.</exception>
         public JwtTokenAuthorizationOptions(IJwtTokenReader reader)
             : this(reader, DefaultHeaderName)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JwtTokenAuthorizationOptions"/> class.
+        /// </summary>
+        /// <param name="claimCheck">Custom claims key-value pair to validate against.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="claimCheck"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
+        public JwtTokenAuthorizationOptions(IDictionary<string, string> claimCheck)
+            : this(new JwtTokenReader(new TokenValidationParameters(), claimCheck))
         {
         }
 
