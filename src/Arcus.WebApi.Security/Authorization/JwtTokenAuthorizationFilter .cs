@@ -2,13 +2,18 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
+using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authorization
@@ -52,8 +57,14 @@ namespace Arcus.WebApi.Security.Authorization
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
             ILogger logger = context.HttpContext.RequestServices.GetLoggerOrDefault<JwtTokenAuthorizationFilter>();
-            IJwtTokenReader reader = _authorizationOptions.GetOrCreateJwtTokenReader(context.HttpContext.RequestServices);
             
+            if (context.ActionDescriptor?.EndpointMetadata?.Any(m => m is BypassJwtTokenAuthorizationAttribute || m is AllowAnonymousAttribute) == true)
+            {
+                logger.LogTrace("Bypass JWT authorization on this path because the '{SpecificAttribute}' of '{GeneralAttribute}' was found", nameof(BypassJwtTokenAuthorizationAttribute), nameof(AllowAnonymousAttribute));
+                return;
+            }
+            
+            IJwtTokenReader reader = _authorizationOptions.GetOrCreateJwtTokenReader(context.HttpContext.RequestServices);
             if (reader is null)
             {
                 logger.LogError("Cannot validate JWT MSI token because no '{Type}' was registered in the options of the JWT authorization filter", nameof(IJwtTokenReader));

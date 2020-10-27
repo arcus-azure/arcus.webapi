@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using GuardNet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -39,6 +41,12 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
             IServiceProvider services = context.HttpContext.RequestServices;
             ILogger logger = services.GetLoggerOrDefault<CertificateAuthenticationFilter>();
+
+            if (context.ActionDescriptor?.EndpointMetadata?.Any(m => m is BypassCertificateAuthenticationAttribute || m is AllowAnonymousAttribute) == true)
+            {
+                logger.LogTrace("Bypass certificate authentication because '{SpecificAttribute}' or '{GeneralAttribute}' was found", nameof(BypassCertificateAuthenticationAttribute), nameof(AllowAnonymousAttribute));
+                return;
+            }
 
             var validator = services.GetService<CertificateAuthenticationValidator>();
             if (validator is null)

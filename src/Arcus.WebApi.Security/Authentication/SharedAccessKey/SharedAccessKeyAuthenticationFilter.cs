@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates;
+using Arcus.WebApi.Security.Authorization;
 using GuardNet;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +65,13 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
 
             ILogger logger = context.HttpContext.RequestServices.GetLoggerOrDefault<SharedAccessKeyAuthenticationFilter>();
+            
+            if (context.ActionDescriptor?.EndpointMetadata?.Any(m => m is BypassSharedAccessKeyAuthenticationAttribute || m is AllowAnonymousAttribute) == true)
+            {
+                logger.LogTrace("Bypass shared access key authentication because the '{SpecificAttribute}' or '{GeneralAttribute}' was found", nameof(BypassSharedAccessKeyAuthenticationAttribute), nameof(AllowAnonymousAttribute));
+                return;
+            }
+            
             string foundSecret = await GetAuthorizationSecretAsync(context);
 
             if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) 

@@ -264,6 +264,24 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             
         }
 
+        [Theory]
+        [InlineData(BypassOnMethodController.JwtRoute)]
+        [InlineData(BypassJwtTokenAuthorizationController.BypassOverAuthorizationRoute)]
+        [InlineData(BypassOnMethodController.AllowAnonymousRoute)]
+        public async Task JwtAuthorizedRoute_WithBypassAttribute_SkipsAuthorization(string route)
+        {
+            // Arrange
+            _testServer.AddFilter(filters => filters.AddJwtTokenAuthorization());
+
+            using (HttpClient client = _testServer.CreateClient()) 
+                // Act
+            using (HttpResponseMessage response = await client.GetAsync(route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        }
+
         /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
