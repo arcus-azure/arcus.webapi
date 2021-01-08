@@ -1,12 +1,9 @@
 ---
 title: "Home"
 layout: default
-permalink: /
-redirect_from:
- - /index.html
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?packageVersion=1.1.0)](https://www.nuget.org/packages/Arcus.WebApi.All/1.1.0)
 
 # Installation
 
@@ -15,7 +12,7 @@ The Arcus.WebApi library can be installed via NuGet.
 To install all Arcus.WebApi packages:
 
 ```shell
-PM > Install-Package Arcus.WebApi.All
+PM > Install-Package Arcus.WebApi.All --Version 1.1.0
 ```
 
 For more granular packages we recommend reading the documentation.
@@ -45,8 +42,8 @@ This is licensed under The MIT License (MIT). Which means that you can use, copy
 
 # Older versions
 
-- [v1.0.0](v1.0.0)
-- [v0.4.0](v0.4.0)
-- [v0.3.0](v0.3.0)
-- [v0.2.0](v0.2.0)
-- [v0.1.0](v0.1.0)
+- [v1.0.0](../v1.0.0)
+- [v0.4.0](../v0.4.0)
+- [v0.3.0](../v0.3.0)
+- [v0.2.0](../v0.2.0)
+- [v0.1.0](../v0.1.0)

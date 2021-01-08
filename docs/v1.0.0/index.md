@@ -42,6 +42,6 @@ This is licensed under The MIT License (MIT). Which means that you can use, copy
 
 # Older versions
 
-- [v0.3.0](v0.3.0)
-- [v0.2.0](v0.2.0)
-- [v0.1.0](v0.1.0)
+- [v0.3.0](../v0.3.0)
+- [v0.2.0](../v0.2.0)
+- [v0.1.0](../v0.1.0)
