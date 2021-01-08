@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Arcus.Observability.Telemetry.Core;
 using Arcus.Observability.Telemetry.Serilog.Enrichers;
 using Arcus.WebApi.Tests.Unit.Hosting;
 using Microsoft.AspNetCore.Builder;

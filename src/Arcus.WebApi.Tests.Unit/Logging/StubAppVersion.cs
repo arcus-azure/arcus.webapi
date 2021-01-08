@@ -1,4 +1,5 @@
-﻿using Arcus.Observability.Telemetry.Serilog.Enrichers;
+﻿using Arcus.Observability.Telemetry.Core;
+using Arcus.Observability.Telemetry.Serilog.Enrichers;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
