@@ -21,19 +21,30 @@ PM > Install-Package Arcus.WebApi.OpenApi.Extensions
 To indicate that an API is protected by OAuth, you need to add `AuthorizeCheckOperationFilter` as an `OperationFilter` when configuring Swashbuckles Swagger generation:
 
 ```csharp
-services.AddSwaggerGen(setupAction =>
+using Arcus.WebApi.OpenApi.Extensions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
+
+public class Startup
 {
-   setupAction.SwaggerDoc("v1", new Info { Title = "My API v1", Version = "v1" });
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSwaggerGen(setupAction =>
+        {
+            setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "My API v1", Version = "v1" });
 
-   setupAction.AddSecurityDefinition("oauth2", new OAuth2Scheme
-   {
-      Flow = "implicit",
-      AuthorizationUrl = $"{authorityUrl}connect/authorize",
-      Scopes = scopes
-   });
+            string securitySchemaName = "my-oauth2";
+            setupAction.AddSecurityDefinition(securitySchemaName, new OAuth2Scheme
+            {
+                Flow = "implicit",
+                AuthorizationUrl = $"{authorityUrl}connect/authorize",
+                Scopes = scopes
+            });
 
-   setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(new object[] {new [] {"myApiScope1", "myApiScope2"});
-});
+            setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(securitySchemaName, new object[] { new[] { "myApiScope1", "myApiScope2" } });
+        });
+    }
+}
 ```
 
 [&larr; back](/)

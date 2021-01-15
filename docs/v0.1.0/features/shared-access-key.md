@@ -36,10 +36,17 @@ The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be
 After that, you can add the filter to the MVC services:
 
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+    }
 }
 ```
 
@@ -55,16 +62,24 @@ This attribute will then add authentication to the route(s) via shared access ke
 The authentication requires a `ICachedSecretProvider` or `ISecretProvider` to be registered in services of the applications (normally in the `Startup` class):
 
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddScoped<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
-    services.AddMvc();
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+        services.AddMvc();
+    }
 }
 ```
 
 After that, you can freely use the attribute on the route (single method) or routes (multiple methods or `Controller` level) that requires authentication:
 
 ```csharp
+using Arcus.WebApi.Security.Authentication;
+
 [ApiController]
 [SharedAccessKeyAuthentication(headerName: "http-request-header-name", secretName: "shared-access-key-name")]
 public class MyApiController : ControllerBase

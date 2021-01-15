@@ -48,6 +48,29 @@ This mapping of what service which property uses, is defined in an `CertificateA
 Once this is done, the `CertificateAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
+<<<<<<< HEAD
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.Certificates;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
+{
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+
+        var certificateAuthenticationConfig = 
+            new CertificateAuthenticationConfigBuilder()
+                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+                .Build();
+
+        services.AddScoped<CertificateAuthenticationValidator>(
+            serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
+
+        services.AddMvc(
+            options => options.Filters.Add(new CertificateAuthenticationFilter()));
+    }
+=======
 public void ConfigureServices(IServiceCollections services)
 {
     services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
@@ -62,6 +85,7 @@ public void ConfigureServices(IServiceCollections services)
 
     services.AddMvc(
         options => options.Filters.Add(new CertificateAuthenticationFilter()));
+>>>>>>> master
 }
 ```
 
@@ -82,25 +106,34 @@ The authentication requires a service dependency to be registered with the servi
 This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class:
 
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.Certificates;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
-    var certificateAuthenticationConfig = 
-        new CertificateAuthenticationConfigBuilder()
-            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-            .Build();
+        var certificateAuthenticationConfig = 
+            new CertificateAuthenticationConfigBuilder()
+                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+                .Build();
 
-    services.AddScoped<CertificateAuthenticationValidator>(
-        serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
- 
-    services.AddMvc();
+        services.AddScoped<CertificateAuthenticationValidator>(
+            serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
+    
+        services.AddMvc();
+    }
 }
 ```
 
 After that, the `CertificateAuthenticationAttribute` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:
 
 ```csharp
+using Arcus.WebApi.Security.Authentication.Certificates;
+
 [ApiController]
 [CertificateAuthentication]
 public class MyApiController : ControllerBase
@@ -124,6 +157,8 @@ This works with adding one of these attributes to the respectively endpoint:
 > Works on both method and controller level, using either the certificate filter or attribute.
 
 ```csharp
+using Arcus.WebApi.Security.Authentication.Certificates;
+
 [ApiController]
 [CertificateAuthentication]
 public class SystemController : ControllerBase

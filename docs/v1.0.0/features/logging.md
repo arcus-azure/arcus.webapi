@@ -33,12 +33,18 @@ However, when the runtime throws a `BadHttpRequestException` we will reflect thi
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-   app.UseMiddleware<Arcus.WebApi.Logging.ExceptionHandlingMiddleware>();
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-   ...
-   app.UseMvc();
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+       app.UseMiddleware<Arcus.WebApi.Logging.ExceptionHandlingMiddleware>();
+
+       ...
+       app.UseMvc();
+    }
 }
 ```
 
@@ -50,21 +56,42 @@ By doing so, unhandled exceptions that might occur in other middleware component
 To get the information logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Startup.cs`:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Serilog;
+using Serilog.Configuration;
+
+public class Startup
 {
-    Log.Logger = new LoggerConfiguration()
-        .WriteTo.AzureApplicationInsights("my-instrumentation-key")
-        .CreateLogger();
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.AzureApplicationInsights("my-instrumentation-key")
+            .CreateLogger();
+    }
 }
 ```
 
 Note, don't forget to add `.UseSerilog` in the `Program.cs`.
 
 ```csharp
-WebHost.CreateDefaultBuilder(args)
-       .UseApplicationInsights()
-       .UseSerilog()
-       .UseStartup<Startup>();
+using Microsoft.AspNetCore.Hosting;
+using Serilog;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateWebHostBuilder(args).Build().Run();
+    }
+
+    private static WebHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        return WebHost.CreateDefaultBuilder(args)
+                      .UseSerilog()
+                      .UseStartup<Startup>();
+    }
+}
 ```
 
 To have access to the `.AzureApplicationInsights` extension, make sure you've installed [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/).

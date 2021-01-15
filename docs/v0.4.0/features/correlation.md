@@ -30,16 +30,23 @@ PM > Install-Package Arcus.WebApi.Correlation -Version 0.4.0
 To make sure the correlation is added to the HTTP response, following additions have to be made in the `.ConfigureServices` and `Configure` methods:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddCorrelation();
-}
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+public class Startup
 {
-    app.UseCorrelation();
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddCorrelation();
+    }
 
-    app.UseMvc();
+    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+    {
+        app.UseCorrelation();
+
+        app.UseMvc();
+    }
 }
 ```
 
@@ -50,45 +57,50 @@ Note: because the correlation is based on <span>ASP.NET</span> Core middleware, 
 Some extra options are available to alter the functionality of the correlation:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services)
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddCorrelation(options =>
+    public void ConfigureServices(IServiceCollection services)
     {
-        // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
-        // ---------------------------------------------------------------------------------
-
-        // Whether the transaction ID can be specified in the request, and will be used throughout the request handling.
-        // The request will return early when the `.AllowInRequest` is set to `false` and the request does contain the header (default: true).
-        options.Transaction.AllowInRequest = true;
-
-        // Whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
-        // When the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header, no value will be available for the transaction ID; 
-        // otherwise a GUID will be generated (default: true).
-        options.Transaction.GenerateWhenNotSpecified = true;
-
-        // Whether to include the transaction ID in the response (default: true).
-        options.Transaction.IncludeInResponse = true;
-
-        // The header to look for in the HTTP request, and will be set in the HTTP response (default: X-Transaction-ID).
-        options.Transaction.HeaderName = "X-Transaction-ID";
-
-        // The function that will generate the transaction ID, when the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header.
-        // (default: new `Guid`).
-        options.Transaction.GenerateId = () => $"Transaction-{Guid.NewGuid()}";
-
-        // Configuration on the operation ID (`RequestId`) response header.
-        // ----------------------------------------------------------------
-
-        // Whether to include the operation ID in the response (default: true).
-        options.Operation.IncludeInResponse = true;
-
-        // The header that will contain the operation ID in the HTTP response (default: RequestId).
-        options.Operation.HeaderName = "RequestId";
-
-        // The function that will generate the operation ID header value.
-        // (default: new `Guid`).
-        options.Operation.GenerateId = () => $"Operation-{Guid.NewGuid()}";
-    });
+        services.AddCorrelation(options =>
+        {
+            // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
+            // ---------------------------------------------------------------------------------
+    
+            // Whether the transaction ID can be specified in the request, and will be used throughout the request handling.
+            // The request will return early when the `.AllowInRequest` is set to `false` and the request does contain the header (default: true).
+            options.Transaction.AllowInRequest = true;
+    
+            // Whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
+            // When the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header, no value will be available for the transaction ID; 
+            // otherwise a GUID will be generated (default: true).
+            options.Transaction.GenerateWhenNotSpecified = true;
+    
+            // Whether to include the transaction ID in the response (default: true).
+            options.Transaction.IncludeInResponse = true;
+    
+            // The header to look for in the HTTP request, and will be set in the HTTP response (default: X-Transaction-ID).
+            options.Transaction.HeaderName = "X-Transaction-ID";
+    
+            // The function that will generate the transaction ID, when the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header.
+            // (default: new `Guid`).
+            options.Transaction.GenerateId = () => $"Transaction-{Guid.NewGuid()}";
+    
+            // Configuration on the operation ID (`RequestId`) response header.
+            // ----------------------------------------------------------------
+    
+            // Whether to include the operation ID in the response (default: true).
+            options.Operation.IncludeInResponse = true;
+    
+            // The header that will contain the operation ID in the HTTP response (default: RequestId).
+            options.Operation.HeaderName = "RequestId";
+    
+            // The function that will generate the operation ID header value.
+            // (default: new `Guid`).
+            options.Operation.GenerateId = () => $"Operation-{Guid.NewGuid()}";
+        });
+    }
 }
 ```
 

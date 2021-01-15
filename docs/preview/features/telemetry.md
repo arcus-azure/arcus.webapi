@@ -21,6 +21,11 @@ The enricher requires access to the application services so it can get the corre
 Following example shows how the Serilog logger is configured in the `Startup.cs` file.
 
 ```csharp
+using Arcus.Observability.Correlation;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Serilog;
+
 public class Startup
 {
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
