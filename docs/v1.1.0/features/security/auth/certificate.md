@@ -48,6 +48,7 @@ This mapping of what service which property uses, is defined in an `CertificateA
 Once this is done, the `CertificateAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
+<<<<<<< HEAD
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using Microsoft.Extensions.DependencyInjection;
@@ -69,6 +70,22 @@ public class Startup
         services.AddMvc(
             options => options.Filters.Add(new CertificateAuthenticationFilter()));
     }
+=======
+public void ConfigureServices(IServiceCollections services)
+{
+    services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+
+    var certificateAuthenticationConfig = 
+        new CertificateAuthenticationConfigBuilder()
+            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+            .Build();
+    
+    services.AddScoped<CertificateAuthenticationValidator>(
+        serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
+
+    services.AddMvc(
+        options => options.Filters.Add(new CertificateAuthenticationFilter()));
+>>>>>>> master
 }
 ```
 
