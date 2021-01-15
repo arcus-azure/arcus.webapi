@@ -21,12 +21,18 @@ PM > Install-Package Arcus.WebApi.Logging -Version 0.2.0
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-{
-   app.UseMiddleware<Arcus.WebApi.Logging.ExceptionHandlingMiddleware>();
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-   ...
-   app.UseMvc();
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+       app.UseMiddleware<Arcus.WebApi.Logging.ExceptionHandlingMiddleware>();
+
+       ...
+       app.UseMvc();
+    }
 }
 ```
 
@@ -35,10 +41,24 @@ If you have multiple middleware components configured, it is advised to put the 
 To get the exceptions logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Program.cs`:
 
 ```csharp
-WebHost.CreateDefaultBuilder(args)
-       .UseApplicationInsights()
-       .ConfigureLogging(loggers => loggers.AddApplicationInsights())
-       .UseStartup<Startup>();
+using Microsoft.AspNetCore.Hosting;
+using Serilog;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateWebHostBuilder(args).Build().Run();
+    }
+
+    private static WebHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        return WebHost.CreateDefaultBuilder(args)
+                      .UseApplicationInsights()
+                      .ConfigureLogging(loggers => loggers.AddApplicationInsights())
+                      .UseStartup<Startup>();
+    }
+}
 ```
 
 To be able to use the `AddApplicationInsights` extension method, the Microsoft.Extensions.Logging.ApplicationInsights package must be installed.
