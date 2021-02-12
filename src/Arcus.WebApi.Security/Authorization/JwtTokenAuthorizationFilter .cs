@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
@@ -12,8 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authorization

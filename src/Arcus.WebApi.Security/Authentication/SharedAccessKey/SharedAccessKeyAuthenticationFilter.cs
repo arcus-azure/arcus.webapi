@@ -5,15 +5,12 @@ using System.Net;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
-using Arcus.WebApi.Security.Authentication.Certificates;
-using Arcus.WebApi.Security.Authorization;
 using GuardNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
