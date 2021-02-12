@@ -5,15 +5,12 @@ using System.Net;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
-using Arcus.WebApi.Security.Authentication.Certificates;
-using Arcus.WebApi.Security.Authorization;
 using GuardNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
@@ -77,7 +74,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) 
                 && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
             {
-                LogSecurityEvent(logger, LogLevel.Trace, $"Cannot verify shared access key because neither a request header '{_headerName}' or query parameter '{_queryParameterName}' was found in the incoming request that was configured for shared access authentication", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, $"Cannot verify shared access key because neither a request header '{_headerName}' or query parameter '{_queryParameterName}' was found in the incoming request that was configured for shared access authentication", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedResult();
             }
             else
@@ -127,17 +124,17 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             {
                 if (requestSecretHeaders.Any(headerValue => headerValue != foundSecret))
                 {
-                    LogSecurityEvent(logger, LogLevel.Trace, $"Shared access key in request header '{_headerName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
+                    LogSecurityEvent(logger, $"Shared access key in request header '{_headerName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
                     context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
                 else
                 {
-                    LogSecurityEvent(logger, LogLevel.Trace, $"Shared access key in request header '{_headerName}' matches expected access key");
+                    LogSecurityEvent(logger, $"Shared access key in request header '{_headerName}' matches expected access key");
                 }
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Trace, $"No shared access key found in request header '{_headerName}'", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, $"No shared access key found in request header '{_headerName}'", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No shared access key found in request");
             }
         }
@@ -153,25 +150,23 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             {
                 if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
                 {
-                    LogSecurityEvent(logger, LogLevel.Trace, $"Shared access key in query parameter '{_queryParameterName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
+                    LogSecurityEvent(logger, $"Shared access key in query parameter '{_queryParameterName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
                     context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
                 else
                 {
-                    LogSecurityEvent(logger, LogLevel.Information, $"Shared access key in query parameter '{_queryParameterName}' matches expected access key");
+                    LogSecurityEvent(logger, $"Shared access key in query parameter '{_queryParameterName}' matches expected access key");
                 }
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Trace, $"No shared access key found in query parameter '{_queryParameterName}'", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, $"No shared access key found in query parameter '{_queryParameterName}'", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No shared access key found in request");
             }
         }
 
-        private static void LogSecurityEvent(ILogger logger, LogLevel level, string description, HttpStatusCode? responseStatusCode = null)
+        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
-            /* TODO: use 'Arcus.Observability.Telemetry.Core' 'LogSecurityEvent' instead once the SQL dependency is moved
-                       -> https://github.com/arcus-azure/arcus.observability/issues/131 */
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",
@@ -184,7 +179,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                 telemetryContext["StatusCode"] = responseStatusCode.ToString();
             }
 
-            logger.Log(level, "Events {EventName} (Context: {@EventContext})", "Authentication", telemetryContext);
+            logger.LogSecurityEvent("Authentication", telemetryContext);
         }
     }
 }
