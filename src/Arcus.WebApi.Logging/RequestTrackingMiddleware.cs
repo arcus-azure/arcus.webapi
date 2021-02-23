@@ -47,9 +47,12 @@ namespace Arcus.WebApi.Logging
         public async Task Invoke(HttpContext httpContext)
         {
             var stopwatch = Stopwatch.StartNew();
+
+            string requestBody = null;
             if (_options.IncludeRequestBody)
             {
                 httpContext.Request.EnableBuffering();
+                requestBody = await GetRequestBodyAsync(httpContext);
             }
 
             try
@@ -59,18 +62,17 @@ namespace Arcus.WebApi.Logging
             finally
             {
                 stopwatch.Stop();
-                await TrackRequestAsync(httpContext, stopwatch.Elapsed);
+                await TrackRequestAsync(requestBody, httpContext, stopwatch.Elapsed);
             }
         }
 
-        private async Task TrackRequestAsync(HttpContext httpContext, TimeSpan duration)
+        private async Task TrackRequestAsync(string requestBody, HttpContext httpContext, TimeSpan duration)
         {
             try
             {
                 IDictionary<string, StringValues> telemetryContext = GetRequestHeaders(httpContext);
 
-                string requestBody = await GetRequestBodyAsync(httpContext);
-                if (requestBody != null)
+                if (string.IsNullOrWhiteSpace(requestBody) == false)
                 {
                     telemetryContext.Add("Body", requestBody);
                 }
@@ -131,7 +133,7 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private static async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
+        private async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
         {
             if (!requestStream.CanRead)
             {
@@ -143,18 +145,31 @@ namespace Arcus.WebApi.Logging
                 return "Request body could not be tracked because stream is not seekable";
             }
 
-            long originalPosition = requestStream.Position;
-            if (requestStream.Position != 0)
-            {
-                requestStream.Seek(0, SeekOrigin.Begin);
-            }
-
-            var reader = new StreamReader(requestStream);
-            string contents = await reader.ReadToEndAsync();
+            string contents = null;
+            long? originalPosition = null;
 
             try
             {
-                requestStream.Seek(originalPosition, SeekOrigin.Begin);
+                originalPosition = requestStream.Position;
+                if (requestStream.Position != 0)
+                {
+                    requestStream.Seek(0, SeekOrigin.Begin);
+                }
+
+                var reader = new StreamReader(requestStream);
+                contents = await reader.ReadToEndAsync();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogWarning(ex, "Unable to get request body for request tracking");
+            }
+
+            try
+            {
+                if (originalPosition.HasValue)
+                {
+                    requestStream.Seek(originalPosition.Value, SeekOrigin.Begin);
+                }
             }
             catch
             {
