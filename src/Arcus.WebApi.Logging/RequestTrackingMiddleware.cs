@@ -62,11 +62,11 @@ namespace Arcus.WebApi.Logging
             finally
             {
                 stopwatch.Stop();
-                await TrackRequestAsync(requestBody, httpContext, stopwatch.Elapsed);
+                TrackRequest(requestBody, httpContext, stopwatch.Elapsed);
             }
         }
 
-        private async Task TrackRequestAsync(string requestBody, HttpContext httpContext, TimeSpan duration)
+        private void TrackRequest(string requestBody, HttpContext httpContext, TimeSpan duration)
         {
             try
             {
@@ -145,7 +145,7 @@ namespace Arcus.WebApi.Logging
                 return "Request body could not be tracked because stream is not seekable";
             }
 
-            string contents = null;
+            string contents;
             long? originalPosition = null;
 
             try
@@ -159,9 +159,11 @@ namespace Arcus.WebApi.Logging
                 var reader = new StreamReader(requestStream);
                 contents = await reader.ReadToEndAsync();
             }
-            catch (Exception ex)
+            catch
             {
-                _logger.LogWarning(ex, "Unable to get request body for request tracking");
+                // We don't want to track additional telemetry for cost purposes,
+                // so we surface it like this
+                contents = "Unable to get request body for request tracking";
             }
 
             try
