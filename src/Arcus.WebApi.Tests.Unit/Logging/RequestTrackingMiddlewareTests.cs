@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking());
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
                 {
                     Headers = { {headerName, headerValue} },
                     Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
@@ -55,7 +55,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking<NoHeadersRequestTrackingMiddleware>());
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
                 {
                     Headers = { {headerName, headerValue} },
                     Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
@@ -87,7 +87,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking());
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
                 {
                     Headers =
                     {
@@ -121,7 +121,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedHeaderNames.Add(customHeaderName)));
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
                 {
                     Headers = { {customHeaderName, customHeaderValue} },
                     Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
@@ -150,7 +150,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.IncludeRequestHeaders = false));
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
                 {
                     Headers = { {headerName, headerValue} },
                     Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
@@ -179,7 +179,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.IncludeRequestBody = true));
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Get, EchoController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
                 {
                     Headers = { {headerName, headerValue} },
                     Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
@@ -198,6 +198,40 @@ namespace Arcus.WebApi.Tests.Unit.Logging
                     Assert.True(ContainsRequestBody(eventContext, body), "Logged event context should contain request body");
                 }
             }
+        }
+
+        [Fact]
+        public async Task GetRequestWithSkippedAttributeOnMethod_SkipsRequestTracking_ReturnsSuccess()
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value", body = "some body";
+            _testServer.AddConfigure(app => app.UseRequestTracking());
+            using (HttpClient client = _testServer.CreateClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, SkipRequestTrackingOnMethodController.Route)
+                {
+                    Headers = { {headerName, headerValue} },
+                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
+                };
+
+                // Act
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.False(ContainsLoggedEventContext(), "No event context should be logged when the skipped request tracking attribute is applied");
+                }
+            }
+        }
+
+        private bool ContainsLoggedEventContext()
+        {
+            IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties = 
+                _testServer.LogSink.DequeueLogEvents()
+                           .SelectMany(ev => ev.Properties);
+
+            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.TelemetryContext);
+            return eventContexts.Any();
         }
 
         private IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> GetLoggedEventContext()
