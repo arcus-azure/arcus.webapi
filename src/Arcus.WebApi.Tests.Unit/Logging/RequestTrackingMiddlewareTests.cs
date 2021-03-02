@@ -200,15 +200,17 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
-        [Fact]
-        public async Task GetRequestWithSkippedAttributeOnMethod_SkipsRequestTracking_ReturnsSuccess()
+        [Theory]
+        [InlineData(SkipRequestTrackingOnMethodController.Route)]
+        [InlineData(SkipRequestTrackingOnClassController.Route)]
+        public async Task GetRequestWithSkippedAttributeOnMethod_SkipsRequestTracking_ReturnsSuccess(string route)
         {
             // Arrange
             const string headerName = "x-custom-header", headerValue = "custom header value", body = "some body";
             _testServer.AddConfigure(app => app.UseRequestTracking());
             using (HttpClient client = _testServer.CreateClient())
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, SkipRequestTrackingOnMethodController.Route)
+                var request = new HttpRequestMessage(HttpMethod.Post, route)
                 {
                     Headers = { {headerName, headerValue} },
                     Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
