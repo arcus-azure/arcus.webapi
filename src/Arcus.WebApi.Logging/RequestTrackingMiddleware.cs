@@ -52,8 +52,6 @@ namespace Arcus.WebApi.Logging
             Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
-
-            
             var endpoint = httpContext.Features.Get<IEndpointFeature>();
             if (endpoint is null)
             {
@@ -67,7 +65,6 @@ namespace Arcus.WebApi.Logging
             {
                 _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(SkipRequestTrackingAttribute));
                 await _next(httpContext);
-                
             }
             else
             {
