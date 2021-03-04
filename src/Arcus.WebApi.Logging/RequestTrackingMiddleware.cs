@@ -154,6 +154,17 @@ namespace Arcus.WebApi.Logging
 
         private void LogRequest(string requestBody, string responseBody, HttpContext httpContext, TimeSpan duration)
         {
+            if (_options.IncludeResponseBody)
+            {
+                var responseBodyBuffer = new MemoryStream();
+                return responseBodyBuffer;
+            }
+
+            return Stream.Null;
+        }
+
+        private void TrackRequest(string requestBody, string responseBody, HttpContext httpContext, TimeSpan duration)
+        {
             try
             {
                 IDictionary<string, StringValues> telemetryContext = GetRequestHeaders(httpContext);

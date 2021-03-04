@@ -20,5 +20,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
         {
             return Ok(body);
         }
+
     }
 }
