@@ -13,9 +13,17 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
 
         [HttpGet]
         [Route(Route)]
-        public IActionResult Get([FromBody] string body)
+        public IActionResult Get()
+        {
+            return Ok();
+        }
+
+        [HttpPost]
+        [Route(Route)]
+        public IActionResult Post([FromBody] string body)
         {
             return Ok(body);
         }
+
     }
 }

@@ -34,6 +34,7 @@
     <PackageReference Include="Arcus.Observability.Telemetry.AspNetCore" Version="2.0.0" />
     <PackageReference Include="Arcus.Observability.Correlation" Version="2.0.0" />
     <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="2.0.0" />
+    <PackageReference Include="Microsoft.IO.RecyclableMemoryStream" Version="1.4.0" />
   </ItemGroup>
 
    <ItemGroup>

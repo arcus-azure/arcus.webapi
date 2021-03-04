@@ -111,6 +111,14 @@ public class Startup
             // All omitted HTTP request header names that should always be excluded from the request tracking logging emits.
             // (default: `[ "Authentication", "X-Api-Key", "X-ARR-ClientCert" ]`)
             options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
+
+            // Size of the request body buffer (in bytes) which should be tracked. Request bodies greater than this buffer will only be partly present in the telemetry.
+            // (default: 1MB)
+            options.RequestBodyBufferSize = 10 * 1024 * 1024; // 10MB
+
+            // Size of the response body buffer (in bytes) hwhich should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
+            // (default: 1MB)
+            options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
         });
 
         ...
