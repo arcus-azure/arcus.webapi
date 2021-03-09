@@ -71,48 +71,53 @@ namespace Arcus.WebApi.Logging
             }
             else
             {
-                var stopwatch = Stopwatch.StartNew();
+                await TrackRequest(httpContext);
+            }
+        }
 
-                string requestBody = null;
-                if (_options.IncludeRequestBody)
+        private async Task TrackRequest(HttpContext httpContext)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            string requestBody = null;
+            if (_options.IncludeRequestBody)
+            {
+                httpContext.Request.EnableBuffering();
+                requestBody = await GetRequestBodyAsync(httpContext);
+            }
+
+            Stream originalResponseBodyStream = null;
+            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
+            {
+                if (_options.IncludeResponseBody)
                 {
-                    httpContext.Request.EnableBuffering();
-                    requestBody = await GetRequestBodyAsync(httpContext);
+                    originalResponseBodyStream = httpContext.Response.Body;
+                    httpContext.Response.Body = temporaryResponseBodyStream;
                 }
-            
-                Stream originalResponseBodyStream = null;
-                using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
+
+                try
                 {
+                    await _next(httpContext);
+                }
+                finally
+                {
+                    string responseBody = await GetResponseBodyAsync(httpContext);
+
+                    stopwatch.Stop();
+                    LogRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
+
                     if (_options.IncludeResponseBody)
                     {
-                        originalResponseBodyStream = httpContext.Response.Body;
-                        httpContext.Response.Body = temporaryResponseBodyStream;
-                    }
-            
-                    try
-                    {
-                        await _next(httpContext);
-                    }
-                    finally
-                    {
-                        string responseBody = await GetResponseBodyAsync(httpContext);
-                    
-                        stopwatch.Stop();
-                        TrackRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
+                        temporaryResponseBodyStream.Position = 0;
 
-                        if (_options.IncludeResponseBody)
-                        {
-                            temporaryResponseBodyStream.Position = 0;
-                        
-                            // Copy back the seekable/temporary response body stream to the original response body stream,
-                            // for the remaining middleware components that comes after this one.
-                            await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream); 
-                        }
+                        // Copy back the seekable/temporary response body stream to the original response body stream,
+                        // for the remaining middleware components that comes after this one.
+                        await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream);
                     }
                 }
             }
         }
-        
+
         private Stream DetermineResponseBodyBuffer()
         {
             if (_options.IncludeResponseBody)
@@ -124,7 +129,7 @@ namespace Arcus.WebApi.Logging
             return Stream.Null;
         }
 
-        private void TrackRequest(string requestBody, string responseBody, HttpContext httpContext, TimeSpan duration)
+        private void LogRequest(string requestBody, string responseBody, HttpContext httpContext, TimeSpan duration)
         {
             try
             {
