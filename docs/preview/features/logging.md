@@ -113,11 +113,15 @@ public class Startup
             options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
 
             // Size of the request body buffer (in bytes) which should be tracked. Request bodies greater than this buffer will only be partly present in the telemetry.
-            // (default: 1MB)
+            // (default: no limit)
             options.RequestBodyBufferSize = 10 * 1024 * 1024; // 10MB
 
+            // Whether or not the HTTP response body should be included in the request tracking logging emits.
+            // (default: `false`)
+            options.IncludeResponseBody = true;
+
             // Size of the response body buffer (in bytes) hwhich should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
-            // (default: 1MB)
+            // (default: no limit)
             options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
         });
 

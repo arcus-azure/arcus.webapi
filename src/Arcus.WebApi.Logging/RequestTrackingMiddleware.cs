@@ -171,7 +171,7 @@ namespace Arcus.WebApi.Logging
             return null;
         }
 
-        private async Task<string> GetBodyAsync(Stream body, int maxLength, string target)
+        private async Task<string> GetBodyAsync(Stream body, int? maxLength, string target)
         {
             _logger.LogTrace("Prepare for {Target} body to be tracked...", target);
             string sanitizedBody = await SanitizeStreamAsync(body, maxLength, target);
@@ -194,7 +194,7 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private static async Task<string> SanitizeStreamAsync(Stream stream, int maxLength, string targetName)
+        private async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
         {
             if (!stream.CanRead)
             {
@@ -217,10 +217,17 @@ namespace Arcus.WebApi.Logging
                     stream.Seek(0, SeekOrigin.Begin);
                 }
 
-                var buffer = new char[maxLength];
                 var reader = new StreamReader(stream);
-                await reader.ReadBlockAsync(buffer, 0, buffer.Length);
-                contents = new String(buffer);
+                if (maxLength.HasValue)
+                {
+                    var buffer = new char[maxLength.Value];
+                    await reader.ReadBlockAsync(buffer, 0, buffer.Length);
+                    contents = new String(buffer); 
+                }
+                else
+                {
+                    contents = await reader.ReadToEndAsync();
+                }
             }
             catch
             {

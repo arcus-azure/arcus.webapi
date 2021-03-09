@@ -10,8 +10,8 @@ namespace Arcus.WebApi.Logging
     /// </summary>
     public class RequestTrackingOptions
     {
-        private int _requestBodyBufferSize = 1024 * 1024,
-                    _responseBodyBufferSize = 1024 * 1024;
+        private int? _requestBodyBufferSize,
+                     _responseBodyBufferSize;
 
         /// <summary>
         /// Gets or sets the value indicating whether or not the HTTP request headers should be tracked.
@@ -27,12 +27,12 @@ namespace Arcus.WebApi.Logging
         /// Gets or sets the size (in bytes) of the request body buffer which indicates the maximum length of the body that should be tracked.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="value"/> is less than zero.</exception>
-        public int RequestBodyBufferSize
+        public int? RequestBodyBufferSize
         {
             get => _requestBodyBufferSize;
             set
             {
-                Guard.NotLessThan(value, 0, nameof(value), "Requires a request body buffer size greater than zero");
+                Guard.For<ArgumentOutOfRangeException>(() => value < 0, "Requires a request body buffer size greater than zero");
                 _requestBodyBufferSize = value;
             }
         }
@@ -46,12 +46,12 @@ namespace Arcus.WebApi.Logging
         /// Gets or sets the size (in bytes) of the response body buffer which indicates the maximum length of the body that should be tracked.
         /// </summary>
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="value"/> is less than zero.</exception>
-        public int ResponseBodyBufferSize
+        public int? ResponseBodyBufferSize
         {
             get => _responseBodyBufferSize;
             set
             {
-                Guard.NotLessThan(value, 0, nameof(value), "Requires a response body buffer size greater than zero");
+                Guard.For<ArgumentOutOfRangeException>(() => value < 0, "Requires a response body buffer size greater than zero");
                 _responseBodyBufferSize = value;
             }
         }
