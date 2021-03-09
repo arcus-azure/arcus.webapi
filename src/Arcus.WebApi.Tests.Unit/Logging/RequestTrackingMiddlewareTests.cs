@@ -269,6 +269,42 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
+        [Theory]
+        [InlineData(SkipRequestTrackingOnMethodController.Route)]
+        [InlineData(SkipRequestTrackingOnClassController.Route)]
+        public async Task GetRequestWithSkippedAttributeOnMethod_SkipsRequestTracking_ReturnsSuccess(string route)
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value", body = "some body";
+            _testServer.AddConfigure(app => app.UseRequestTracking());
+            using (HttpClient client = _testServer.CreateClient())
+            {
+                var request = new HttpRequestMessage(HttpMethod.Post, route)
+                {
+                    Headers = { {headerName, headerValue} },
+                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
+                };
+
+                // Act
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.False(ContainsLoggedEventContext(), "No event context should be logged when the skipped request tracking attribute is applied");
+                }
+            }
+        }
+
+        private bool ContainsLoggedEventContext()
+        {
+            IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties = 
+                _testServer.LogSink.DequeueLogEvents()
+                           .SelectMany(ev => ev.Properties);
+
+            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.TelemetryContext);
+            return eventContexts.Any();
+        }
+
         private IDictionary<string, string> GetLoggedEventContext()
         {
             IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties = 

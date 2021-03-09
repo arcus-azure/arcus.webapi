@@ -78,6 +78,14 @@ public class Startup
 {
     public void Configure(IApplicationBuilder app, IWebHostEvironment env)
     {
+         // In versions less than .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseEndpointRouting();
+
+        // In versions starting from .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseRouting();
+
         app.UseRequestTracking();
 
         ...
@@ -98,6 +106,14 @@ public class Startup
 {
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+        // In versions less than .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseEndpointRouting();
+
+        // In versions starting from .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseRouting();
+
         app.UseRequestTracking(options =>
         {
             // Whether or not the HTTP request body should be included in the request tracking logging emits.
@@ -126,10 +142,32 @@ public class Startup
         });
 
         ...
+
         app.UseMvc();
     }
 }
 ```
+
+**Skipping certain routes**
+
+The request tracking middleware can be disabled for certain endpoints (operation and/or controller level). This can come in handy if you have certain endpoints with rather large request bodies or want to boost performace.
+This can be achieved by placing the `SkipRequestTrackingAttribute` on the endpoint of your choosing.
+
+```csharp
+[ApiController]
+public class OrderController : ControllerBase
+{
+    [HttpPost]
+    [SkipRequestTracking]
+    public IActionResult BigPost()
+    {
+        Stream bigRequestBody = Request.Body;
+        return Ok();
+    }
+}
+```
+
+**Customization**
 
 Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
 
@@ -165,6 +203,14 @@ public class Startup
 {
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
+         // In versions less than .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseEndpointRouting();
+
+        // In versions starting from .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseRouting();
+
         app.UseRequestTracking<EmptyButNotOmitRequestTrackingMiddleware>(options => options.OmittedHeaderNames.Clear());
 
         ...

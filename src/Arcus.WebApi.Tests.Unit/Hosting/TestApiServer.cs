@@ -178,9 +178,9 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
 #endif
 
 #if !NETCOREAPP3_1
-
                 app.UseMvc();
 #endif
+
                 app.UseSwagger();
                 app.UseSwaggerUI(swaggerUiOptions =>
                 {

@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -50,43 +52,62 @@ namespace Arcus.WebApi.Logging
         public async Task Invoke(HttpContext httpContext)
         {
             Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context instance to track the incoming request and outgoing response");
+            Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
+            Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
-            var stopwatch = Stopwatch.StartNew();
-
-            string requestBody = null;
-            if (_options.IncludeRequestBody)
+            var endpoint = httpContext.Features.Get<IEndpointFeature>();
+            if (endpoint is null)
             {
-                httpContext.Request.EnableBuffering();
-                requestBody = await GetRequestBodyAsync(httpContext);
+                _logger.LogWarning(
+                    "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
+                    nameof(SkipRequestTrackingAttribute));
             }
             
-            Stream originalResponseBodyStream = null;
-            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
+            var skipRequestTrackingAttribute = endpoint?.Endpoint.Metadata.GetMetadata<SkipRequestTrackingAttribute>();
+            if (skipRequestTrackingAttribute != null)
             {
-                if (_options.IncludeResponseBody)
+                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(SkipRequestTrackingAttribute));
+                await _next(httpContext);
+            }
+            else
+            {
+                var stopwatch = Stopwatch.StartNew();
+
+                string requestBody = null;
+                if (_options.IncludeRequestBody)
                 {
-                    originalResponseBodyStream = httpContext.Response.Body;
-                    httpContext.Response.Body = temporaryResponseBodyStream;
+                    httpContext.Request.EnableBuffering();
+                    requestBody = await GetRequestBodyAsync(httpContext);
                 }
             
-                try
+                Stream originalResponseBodyStream = null;
+                using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
                 {
-                    await _next(httpContext);
-                }
-                finally
-                {
-                    string responseBody = await GetResponseBodyAsync(httpContext);
-                    
-                    stopwatch.Stop();
-                    TrackRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
-
                     if (_options.IncludeResponseBody)
                     {
-                        temporaryResponseBodyStream.Position = 0;
+                        originalResponseBodyStream = httpContext.Response.Body;
+                        httpContext.Response.Body = temporaryResponseBodyStream;
+                    }
+            
+                    try
+                    {
+                        await _next(httpContext);
+                    }
+                    finally
+                    {
+                        string responseBody = await GetResponseBodyAsync(httpContext);
+                    
+                        stopwatch.Stop();
+                        TrackRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
+
+                        if (_options.IncludeResponseBody)
+                        {
+                            temporaryResponseBodyStream.Position = 0;
                         
-                        // Copy back the seekable/temporary response body stream to the original response body stream,
-                        // for the remaining middleware components that comes after this one.
-                        await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream); 
+                            // Copy back the seekable/temporary response body stream to the original response body stream,
+                            // for the remaining middleware components that comes after this one.
+                            await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream); 
+                        }
                     }
                 }
             }
