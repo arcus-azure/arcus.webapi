@@ -6,6 +6,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -46,23 +48,44 @@ namespace Arcus.WebApi.Logging
         /// <param name="httpContext">The current HTTP context.</param>
         public async Task Invoke(HttpContext httpContext)
         {
-            var stopwatch = Stopwatch.StartNew();
+            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context to track the request");
+            Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
+            Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
-            string requestBody = null;
-            if (_options.IncludeRequestBody)
+            var endpoint = httpContext.Features.Get<IEndpointFeature>();
+            if (endpoint is null)
             {
-                httpContext.Request.EnableBuffering();
-                requestBody = await GetRequestBodyAsync(httpContext);
+                _logger.LogWarning(
+                    "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
+                    nameof(SkipRequestTrackingAttribute));
             }
-
-            try
+            
+            var skipRequestTrackingAttribute = endpoint?.Endpoint.Metadata.GetMetadata<SkipRequestTrackingAttribute>();
+            if (skipRequestTrackingAttribute != null)
             {
+                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(SkipRequestTrackingAttribute));
                 await _next(httpContext);
             }
-            finally
+            else
             {
-                stopwatch.Stop();
-                TrackRequest(requestBody, httpContext, stopwatch.Elapsed);
+                var stopwatch = Stopwatch.StartNew();
+
+                string requestBody = null;
+                if (_options.IncludeRequestBody)
+                {
+                    httpContext.Request.EnableBuffering();
+                    requestBody = await GetRequestBodyAsync(httpContext);
+                }
+
+                try
+                {
+                    await _next(httpContext);
+                }
+                finally
+                {
+                    stopwatch.Stop();
+                    TrackRequest(requestBody, httpContext, stopwatch.Elapsed);
+                }
             }
         }
 
