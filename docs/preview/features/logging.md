@@ -29,7 +29,7 @@ The unhandled exceptions are caught by this middleware component and are logged 
 The HTTP status code `500` is used as response code when an unhandled exception is caught. 
 However, when the runtime throws a `BadHttpRequestException` we will reflect this by returning the corresponding status code determined by the runtime.
 
-**Usage**
+### Usage
 
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
@@ -62,11 +62,11 @@ The HTTP request body is not logged by default.
 The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
 See [configuration](#configuration) for more details.
 
-**Example**
+### Example
 
 `HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [Content-Type, application/json], [Body, {"today":"cloudy"}])`
 
-**Usage**
+### Usage
 
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
@@ -94,7 +94,7 @@ public class Startup
 }
 ```
 
-**Configuration**
+### Configuration
 
 The request tracking middleware has several configuration options to manipulate what the request logging emits should contain.
 
@@ -136,10 +136,11 @@ public class Startup
 }
 ```
 
-**Skipping certain routes**
+### Skipping certain routes
 
-The request tracking middleware can be disabled for certain endpoints (operation and/or controller level). This can come in handy if you have certain endpoints with rather large request bodies or want to boost performace.
-This can be achieved by placing the `SkipRequestTrackingAttribute` on the endpoint of your choosing.
+You can opt-out for request tracking on one or more endpoints (operation and/or controller level).
+This can come in handy if you have certain endpoints with rather large request bodies or want to boost performance or are constantly probed to monitor the application.
+This can easily be done by using the `SkipRequestTrackingAttribute` on the endpoint or controller of your choosing.
 
 ```csharp
 [ApiController]
@@ -155,7 +156,7 @@ public class OrderController : ControllerBase
 }
 ```
 
-**Customization**
+### Customization
 
 Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
 
