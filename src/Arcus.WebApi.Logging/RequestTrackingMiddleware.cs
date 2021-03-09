@@ -55,7 +55,7 @@ namespace Arcus.WebApi.Logging
             var endpoint = httpContext.Features.Get<IEndpointFeature>();
             if (endpoint is null)
             {
-                _logger.LogWarning(
+                _logger.LogTrace(
                     "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
                     nameof(SkipRequestTrackingAttribute));
             }
