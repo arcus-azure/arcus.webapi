@@ -108,11 +108,7 @@ namespace Arcus.WebApi.Logging
 
                     if (_options.IncludeResponseBody)
                     {
-                        temporaryResponseBodyStream.Position = 0;
-
-                        // Copy back the seekable/temporary response body stream to the original response body stream,
-                        // for the remaining middleware components that comes after this one.
-                        await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream);
+                        await CopyTemporaryStreamToResponseStreamAsync(temporaryResponseBodyStream, originalResponseBodyStream);
                     }
                 }
             }
@@ -275,7 +271,18 @@ namespace Arcus.WebApi.Logging
             }
 
             // Trim string 'NULL' characters when the buffer was greater than the actual request/response body that was tracked.
-            return contents.TrimEnd('\0');
+            return contents?.TrimEnd('\0');
+        }
+
+        private static async Task CopyTemporaryStreamToResponseStreamAsync(
+            Stream temporaryResponseBodyStream,
+            Stream originalResponseBodyStream)
+        {
+            temporaryResponseBodyStream.Position = 0;
+
+            // Copy back the seekable/temporary response body stream to the original response body stream,
+            // for the remaining middleware components that comes after this one.
+            await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream);
         }
     }
 }
