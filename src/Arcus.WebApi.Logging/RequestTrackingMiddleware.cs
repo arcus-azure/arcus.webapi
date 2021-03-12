@@ -27,15 +27,16 @@ namespace Arcus.WebApi.Logging
         /// </summary>
         /// <param name="options">The options to control the behavior of the request tracking.</param>
         /// <param name="next">The next pipeline function to process the HTTP context.</param>
-        /// <param name="logger">The logger to write diagnostic messages during the request tracking.</param>
+        /// <param name="logger">The logger to write telemetry tracking during the request tracking.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/>, <paramref name="next"/>, <paramref name="logger"/> is <c>null</c>.</exception>
         public RequestTrackingMiddleware(
             RequestTrackingOptions options,
             RequestDelegate next,
             ILogger<RequestTrackingMiddleware> logger)
         {
-            Guard.NotNull(options, nameof(options));
-            Guard.NotNull(next, nameof(next));
-            Guard.NotNull(logger, nameof(logger));
+            Guard.NotNull(options, nameof(options), "Requires a set of options to control the behavior of the HTTP tracking middleware");
+            Guard.NotNull(next, nameof(next), "Requires a function pipeline to delegate the remainder of the request processing");
+            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to write telemetry tracking during the request processing");
 
             _options = options;
             _next = next;
@@ -43,12 +44,14 @@ namespace Arcus.WebApi.Logging
         }
 
         /// <summary>
-        /// Logs every incoming HTTP request.
+        /// Request handling method.
         /// </summary>
-        /// <param name="httpContext">The current HTTP context.</param>
+        /// <param name="httpContext">The <see cref="T:Microsoft.AspNetCore.Http.HttpContext" /> for the current request.</param>
+        /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that represents the execution of this middleware.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="httpContext"/> is <c>null</c>.</exception>
         public async Task Invoke(HttpContext httpContext)
         {
-            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context to track the request");
+            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context instance to track the incoming request and outgoing response");
             Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
@@ -68,13 +71,32 @@ namespace Arcus.WebApi.Logging
             }
             else
             {
-                var stopwatch = Stopwatch.StartNew();
+                await TrackRequest(httpContext);
+            }
+        }
 
-                string requestBody = null;
-                if (_options.IncludeRequestBody)
+        private async Task TrackRequest(HttpContext httpContext)
+        {
+            var stopwatch = Stopwatch.StartNew();
+
+            string requestBody = null;
+            if (_options.IncludeRequestBody)
+            {
+                httpContext.Request.EnableBuffering();
+                requestBody = await GetRequestBodyAsync(httpContext);
+            }
+
+            // Response body doesn't support (built-in) buffering and is not seekable, so we're storing temporary the response stream in our own seekable stream,
+            // which we later (*) replace back with the original response stream.
+            // If we don't store it in our own seekable stream first, we would read the response stream for tracking and could not use the same stream to respond to the request.
+            
+            Stream originalResponseBodyStream = null;
+            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
+            {
+                if (_options.IncludeResponseBody)
                 {
-                    httpContext.Request.EnableBuffering();
-                    requestBody = await GetRequestBodyAsync(httpContext);
+                    originalResponseBodyStream = httpContext.Response.Body;
+                    httpContext.Response.Body = temporaryResponseBodyStream;
                 }
 
                 try
@@ -83,13 +105,33 @@ namespace Arcus.WebApi.Logging
                 }
                 finally
                 {
+                    string responseBody = await GetResponseBodyAsync(httpContext);
+
                     stopwatch.Stop();
-                    TrackRequest(requestBody, httpContext, stopwatch.Elapsed);
+                    LogRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
+
+                    if (_options.IncludeResponseBody)
+                    {
+                        // (*) Copy back the seekable/temporary response body stream to the original response body stream,
+                        // for the remaining middleware components that comes after this one.
+                        await CopyTemporaryStreamToResponseStreamAsync(temporaryResponseBodyStream, originalResponseBodyStream);
+                    }
                 }
             }
         }
 
-        private void TrackRequest(string requestBody, HttpContext httpContext, TimeSpan duration)
+        private Stream DetermineResponseBodyBuffer()
+        {
+            if (_options.IncludeResponseBody)
+            {
+                var responseBodyBuffer = new MemoryStream();
+                return responseBodyBuffer;
+            }
+
+            return Stream.Null;
+        }
+
+        private void LogRequest(string requestBody, string responseBody, HttpContext httpContext, TimeSpan duration)
         {
             try
             {
@@ -97,7 +139,13 @@ namespace Arcus.WebApi.Logging
 
                 if (string.IsNullOrWhiteSpace(requestBody) == false)
                 {
-                    telemetryContext.Add("Body", requestBody);
+                    telemetryContext.Add("Body", "Request body is now available in 'RequestBody' dimension");
+                    telemetryContext.Add("RequestBody", requestBody);
+                }
+
+                if (string.IsNullOrWhiteSpace(responseBody) == false)
+                {
+                    telemetryContext.Add("ResponseBody", responseBody);
                 }
 
                 Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object)kv.Value);
@@ -105,7 +153,7 @@ namespace Arcus.WebApi.Logging
             }
             catch (Exception exception)
             {
-                _logger.LogCritical(exception, "Failed to track request");
+                _logger.LogCritical(exception, "Failed to track request due to an unexpected failure");
             }
         }
 
@@ -133,17 +181,35 @@ namespace Arcus.WebApi.Logging
         {
             if (_options.IncludeRequestBody)
             {
-                _logger.LogTrace("Prepare for the request body to be tracked...");
-                string sanitizedBody = await SanitizeRequestBodyAsync(httpContext.Request.Body);
-                if (sanitizedBody != null)
-                {
-                    _logger.LogTrace("Found request body to be tracked");
-                    return sanitizedBody;
-                }
-
-                _logger.LogWarning("No request body was found to be tracked");
+                string sanitizedBody = await GetBodyAsync(httpContext.Request.Body, _options.RequestBodyBufferSize, "Request");
+                return sanitizedBody;
             }
 
+            return null;
+        }
+
+        private async Task<string> GetResponseBodyAsync(HttpContext httpContext)
+        {
+            if (_options.IncludeResponseBody)
+            {
+                string sanitizedBody = await GetBodyAsync(httpContext.Response.Body, _options.ResponseBodyBufferSize, "Response");
+                return sanitizedBody;
+            }
+
+            return null;
+        }
+
+        private async Task<string> GetBodyAsync(Stream body, int? maxLength, string target)
+        {
+            _logger.LogTrace("Prepare for {Target} body to be tracked...", target);
+            string sanitizedBody = await SanitizeStreamAsync(body, maxLength, target);
+            if (sanitizedBody != null)
+            {
+                _logger.LogTrace("Found {Target} body to be tracked", target);
+                return sanitizedBody;
+            }
+                
+            _logger.LogWarning("No {Target} body was found to be tracked", target);
             return null;
         }
 
@@ -156,16 +222,16 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private async Task<string> SanitizeRequestBodyAsync(Stream requestStream)
+        private async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
         {
-            if (!requestStream.CanRead)
+            if (!stream.CanRead)
             {
-                return "Request body could not be tracked because stream is not readable";
+                return $"{targetName} body could not be tracked because stream is not readable";
             }
 
-            if (!requestStream.CanSeek)
+            if (!stream.CanSeek)
             {
-                return "Request body could not be tracked because stream is not seekable";
+                return $"{targetName} body could not be tracked because stream is not seekable";
             }
 
             string contents;
@@ -173,27 +239,36 @@ namespace Arcus.WebApi.Logging
 
             try
             {
-                originalPosition = requestStream.Position;
-                if (requestStream.Position != 0)
+                originalPosition = stream.Position;
+                if (stream.Position != 0)
                 {
-                    requestStream.Seek(0, SeekOrigin.Begin);
+                    stream.Seek(0, SeekOrigin.Begin);
                 }
 
-                var reader = new StreamReader(requestStream);
-                contents = await reader.ReadToEndAsync();
+                var reader = new StreamReader(stream);
+                if (maxLength.HasValue)
+                {
+                    var buffer = new char[maxLength.Value];
+                    await reader.ReadBlockAsync(buffer, 0, buffer.Length);
+                    contents = new String(buffer); 
+                }
+                else
+                {
+                    contents = await reader.ReadToEndAsync();
+                }
             }
             catch
             {
                 // We don't want to track additional telemetry for cost purposes,
                 // so we surface it like this
-                contents = "Unable to get request body for request tracking";
+                contents = $"Unable to get '{targetName}' body for request tracking";
             }
 
             try
             {
                 if (originalPosition.HasValue)
                 {
-                    requestStream.Seek(originalPosition.Value, SeekOrigin.Begin);
+                    stream.Seek(originalPosition.Value, SeekOrigin.Begin);
                 }
             }
             catch
@@ -201,7 +276,17 @@ namespace Arcus.WebApi.Logging
                 // Nothing to do here, we want to ensure the value is always returned.
             }
 
-            return contents;
+            // Trim string 'NULL' characters when the buffer was greater than the actual request/response body that was tracked.
+            return contents?.TrimEnd('\0');
+        }
+
+        private static async Task CopyTemporaryStreamToResponseStreamAsync(
+            Stream temporaryResponseBodyStream,
+            Stream originalResponseBodyStream)
+        {
+            temporaryResponseBodyStream.Position = 0;
+
+            await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream);
         }
     }
 }

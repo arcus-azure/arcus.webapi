@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using GuardNet;
 
 namespace Arcus.WebApi.Logging
 {
@@ -8,6 +10,9 @@ namespace Arcus.WebApi.Logging
     /// </summary>
     public class RequestTrackingOptions
     {
+        private int? _requestBodyBufferSize,
+                     _responseBodyBufferSize;
+
         /// <summary>
         /// Gets or sets the value indicating whether or not the HTTP request headers should be tracked.
         /// </summary>
@@ -17,6 +22,39 @@ namespace Arcus.WebApi.Logging
         /// Gets or sets the value to indicate whether or not the HTTP request body should be tracked.
         /// </summary>
         public bool IncludeRequestBody { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the size (in bytes) of the request body buffer which indicates the maximum length of the body that should be tracked.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="value"/> is less than zero.</exception>
+        public int? RequestBodyBufferSize
+        {
+            get => _requestBodyBufferSize;
+            set
+            {
+                Guard.For<ArgumentOutOfRangeException>(() => value < 0, "Requires a request body buffer size greater than zero");
+                _requestBodyBufferSize = value;
+            }
+        }
+        
+        /// <summary>
+        /// Gets or sets the value to indicate whether or not the HTTP response body should be tracked.
+        /// </summary>
+        public bool IncludeResponseBody { get; set; } = false;
+
+        /// <summary>
+        /// Gets or sets the size (in bytes) of the response body buffer which indicates the maximum length of the body that should be tracked.
+        /// </summary>
+        /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="value"/> is less than zero.</exception>
+        public int? ResponseBodyBufferSize
+        {
+            get => _responseBodyBufferSize;
+            set
+            {
+                Guard.For<ArgumentOutOfRangeException>(() => value < 0, "Requires a response body buffer size greater than zero");
+                _responseBodyBufferSize = value;
+            }
+        }
 
         /// <summary>
         /// Gets or sets the HTTP request headers names that will be omitted during request tracking.

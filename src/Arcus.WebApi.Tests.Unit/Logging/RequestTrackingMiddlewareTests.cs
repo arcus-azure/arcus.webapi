@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Tests.Unit.Correlation;
 using Arcus.WebApi.Tests.Unit.Hosting;
+using Bogus;
 using Microsoft.AspNetCore.Builder;
 using Serilog.Events;
 using Xunit;
@@ -16,35 +17,27 @@ namespace Arcus.WebApi.Tests.Unit.Logging
 {
     public class RequestTrackingMiddlewareTests : IDisposable
     {
+        private const string RequestBodyKey = "RequestBody",
+                             ResponseBodyKey = "ResponseBody";
+        
         private readonly TestApiServer _testServer = new TestApiServer();
-
+        private readonly Faker _bogusGenerator = new Faker();
+        
         [Fact]
         public async Task GetRequest_TracksRequest_ReturnsSuccess()
         {
             // Arrange
             const string headerName = "x-custom-header", headerValue = "custom header value", body = "echo me";
             _testServer.AddConfigure(app => app.UseRequestTracking());
-            using (HttpClient client = _testServer.CreateClient())
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
-                {
-                    Headers = { {headerName, headerValue} },
-                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
-                };
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string content = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("echo me", content);
-
-                    IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext = GetLoggedEventContext();
-                    Assert.True(ContainsRequestHeader(eventContext, headerName, headerValue), "Logged event context should contain request header");
-                    Assert.False(ContainsRequestBody(eventContext, body), "Shouldn't contain request body");
-                }
-            }
+            
+            // Act
+            await PostRequestAsync(headerName, headerValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
         }
 
         [Fact]
@@ -53,27 +46,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Arrange
             const string headerName = "x-custom-header", headerValue = "custom header value", body = "echo me";
             _testServer.AddConfigure(app => app.UseRequestTracking<NoHeadersRequestTrackingMiddleware>());
-            using (HttpClient client = _testServer.CreateClient())
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
-                {
-                    Headers = { {headerName, headerValue} },
-                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
-                };
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string content = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("echo me", content);
-
-                    IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext = GetLoggedEventContext();
-                    Assert.False(ContainsRequestHeader(eventContext, headerName, headerValue), "Logged event context shouldn't contain request header");
-                    Assert.False(ContainsRequestBody(eventContext, body), "Logged event context shouldn't contain request body");
-                }
-            }
+           
+            // Act
+            await PostRequestAsync(headerName, headerValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.DoesNotContain(headerName, eventContext);
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
         }
 
         [Theory]
@@ -85,32 +66,16 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Arrange
             const string customHeaderName = "x-custom-header", customHeaderValue = "custom header value", body = "echo me";
             _testServer.AddConfigure(app => app.UseRequestTracking());
-            using (HttpClient client = _testServer.CreateClient())
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
-                {
-                    Headers =
-                    {
-                        {omittedHeaderName, Guid.NewGuid().ToString()}, 
-                        {customHeaderName, customHeaderValue}
-                    },
-                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
-                };
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string content = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("echo me", content);
-
-                    IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext = GetLoggedEventContext();
-                    Assert.True(ContainsRequestHeader(eventContext, customHeaderName, customHeaderValue), "Logged event context should contain request header");
-                    Assert.DoesNotContain(eventContext, item => item.Key.ToStringValue() == omittedHeaderName);
-                    Assert.False(ContainsRequestBody(eventContext, body), "Logged event context shouldn't contain request body");
-                }
-            }
+            
+            // Act
+            await PostRequestAsync(customHeaderName, customHeaderValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(customHeaderValue, Assert.Contains(customHeaderName, eventContext));
+            Assert.DoesNotContain(omittedHeaderName, eventContext);
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
         }
 
         [Fact]
@@ -119,27 +84,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Arrange
             const string customHeaderName = "x-custom-secret-header", customHeaderValue = "custom header value", body = "echo me";
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedHeaderNames.Add(customHeaderName)));
-            using (HttpClient client = _testServer.CreateClient())
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
-                {
-                    Headers = { {customHeaderName, customHeaderValue} },
-                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
-                };
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string content = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("echo me", content);
-
-                    IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext = GetLoggedEventContext();
-                    Assert.False(ContainsRequestHeader(eventContext, customHeaderName, customHeaderValue), "Logged event context shouldn't contain request header");
-                    Assert.False(ContainsRequestBody(eventContext, body), "Logged event context shouldn't contain request body");
-                }
-            }
+            
+            // Act
+            await PostRequestAsync(customHeaderName, customHeaderValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.DoesNotContain(customHeaderName, eventContext);
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
         }
 
         [Fact]
@@ -148,55 +101,171 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Arrange
             const string headerName = "x-custom-header", headerValue = "custom header value", body = "echo me";
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.IncludeRequestHeaders = false));
-            using (HttpClient client = _testServer.CreateClient())
-            {
-                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
-                {
-                    Headers = { {headerName, headerValue} },
-                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
-                };
-
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string content = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("echo me", content);
-
-                    IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext = GetLoggedEventContext();
-                    Assert.False(ContainsRequestHeader(eventContext, headerName, headerValue), "Logged event context shouldn't contain request header");
-                    Assert.False(ContainsRequestBody(eventContext, body), "Logged event context shouldn't contain request body");
-                }
-            }
+            
+            // Act
+            await PostRequestAsync(headerName, headerValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.DoesNotContain(headerName, eventContext);
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
         }
 
         [Fact]
-        public async Task GetRequestWithBody_TracksRequest_ReturnsSuccess()
+        public async Task PostRequestWithRequestBody_TracksRequest_ReturnsSuccess()
         {
             // Arrange
             const string headerName = "x-custom-header", headerValue = "custom header value", body = "echo me";
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.IncludeRequestBody = true));
-            using (HttpClient client = _testServer.CreateClient())
+            
+            // Act
+            await PostRequestAsync(headerName, headerValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            Assert.Equal(body, Assert.Contains(RequestBodyKey, eventContext));
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
+        }
+
+        [Fact]
+        public async Task PostRequestWithRequestBody_TracksRequestTillBufferMax_ReturnsSuccess()
+        {
+            // Arrange
+            string headerName = $"x-cutom-header-{Guid.NewGuid()}",
+                   headerValue = $"header-{Guid.NewGuid()}",
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
             {
-                var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
-                {
-                    Headers = { {headerName, headerValue} },
-                    Content = new StringContent($"\"{body}\"", Encoding.UTF8, "application/json")
-                };
+                options.IncludeRequestBody = true;
+                options.RequestBodyBufferSize = 100;
+            }));
+            
+            // Act
+            await PostRequestAsync(headerName, headerValue, requestBody);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            string partyRequestBody = Assert.Contains(RequestBodyKey, eventContext);
+            Assert.StartsWith(partyRequestBody, requestBody);
+            Assert.DoesNotContain(ResponseBodyKey, eventContext);
+        }
 
-                // Act
-                using (HttpResponseMessage response = await client.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string content = await response.Content.ReadAsStringAsync();
-                    Assert.Equal("echo me", content);
+        [Fact]
+        public async Task PostWithWithResponseBody_TracksRequest_ReturnsSuccess()
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeResponseBody = true;
+            }));
 
-                    IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext = GetLoggedEventContext();
-                    Assert.True(ContainsRequestHeader(eventContext, headerName, headerValue), "Logged event context should contain request header");
-                    Assert.True(ContainsRequestBody(eventContext, body), "Logged event context should contain request body");
-                }
+            // Act
+            await PostRequestAsync(headerName, headerValue, requestBody);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            Assert.Equal(requestBody, Assert.Contains(ResponseBodyKey, eventContext));
+        }
+
+        [Fact]
+        public async Task PostWithResponseBodyOverBuffer_TracksRequestTillBufferMax_ReturnsSuccess()
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeResponseBody = true;
+                options.ResponseBodyBufferSize = 100;
+            }));
+            
+            // Act
+            await PostRequestAsync(headerName, headerValue, requestBody);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            Assert.DoesNotContain(RequestBodyKey, eventContext);
+            string partlyResponseBody = Assert.Contains(ResponseBodyKey, eventContext);
+            Assert.True(partlyResponseBody.Length < requestBody.Length, "Only a part of the response body should be tracked");
+            Assert.StartsWith(partlyResponseBody, requestBody);
+        }
+
+        [Fact]
+        public async Task PostWithBothRequestAndResponseBody_TracksRequest_ReturnsSuccess()
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   body = $"body-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeRequestBody = true;
+                options.IncludeResponseBody = true;
+            }));
+
+            // Act
+            await PostRequestAsync(headerName, headerValue, body);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            Assert.Equal(body, Assert.Contains(RequestBodyKey, eventContext));
+            Assert.Equal(body, Assert.Contains(ResponseBodyKey, eventContext));
+        }
+        
+        [Fact]
+        public async Task PostWithBothRequestAndResponseBodyOverBuffer_TracksRequestTillBufferMax_ReturnsSuccess()
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeRequestBody = true;
+                options.RequestBodyBufferSize = 100;
+                options.IncludeResponseBody = true;
+                options.ResponseBodyBufferSize = 100;
+            }));
+            
+            // Act
+            await PostRequestAsync(headerName, headerValue, requestBody);
+            
+            // Assert
+            IDictionary<string, string> eventContext = GetLoggedEventContext();
+            Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            string partyRequestBody = Assert.Contains(RequestBodyKey, eventContext);
+            Assert.True(partyRequestBody.Length < requestBody.Length, "Only a part of the request body should be tracked");
+            Assert.StartsWith(partyRequestBody, requestBody);
+            string partlyResponseBody = Assert.Contains(ResponseBodyKey, eventContext);
+            Assert.True(partlyResponseBody.Length < requestBody.Length, "Only a part of the response body should be tracked");
+            Assert.StartsWith(partlyResponseBody, requestBody);
+        }
+        
+        private async Task PostRequestAsync(string headerName, string headerValue, string requestBody)
+        {
+            using (HttpClient client = _testServer.CreateClient())
+            using (var requestContents = new StringContent($"\"{requestBody}\"", Encoding.UTF8, "application/json"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, EchoController.Route)
+            {
+                Headers = { {headerName, headerValue} },
+                Content = requestContents
+            })
+            using (HttpResponseMessage response = await client.SendAsync(request))
+            {
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                string responseContents = await response.Content.ReadAsStringAsync();
+                Assert.Equal(requestBody, responseContents);
             }
         }
 
@@ -236,7 +305,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             return eventContexts.Any();
         }
 
-        private IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> GetLoggedEventContext()
+        private IDictionary<string, string> GetLoggedEventContext()
         {
             IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties = 
                 _testServer.LogSink.DequeueLogEvents()
@@ -246,17 +315,9 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             (string key, LogEventPropertyValue eventContext) = Assert.Single(eventContexts);
             var dictionaryValue = Assert.IsType<DictionaryValue>(eventContext);
 
-            return dictionaryValue.Elements;
-        }
-
-        private static bool ContainsRequestHeader(IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext, string headerName, string headerValue)
-        {
-            return eventContext.Any(item => item.Key.ToStringValue() == headerName && item.Value.ToStringValue() == $"[\"{headerValue}\"]");
-        }
-
-        private static bool ContainsRequestBody(IReadOnlyDictionary<ScalarValue, LogEventPropertyValue> eventContext, string expectedBody)
-        {
-            return eventContext.Any(item => item.Key.ToStringValue() == "Body" && item.Value.ToStringValue().Trim('\\', '\"', '[', ']') == expectedBody);
+            return dictionaryValue.Elements.ToDictionary(
+                item => item.Key.ToStringValue(), 
+                item => item.Value.ToStringValue().Trim('\\', '\"', '[', ']'));
         }
 
         /// <summary>

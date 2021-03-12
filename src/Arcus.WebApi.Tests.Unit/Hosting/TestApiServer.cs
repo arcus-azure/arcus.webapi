@@ -161,10 +161,9 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 app.UseExceptionHandling();
                 app.UseMiddleware<TraceIdentifierMiddleware>();
                 app.UseHttpCorrelation();
-                
+
 #if NETCOREAPP3_1
                 app.UseRouting();
-                
 #else
                 app.UseEndpointRouting();
 #endif
@@ -201,6 +200,7 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 collection.AddRouting();
                 collection.AddControllers(); 
 #endif
+
                 collection.AddHttpCorrelation();
 
                 Logger logger = null;
@@ -209,7 +209,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     logger = new LoggerConfiguration()
                         .Enrich.FromLogContext()
                         .Enrich.WithHttpCorrelationInfo(services)
-                        .WriteTo.Console()
                         .WriteTo.Sink(LogSink)
                         .WriteTo.Sink(new MicrosoftILoggerLogSink(_logger))
                         .CreateLogger();
