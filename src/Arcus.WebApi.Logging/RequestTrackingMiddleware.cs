@@ -86,6 +86,10 @@ namespace Arcus.WebApi.Logging
                 requestBody = await GetRequestBodyAsync(httpContext);
             }
 
+            // Response body doesn't support (built-in) buffering and is not seekable, so we're storing temporary the response stream in our own seekable stream,
+            // which we later (*) replace back with the original response stream.
+            // If we don't store it in our own seekable stream first, we would read the response stream for tracking and could not use the same stream to respond to the request.
+            
             Stream originalResponseBodyStream = null;
             using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
             {
@@ -108,6 +112,8 @@ namespace Arcus.WebApi.Logging
 
                     if (_options.IncludeResponseBody)
                     {
+                        // (*) Copy back the seekable/temporary response body stream to the original response body stream,
+                        // for the remaining middleware components that comes after this one.
                         await CopyTemporaryStreamToResponseStreamAsync(temporaryResponseBodyStream, originalResponseBodyStream);
                     }
                 }
@@ -203,7 +209,7 @@ namespace Arcus.WebApi.Logging
                 return sanitizedBody;
             }
                 
-            _logger.LogTrace("No {Target} body was found to be tracked", target);
+            _logger.LogWarning("No {Target} body was found to be tracked", target);
             return null;
         }
 
@@ -280,8 +286,6 @@ namespace Arcus.WebApi.Logging
         {
             temporaryResponseBodyStream.Position = 0;
 
-            // Copy back the seekable/temporary response body stream to the original response body stream,
-            // for the remaining middleware components that comes after this one.
             await temporaryResponseBodyStream.CopyToAsync(originalResponseBodyStream);
         }
     }
