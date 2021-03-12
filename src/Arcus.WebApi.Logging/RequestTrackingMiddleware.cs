@@ -207,7 +207,7 @@ namespace Arcus.WebApi.Logging
                 return sanitizedBody;
             }
                 
-            _logger.LogWarning("No {Target} body was found to be tracked", target);
+            _logger.LogTrace("No {Target} body was found to be tracked", target);
             return null;
         }
 
