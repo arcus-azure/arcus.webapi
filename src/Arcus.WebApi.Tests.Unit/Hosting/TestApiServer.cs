@@ -12,6 +12,7 @@ using Arcus.WebApi.Tests.Unit.Logging;
 using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Internal;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
@@ -157,16 +158,28 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
 
             builder.Configure(app =>
             {
+                app.UseExceptionHandling();
+                app.UseMiddleware<TraceIdentifierMiddleware>();
+                app.UseHttpCorrelation();
+
+#if NETCOREAPP3_1
+                app.UseRouting();
+#else
+                app.UseEndpointRouting();
+#endif
+
                 foreach (Action<IApplicationBuilder> configure in _configures)
                 {
                     configure(app);
                 }
 
-                app.UseExceptionHandling();
-                app.UseMiddleware<TraceIdentifierMiddleware>();
+#if NETCOREAPP3_1
+                app.UseEndpoints(endpoints => endpoints.MapControllers());
+#endif
 
-                app.UseHttpCorrelation();
+#if !NETCOREAPP3_1
                 app.UseMvc();
+#endif
 
                 app.UseSwagger();
                 app.UseSwaggerUI(swaggerUiOptions =>
@@ -182,9 +195,12 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
             {
 #if NETCOREAPP2_2
                 collection.AddMvc();
-#else
-                collection.AddMvc(options => options.EnableEndpointRouting = false);
 #endif
+#if NETCOREAPP3_1
+                collection.AddRouting();
+                collection.AddControllers(); 
+#endif
+
                 collection.AddHttpCorrelation();
 
                 Logger logger = null;
@@ -193,7 +209,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                     logger = new LoggerConfiguration()
                         .Enrich.FromLogContext()
                         .Enrich.WithHttpCorrelationInfo(services)
-                        .WriteTo.Console()
                         .WriteTo.Sink(LogSink)
                         .WriteTo.Sink(new MicrosoftILoggerLogSink(_logger))
                         .CreateLogger();

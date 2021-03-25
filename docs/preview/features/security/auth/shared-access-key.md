@@ -38,10 +38,17 @@ The authentication requires an `ICachedSecretProvider` or `ISecretProvider` depe
 Once this is done, the `SharedAccessKeyAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+    }
 }
 ```
 
@@ -57,16 +64,24 @@ The shared access key authentication will then be applied to the endpoint(s) tha
 The authentication requires an `ICachedSecretProvider` or `ISecretProvider` dependency to be registered with the services container of the ASP.NET request pipeline.  This is typically done in the `ConfigureServices` method of the `Startup` class:
 
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
-    services.AddMvc();
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+        services.AddMvc();
+    }
 }
 ```
 
 After that, the `SharedAccessKeyAuthenticationAttribute` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:
 
 ```csharp
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+
 [ApiController]
 [SharedAccessKeyAuthentication(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")]
 public class MyApiController : ControllerBase
@@ -85,30 +100,51 @@ The package supports different scenarios for specifying the shared access key pa
 
 - **Use header only** - Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+    }
 }
 ```
 <br/>
 
 - **Use query parameter only** - Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using Microsoft.Extensions.DependencyInjection;
+
+public class Startup
 {
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
+    }
 }
 ```
 <br/>
 
 - **Support both header & query parameter** - Both the specified request header and query parameter  will be validated for the shared access key.
 ```csharp
-public void ConfigureServices(IServiceCollections services)
+using Arcus.Security.Core.Caching;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using Microsoft.Extensions.DepdendencyInjection;
+
+public class Startup
 {
-    services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-    services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+    public void ConfigureServices(IServiceCollections services)
+    {
+        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+    }
 }
 ```
 If both header and query parameter are specified, they must both be valid or an `Unauthorized` will be returned.
@@ -123,6 +159,8 @@ This works with adding one of these attributes to the respectively endpoint:
 > Works on both method and controller level, using either the shared access key filter or attribute.
 
 ```csharp
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+
 [ApiController]
 [SharedAccessKeyAuthentication("MySecret", "MyHeader")]
 public class SystemController : ControllerBase

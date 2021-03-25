@@ -33,6 +33,11 @@ This filter will then add authorization to all endpoints via the configured prop
 Example:
 
 ```csharp
+using Arcus.WebApi.Security.Authorization.Jwt;
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
@@ -75,6 +80,10 @@ public class Startup
 It allows validating not only on the audience claim in the JWT token, but any type of custom claim that needs to be verified
 
 ```csharp
+using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+
 public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
@@ -131,6 +140,8 @@ This works with adding one of these attributes to the respectively endpoint:
 > Works on both method and controller level.
 
 ```csharp
+using Arcus.WebApi.Security.Authorization.Jwt;
+
 [ApiController]
 public class SystemController : ControllerBase
 {

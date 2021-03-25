@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Linq;
-using System.Net.Mime;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
@@ -12,8 +11,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Security.Authorization
@@ -77,7 +74,7 @@ namespace Arcus.WebApi.Security.Authorization
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Trace, "No JWT MSI token was specified in the request", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, "No JWT MSI token was specified in the request", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No JWT MSI token header found in request");
             }
         }
@@ -86,7 +83,7 @@ namespace Arcus.WebApi.Security.Authorization
         {
             if (String.IsNullOrWhiteSpace(jwtString))
             {
-                LogSecurityEvent(logger, LogLevel.Trace, "Cannot validate JWT MSI token because the token is blank", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, "Cannot validate JWT MSI token because the token is blank", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("Blank JWT MSI token");
                 
                 return;
@@ -94,7 +91,7 @@ namespace Arcus.WebApi.Security.Authorization
 
             if (!JwtRegex.IsMatch(jwtString))
             {
-                LogSecurityEvent(logger, LogLevel.Trace, "Cannot validate JWT MSI token because the token is in an invalid format", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, "Cannot validate JWT MSI token because the token is in an invalid format", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("Invalid JWT MSI token format");
                 
                 return;
@@ -103,20 +100,17 @@ namespace Arcus.WebApi.Security.Authorization
             bool isValidToken = await reader.IsValidTokenAsync(jwtString);
             if (isValidToken)
             {
-                LogSecurityEvent(logger, LogLevel.Trace, "JWT MSI token is valid");
+                LogSecurityEvent(logger, "JWT MSI token is valid");
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Trace, "JWT MSI token is invalid", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, "JWT MSI token is invalid", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("Wrong JWT MSI token");
             }
         }
 
-        private static void LogSecurityEvent(ILogger logger, LogLevel level, string description, HttpStatusCode? responseStatusCode = null)
+        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
-            /* TODO: use 'Arcus.Observability.Telemetry.Core' 'LogSecurityEvent' instead once the SQL dependency is moved
-                       -> https://github.com/arcus-azure/arcus.observability/issues/131 */
-            
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",
@@ -129,7 +123,7 @@ namespace Arcus.WebApi.Security.Authorization
                 telemetryContext["StatusCode"] = responseStatusCode.ToString();
             }
 
-            logger.Log(level, "Events {EventName} (Context: {@EventContext})", "Authorization", telemetryContext);
+            logger.LogSecurityEvent("Authorization", telemetryContext);
         }
     }
 }

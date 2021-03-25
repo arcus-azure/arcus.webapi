@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Arcus.Observability.Telemetry.Serilog.Enrichers;
+using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Tests.Unit.Hosting;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -25,12 +26,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseVersionTracking());
 
             using (HttpClient client = _testServer.CreateClient())
-            // Act
-            using (HttpResponseMessage response = await client.GetAsync(EchoController.Route))
             {
-                // Assert
-                Assert.True(response.Headers.TryGetValues(DefaultHeaderName, out IEnumerable<string> values));
-                Assert.Equal(expected, Assert.Single(values));
+                // Act
+                using (HttpResponseMessage response = await client.GetAsync(EchoController.Route))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.True(response.Headers.TryGetValues(DefaultHeaderName, out IEnumerable<string> values));
+                    Assert.Equal(expected, Assert.Single(values));
+                }
             }
         }
 
@@ -48,6 +52,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             using (HttpResponseMessage response = await client.GetAsync(EchoController.Route))
             {
                 // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                 Assert.False(response.Headers.Contains(DefaultHeaderName));
                 Assert.True(response.Headers.TryGetValues(headerName, out IEnumerable<string> values));
                 Assert.Equal(expected, Assert.Single(values));

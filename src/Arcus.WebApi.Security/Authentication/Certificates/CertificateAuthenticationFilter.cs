@@ -61,17 +61,17 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 bool isCertificateAllowed = await validator.IsCertificateAllowedAsync(clientCertificate, services);
                 if (isCertificateAllowed)
                 {
-                    LogSecurityEvent(logger, LogLevel.Trace, "Client certificate in request is considered allowed according to configured validation requirements");
+                    LogSecurityEvent(logger, "Client certificate in request is considered allowed according to configured validation requirements");
                 }
                 else
                 {
-                    LogSecurityEvent(logger, LogLevel.Trace, "Client certificate in request is not considered allowed according to the configured validation requirements", HttpStatusCode.Unauthorized);
+                    LogSecurityEvent(logger, "Client certificate in request is not considered allowed according to the configured validation requirements", HttpStatusCode.Unauthorized);
                     context.Result = new UnauthorizedObjectResult("Client certificate in request is not allowed");
                 }
             }
             else
             {
-                LogSecurityEvent(logger, LogLevel.Trace, "No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements", HttpStatusCode.Unauthorized);
+                LogSecurityEvent(logger, "No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
         }
@@ -117,11 +117,8 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             return false;
         }
 
-        private static void LogSecurityEvent(ILogger logger, LogLevel level, string description, HttpStatusCode? responseStatusCode = null)
+        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
-            /* TODO: use 'Arcus.Observability.Telemetry.Core' 'LogSecurityEvent' instead once the SQL dependency is moved
-                       -> https://github.com/arcus-azure/arcus.observability/issues/131 */
-            
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",
@@ -134,7 +131,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 telemetryContext["StatusCode"] = responseStatusCode.ToString(); 
             }
 
-            logger.Log(level, "Events {EventName} (Context: {@EventContext})", "Authentication", telemetryContext);
+            logger.LogSecurityEvent("Authentication", telemetryContext);
         }
     }
 }

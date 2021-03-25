@@ -29,17 +29,23 @@ The unhandled exceptions are caught by this middleware component and are logged 
 The HTTP status code `500` is used as response code when an unhandled exception is caught. 
 However, when the runtime throws a `BadHttpRequestException` we will reflect this by returning the corresponding status code determined by the runtime.
 
-**Usage**
+### Usage
 
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-   app.UseExceptionHandling();
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-   ...
-   app.UseMvc();
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+       app.UseExceptionHandling();
+
+       ...
+       app.UseMvc();
+    }
 }
 ```
 
@@ -56,56 +62,121 @@ The HTTP request body is not logged by default.
 The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
 See [configuration](#configuration) for more details.
 
-**Example**
+### Example
 
 `HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [Content-Type, application/json], [Body, {"today":"cloudy"}])`
 
-**Usage**
+### Usage
 
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEvironment env)
-{
-    app.UseRequestTracking();
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-    ...
-    app.UseMvc();
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEvironment env)
+    {
+         // In versions less than .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseEndpointRouting();
+
+        // In versions starting from .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseRouting();
+
+        app.UseRequestTracking();
+
+        ...
+        app.UseMvc();
+    }
 }
 ```
 
-**Configuration**
+### Configuration
 
 The request tracking middleware has several configuration options to manipulate what the request logging emits should contain.
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+
+public class Startup
 {
-    app.UseRequestTracking(options =>
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-        // Whether or not the HTTP request body should be included in the request tracking logging emits.
-        // (default: `false`)
-        options.IncludeRequestBody = true;
+        // In versions less than .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseEndpointRouting();
 
-        // Whether or not the configured HTTP request headers should be included in the request tracking logging emits.
-        // (default: `true`)
-        options.IncludeRequestHeaders = true;
+        // In versions starting from .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseRouting();
 
-        // All omitted HTTP request header names that should always be excluded from the request tracking logging emits.
-        // (default: `[ "Authentication", "X-Api-Key", "X-ARR-ClientCert" ]`)
-        options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
-    });
+        app.UseRequestTracking(options =>
+        {
+            // Whether or not the HTTP request body should be included in the request tracking logging emits.
+            // (default: `false`)
+            options.IncludeRequestBody = true;
 
-    ...
-    app.UseMvc();
+            // Whether or not the configured HTTP request headers should be included in the request tracking logging emits.
+            // (default: `true`)
+            options.IncludeRequestHeaders = true;
+
+            // All omitted HTTP request header names that should always be excluded from the request tracking logging emits.
+            // (default: `[ "Authentication", "X-Api-Key", "X-ARR-ClientCert" ]`)
+            options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
+
+            // Size of the request body buffer (in bytes) which should be tracked. Request bodies greater than this buffer will only be partly present in the telemetry.
+            // (default: no limit)
+            options.RequestBodyBufferSize = 10 * 1024 * 1024; // 10MB
+
+            // Whether or not the HTTP response body should be included in the request tracking logging emits.
+            // (default: `false`)
+            options.IncludeResponseBody = true;
+
+            // Size of the response body buffer (in bytes) hwhich should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
+            // (default: no limit)
+            options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
+        });
+
+        ...
+
+        app.UseMvc();
+    }
 }
 ```
+
+### Skipping certain routes
+
+You can opt-out for request tracking on one or more endpoints (operation and/or controller level).
+This can come in handy if you have certain endpoints with rather large request bodies or want to boost performance or are constantly probed to monitor the application.
+This can easily be done by using the `SkipRequestTrackingAttribute` on the endpoint or controller of your choosing.
+
+```csharp
+[ApiController]
+public class OrderController : ControllerBase
+{
+    [HttpPost]
+    [SkipRequestTracking]
+    public IActionResult BigPost()
+    {
+        Stream bigRequestBody = Request.Body;
+        return Ok();
+    }
+}
+```
+
+### Customization
 
 Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
 
 Following example shows how the request security headers can be emptied by not omitted:
 
 ```csharp
+using Arcus.WebApi.Logging;
+
 public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddleware
 {
     public EmptyButNotOmitRequestTrackingMiddleware(
@@ -126,12 +197,26 @@ public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddlewar
 And, configure your custom middleware like this in the `Startup.cs`:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    app.UseRequestTracking<EmptyButNotOmitRequestTrackingMiddleware>(options => options.OmittedHeaderNames.Clear());
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 
-    ...
-    app.UseMvc();
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+         // In versions less than .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseEndpointRouting();
+
+        // In versions starting from .NET Core 3.0:
+        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        app.UseRouting();
+
+        app.UseRequestTracking<EmptyButNotOmitRequestTrackingMiddleware>(options => options.OmittedHeaderNames.Clear());
+
+        ...
+        app.UseMvc();
+    }
 }
 ```
 
@@ -151,18 +236,25 @@ Such an instance **must** be registered in order for the version tracking to wor
 Adding the version tracking can be done by the following:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddSingleton<IAppVersion, MyAppVersion>();
-}
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.DependencyInjection;
 
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+public class Startup
 {
-    // Uses the previously registered `IAppVersion` service to include the application to the default `X-Version` response header.
-    app.UseVersionTracking();
+    public void ConfigureServices(IServiceCollection services)
+    {
+        services.AddSingleton<IAppVersion, MyAppVersion>();
+    }
 
-    // Uses the previously registered `IAppVersion` service to include the application to the custom `X-My-Version` response header.
-    app.UseVersionTracking(options => options.Header = "X-My-Version");
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        // Uses the previously registered `IAppVersion` service to include the application to the default `X-Version` response header.
+        app.UseVersionTracking();
+
+        // Uses the previously registered `IAppVersion` service to include the application to the custom `X-My-Version` response header.
+        app.UseVersionTracking(options => options.Header = "X-My-Version");
+    }
 }
 ```
 
@@ -171,21 +263,42 @@ public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
 To get the information logged in Azure Application Insights, configure logging like this when building the `IWebHost` in `Startup.cs`:
 
 ```csharp
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Serilog;
+using Serilog.Configuration;
+
+public class Startup
 {
-    Log.Logger = new LoggerConfiguration()
-        .WriteTo.AzureApplicationInsights("my-instrumentation-key")
-        .CreateLogger();
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.AzureApplicationInsights("my-instrumentation-key")
+            .CreateLogger();
+    }
 }
 ```
 
 Note, don't forget to add `.UseSerilog` in the `Program.cs`.
 
 ```csharp
-WebHost.CreateDefaultBuilder(args)
-       .UseApplicationInsights()
-       .UseSerilog()
-       .UseStartup<Startup>();
+using Microsoft.AspNetCore.Hosting;
+using Serilog;
+
+public class Program
+{
+    public static void Main(string[] args)
+    {
+        CreateWebHostBuilder(args).Build().Run();
+    }
+
+    private static WebHostBuilder CreateWebHostBuilder(string[] args)
+    {
+        return WebHost.CreateDefaultBuilder(args)
+                      .UseSerilog()
+                      .UseStartup<Startup>();
+    }
+}
 ```
 
 To have access to the `.AzureApplicationInsights` extension, make sure you've installed [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/).
