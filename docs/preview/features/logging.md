@@ -89,7 +89,7 @@ public class Startup
         app.UseRequestTracking();
 
         // Make sure that the exception handling is placed after the request tracking because otherwise unhandled exceptions that result in 500 response status codes will not be tracked.
-        app.ExceptionHandling();
+        app.UseExceptionHandling();
         app.UseMvc();
         ...
     }
