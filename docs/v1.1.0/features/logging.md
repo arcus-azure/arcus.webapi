@@ -34,7 +34,6 @@ However, when the runtime throws a `BadHttpRequestException` we will reflect thi
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-<<<<<<< HEAD
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
@@ -47,18 +46,10 @@ public class Startup
        ...
        app.UseMvc();
     }
-=======
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-   app.UseExceptionHandling();
-
-   ...
-   app.UseMvc();
->>>>>>> master
 }
 ```
 
-If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as the first one.
+If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as soon as possible.
 By doing so, unhandled exceptions that might occur in other middleware components will also be logged by the `ExceptionHandlingMiddleware` component.
 
 ## Logging incoming requests
@@ -80,7 +71,6 @@ See [configuration](#configuration) for more details.
 To use this middleware, add the following line of code in the `Startup.Configure` method:
 
 ```csharp
-<<<<<<< HEAD
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
@@ -90,17 +80,11 @@ public class Startup
     {
         app.UseRequestTracking();
 
-        ...
+         // Make sure that the exception handling is placed after the request tracking because otherwise unhandled exceptions that result in 500 response status codes will not be tracked.
+        app.UseExceptionHandling();
         app.UseMvc();
+        ...
     }
-=======
-public void Configure(IApplicationBuilder app, IWebHostEvironment env)
-{
-    app.UseRequestTracking();
-
-    ...
-    app.UseMvc();
->>>>>>> master
 }
 ```
 
@@ -109,7 +93,6 @@ public void Configure(IApplicationBuilder app, IWebHostEvironment env)
 The request tracking middleware has several configuration options to manipulate what the request logging emits should contain.
 
 ```csharp
-<<<<<<< HEAD
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
@@ -135,27 +118,6 @@ public class Startup
         ...
         app.UseMvc();
     }
-=======
-public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-{
-    app.UseRequestTracking(options =>
-    {
-        // Whether or not the HTTP request body should be included in the request tracking logging emits.
-        // (default: `false`)
-        options.IncludeRequestBody = true;
-
-        // Whether or not the configured HTTP request headers should be included in the request tracking logging emits.
-        // (default: `true`)
-        options.IncludeRequestHeaders = true;
-
-        // All omitted HTTP request header names that should always be excluded from the request tracking logging emits.
-        // (default: `[ "Authentication", "X-Api-Key", "X-ARR-ClientCert" ]`)
-        options.OmittedRequestHeaderNames.Add("X-My-Secret-Header");
-    });
-
-    ...
-    app.UseMvc();
->>>>>>> master
 }
 ```
 
@@ -164,11 +126,8 @@ Optionally, one can inherit from this middleware component and override the defa
 Following example shows how the request security headers can be emptied by not omitted:
 
 ```csharp
-<<<<<<< HEAD
 using Arcus.WebApi.Logging;
 
-=======
->>>>>>> master
 public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddleware
 {
     public EmptyButNotOmitRequestTrackingMiddleware(
