@@ -30,7 +30,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         
         [HttpPost]
         [Route(ExcludeAllRoute)]
-        [ExcludeRequestTracking(ExcludeFilter.ExcludeAll)]
+        [ExcludeRequestTracking(ExcludeFilter.ExcludeRoute)]
         public IActionResult ExcludeAll([FromBody] string body)
         {
             return Ok(ResponsePrefix + body);
