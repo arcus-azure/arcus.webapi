@@ -148,21 +148,52 @@ public class Startup
 }
 ```
 
-### Skipping certain routes
+### Excluding certain routes
 
 You can opt-out for request tracking on one or more endpoints (operation and/or controller level).
 This can come in handy if you have certain endpoints with rather large request bodies or want to boost performance or are constantly probed to monitor the application.
-This can easily be done by using the `SkipRequestTrackingAttribute` on the endpoint or controller of your choosing.
+This can easily be done by using the `ExcludeRequestTrackingAttribute` on the endpoint or controller of your choosing.
+
+```csharp
+[ApiController]
+[ExcludeRequestTracking]
+public class OrderController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult BigPost()
+    {
+        Stream bigRequestBody = Request.Body;
+        return Ok();
+    }
+}
+```
+
+When used as in the example above, the all routes of the controller will be excluded from the telemtry tracking. 
+The exclude attribute allows you to specify on a more specific level what part of the request should be excluded.
 
 ```csharp
 [ApiController]
 public class OrderController : ControllerBase
 {
+    // Only exclude the request body from the request tracking. 
+    // The request will still be tracked and will contain the request headers and the response body (if configured).
     [HttpPost]
-    [SkipRequestTracking]
-    public IActionResult BigPost()
+    [ExcludeRequstTracking(ExcludeFilter.ExcludeRequestBody)]
+    public IActionResult BigRequestBodyPost()
     {
         Stream bigRequestBody = Request.Body;
+        return Ok();
+    }
+
+    // Only exclude the response body from the request tracking.
+    // The request will still be tracked and will contain the request headers and the request body (if configured).
+    [HttPost]
+    [ExcludeRequestTracking(ExcludeFilter.ExcludeResponseBody)]
+    public async Task<IActionResult> BigResponseBodyPost()
+    {
+        Stream responseBody = ...
+        responseBody.CopyToAsync(Response.Body);
+
         return Ok();
     }
 }
