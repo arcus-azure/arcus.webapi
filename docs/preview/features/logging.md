@@ -178,7 +178,7 @@ public class OrderController : ControllerBase
     // Only exclude the request body from the request tracking. 
     // The request will still be tracked and will contain the request headers and the response body (if configured).
     [HttpPost]
-    [ExcludeRequstTracking(ExcludeFilter.ExcludeRequestBody)]
+    [ExcludeRequestTracking(ExcludeFilter.ExcludeRequestBody)]
     public IActionResult BigRequestBodyPost()
     {
         Stream bigRequestBody = Request.Body;
