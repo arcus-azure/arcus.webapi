@@ -57,7 +57,7 @@ namespace Arcus.WebApi.Logging
             var endpoint = httpContext.Features.Get<IEndpointFeature>();
 
             ExcludeFilter filter = DetermineExclusionFilter(endpoint);
-            if (filter is ExcludeFilter.ExcludeAll)
+            if (filter is ExcludeFilter.ExcludeRoute)
             {
                 _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint?.Endpoint?.DisplayName, nameof(ExcludeRequestTrackingAttribute));
                 await _next(httpContext);

@@ -15,7 +15,7 @@ namespace Arcus.WebApi.Logging
         /// Initializes a new instance of the <see cref="ExcludeRequestTrackingAttribute" /> class
         /// that excludes by default the entire request from the telemetry tracking.
         /// </summary>
-        public ExcludeRequestTrackingAttribute() : this(ExcludeFilter.ExcludeAll)
+        public ExcludeRequestTrackingAttribute() : this(ExcludeFilter.ExcludeRoute)
         {
         }
 
