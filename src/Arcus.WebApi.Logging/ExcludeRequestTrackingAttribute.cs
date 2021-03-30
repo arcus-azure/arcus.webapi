@@ -6,7 +6,7 @@ namespace Arcus.WebApi.Logging
     /// <summary>
     /// Represents an endpoint attribute that indicates which endpoints should be withhold from request tracking.
     /// </summary>
-    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+    [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class ExcludeRequestTrackingAttribute : Attribute
     {
         private static readonly string ExcludeFilterNames = String.Join(", ", Enum.GetNames(typeof(ExcludeFilter)));
@@ -17,7 +17,6 @@ namespace Arcus.WebApi.Logging
         /// </summary>
         public ExcludeRequestTrackingAttribute() : this(ExcludeFilter.ExcludeAll)
         {
-            
         }
 
         /// <summary>

@@ -311,6 +311,53 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
+        [Fact]
+        public async Task PostRequestWithExcludeFilterAttributeOnMethod_GetsIgnoredWhileExcludeAttributeOnClass_ReturnsSuccess()
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            string body = $"body-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeRequestBody = true;
+                options.IncludeResponseBody = true;
+            }));
+
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, body, ExcludeFilterIgnoredWhileExcludedOnClassController.Route))
+            {
+                // Assert
+                string responseContents = await response.Content.ReadAsStringAsync();
+                Assert.Equal(ExcludeFilterIgnoredWhileExcludedOnClassController.ResponsePrefix + body, responseContents);
+                Assert.False(ContainsLoggedEventContext(), "No event context should be logged when the skipped request tracking attribute is applied");
+            }
+        }
+
+        [Fact]
+        public async Task PostRequestWithExcludedFilterAttributeOnMethod_GetsUsedWhileExcludedAttributeOnClass_ReturnsSuccess()
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            string body = $"body-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeRequestBody = true;
+                options.IncludeResponseBody = true;
+            }));
+
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, body, ExcludeFilterUsedWhileExcludedOnClassController.Route))
+            {
+                // Assert
+                string responseContents = await response.Content.ReadAsStringAsync();
+                Assert.Equal(ExcludeFilterUsedWhileExcludedOnClassController.ResponsePrefix + body, responseContents);
+                IDictionary<string, string> eventContext = GetLoggedEventContext();
+                Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+                Assert.DoesNotContain(RequestBodyKey, eventContext);
+                Assert.DoesNotContain(ResponseBodyKey, eventContext);
+            }
+        }
+
         private async Task PostTrackedRequestAsync(string headerName, string headerValue, string requestBody)
         {
             using (HttpClient client = _testServer.CreateClient())

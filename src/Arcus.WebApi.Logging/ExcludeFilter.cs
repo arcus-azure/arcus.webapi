@@ -21,6 +21,6 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Specifies that both the request body and response body will be excluded from the request tracking.
         /// </summary>
-        ExcludeAll = 3
+        ExcludeAll = 7
     }
 }
