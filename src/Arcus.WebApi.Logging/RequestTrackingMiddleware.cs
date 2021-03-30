@@ -55,34 +55,25 @@ namespace Arcus.WebApi.Logging
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
             var endpoint = httpContext.Features.Get<IEndpointFeature>();
-            if (endpoint is null)
-            {
-                _logger.LogTrace(
-                    "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
-                    nameof(ExcludeRequestTrackingAttribute));
-            }
 
-            ExcludeFilter? filter = DetermineExclusionFilter(endpoint);
-            if (filter is null || filter is ExcludeFilter.ExcludeAll)
+            ExcludeFilter filter = DetermineExclusionFilter(endpoint);
+            if (filter is ExcludeFilter.ExcludeAll)
             {
-                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(ExcludeRequestTrackingAttribute));
+                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint?.Endpoint?.DisplayName, nameof(ExcludeRequestTrackingAttribute));
                 await _next(httpContext);
             }
             else
             {
-                await TrackRequest(httpContext, filter.Value);
+                await TrackRequest(httpContext, filter);
             }
         }
 
-        private ExcludeFilter? DetermineExclusionFilter(IEndpointFeature endpoint)
+        private ExcludeFilter DetermineExclusionFilter(IEndpointFeature endpoint)
         {
             if (endpoint is null)
             {
-                _logger.LogTrace(
-                    "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
-                    nameof(ExcludeRequestTrackingAttribute));
-
-                return null;
+                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
+                return ExcludeFilter.None;
             }
 
             ExcludeRequestTrackingAttribute[] excludeRequestTrackingAttributes = 
