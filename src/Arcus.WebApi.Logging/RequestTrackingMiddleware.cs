@@ -91,10 +91,10 @@ namespace Arcus.WebApi.Logging
             if (excludeRequestTrackingAttributes.Length <= 0)
             {
                 _logger.LogTrace("No '{Attribute}' found on endpoint, continue with request tracking", nameof(ExcludeRequestTrackingAttribute));
-                return null;
+                return ExcludeFilter.None;
             }
             
-            ExcludeFilter filter = excludeRequestTrackingAttributes.Aggregate((ExcludeFilter) 0, (acc, item) => acc | item.Filter);
+            ExcludeFilter filter = excludeRequestTrackingAttributes.Aggregate(ExcludeFilter.None, (acc, item) => acc | item.Filter);
             return filter;
         }
 

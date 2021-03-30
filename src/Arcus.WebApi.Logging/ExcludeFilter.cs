@@ -9,6 +9,11 @@ namespace Arcus.WebApi.Logging
     public enum ExcludeFilter
     {
         /// <summary>
+        /// Specifies that nothing will be excluded from the request tracking.
+        /// </summary>
+        None = 0,
+        
+        /// <summary>
         /// Specifies that the request body will be excluded from the request tracking.
         /// </summary>
         ExcludeRequestBody = 1,
