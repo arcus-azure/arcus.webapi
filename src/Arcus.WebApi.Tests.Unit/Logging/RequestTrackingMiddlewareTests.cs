@@ -61,6 +61,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         [InlineData("Authentication")]
         [InlineData("X-Api-Key")]
         [InlineData("X-ARR-ClientCert")]
+        [InlineData("Ocp-Apim-Subscription-Key")]
         public async Task GetRequestWithDefaultOmittedHeader_TracksRequestWithoutHeader_ReturnsSuccess(string omittedHeaderName)
         {
             // Arrange
