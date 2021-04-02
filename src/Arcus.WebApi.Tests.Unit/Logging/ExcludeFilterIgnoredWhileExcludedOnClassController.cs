@@ -13,7 +13,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         
         [HttpPost]
         [Route(Route)]
-        [ExcludeRequestTracking(ExcludeFilter.ExcludeRequestBody)]
+        [RequestTracking(Exclude.RequestBody)]
         public IActionResult BigPost([FromBody] string body)
         {
             return Ok(ResponsePrefix + body);

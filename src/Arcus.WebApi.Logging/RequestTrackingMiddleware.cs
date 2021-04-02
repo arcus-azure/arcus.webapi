@@ -55,47 +55,51 @@ namespace Arcus.WebApi.Logging
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
             var endpoint = httpContext.Features.Get<IEndpointFeature>();
-
-            ExcludeFilter filter = DetermineExclusionFilter(endpoint);
-            if (filter is ExcludeFilter.ExcludeRoute)
+            if (endpoint is null)
+            {
+                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
+                await TrackRequest(httpContext, Exclude.None);
+            }
+            else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
             {
                 _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint?.Endpoint?.DisplayName, nameof(ExcludeRequestTrackingAttribute));
                 await _next(httpContext);
             }
             else
             {
+                Exclude filter = DetermineExclusionFilter(endpoint);
                 await TrackRequest(httpContext, filter);
             }
         }
 
-        private ExcludeFilter DetermineExclusionFilter(IEndpointFeature endpoint)
+        private Exclude DetermineExclusionFilter(IEndpointFeature endpoint)
         {
             if (endpoint is null)
             {
                 _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
-                return ExcludeFilter.None;
+                return Exclude.None;
             }
 
-            ExcludeRequestTrackingAttribute[] excludeRequestTrackingAttributes = 
-                endpoint.Endpoint.Metadata.OfType<ExcludeRequestTrackingAttribute>().ToArray();
+            RequestTrackingAttribute[] excludeRequestTrackingAttributes = 
+                endpoint.Endpoint.Metadata.OfType<RequestTrackingAttribute>().ToArray();
             
             if (excludeRequestTrackingAttributes.Length <= 0)
             {
                 _logger.LogTrace("No '{Attribute}' found on endpoint, continue with request tracking", nameof(ExcludeRequestTrackingAttribute));
-                return ExcludeFilter.None;
+                return Exclude.None;
             }
             
-            ExcludeFilter filter = excludeRequestTrackingAttributes.Aggregate(ExcludeFilter.None, (acc, item) => acc | item.Filter);
+            Exclude filter = excludeRequestTrackingAttributes.Aggregate(Exclude.None, (acc, item) => acc | item.Filter);
             return filter;
         }
 
-        private async Task TrackRequest(HttpContext httpContext, ExcludeFilter excludeFilter)
+        private async Task TrackRequest(HttpContext httpContext, Exclude excludeFilter)
         {
             var stopwatch = Stopwatch.StartNew();
 
             string requestBody = null;
-            bool includeRequestBody = _options.IncludeRequestBody && excludeFilter.HasFlag(ExcludeFilter.ExcludeRequestBody) == false;
-            bool includeResponseBody = _options.IncludeResponseBody && excludeFilter.HasFlag(ExcludeFilter.ExcludeResponseBody) == false;
+            bool includeRequestBody = _options.IncludeRequestBody && excludeFilter.HasFlag(Exclude.RequestBody) == false;
+            bool includeResponseBody = _options.IncludeResponseBody && excludeFilter.HasFlag(Exclude.ResponseBody) == false;
             
             if (includeRequestBody)
             {

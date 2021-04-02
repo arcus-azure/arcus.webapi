@@ -14,7 +14,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         
         [HttpPost]
         [Route(OnlyExcludeRequestBodyRoute)]
-        [ExcludeRequestTracking(ExcludeFilter.ExcludeRequestBody)]
+        [RequestTracking(Exclude.RequestBody)]
         public IActionResult OnlyExcludeRequestBody([FromBody] string body)
         {
             return Ok(ResponsePrefix + body);
@@ -22,16 +22,8 @@ namespace Arcus.WebApi.Tests.Unit.Logging
 
         [HttpPost]
         [Route(OnlyExcludeResponseBodyRoute)]
-        [ExcludeRequestTracking(ExcludeFilter.ExcludeResponseBody)]
+        [RequestTracking(Exclude.ResponseBody)]
         public IActionResult OnlyExcludeResponseBody([FromBody] string body)
-        {
-            return Ok(ResponsePrefix + body);
-        }
-        
-        [HttpPost]
-        [Route(ExcludeAllRoute)]
-        [ExcludeRequestTracking(ExcludeFilter.ExcludeRoute)]
-        public IActionResult ExcludeAll([FromBody] string body)
         {
             return Ok(ResponsePrefix + body);
         }

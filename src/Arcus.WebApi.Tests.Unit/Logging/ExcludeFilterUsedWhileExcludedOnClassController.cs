@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
     [ApiController]
-    [ExcludeRequestTracking(ExcludeFilter.ExcludeResponseBody)]
+    [RequestTracking(Exclude.ResponseBody)]
     public class ExcludeFilterUsedWhileExcludedOnClassController : ControllerBase
     {
         public const string Route = "request-tracking/on-method/used-while-also-on-class",
@@ -12,7 +12,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
 
         [HttpPost]
         [Route(Route)]
-        [ExcludeRequestTracking(ExcludeFilter.ExcludeRequestBody)]
+        [RequestTracking(Exclude.RequestBody)]
         public IActionResult BigPost([FromBody] string body)
         {
             return Ok(ResponsePrefix + body);

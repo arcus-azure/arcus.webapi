@@ -169,7 +169,7 @@ public class OrderController : ControllerBase
 ```
 
 When used as in the example above, the all routes of the controller will be excluded from the telemtry tracking. 
-The exclude attribute allows you to specify on a more specific level what part of the request should be excluded.
+You can also opt for a more finer grained control over what part of the request should be excluded, by using the `RequestTrackingAttribute`.
 
 ```csharp
 [ApiController]
@@ -178,7 +178,7 @@ public class OrderController : ControllerBase
     // Only exclude the request body from the request tracking. 
     // The request will still be tracked and will contain the request headers and the response body (if configured).
     [HttpPost]
-    [ExcludeRequstTracking(ExcludeFilter.ExcludeRequestBody)]
+    [RequestTracking(Exclude.RequestBody)]
     public IActionResult BigRequestBodyPost()
     {
         Stream bigRequestBody = Request.Body;
@@ -188,7 +188,7 @@ public class OrderController : ControllerBase
     // Only exclude the response body from the request tracking.
     // The request will still be tracked and will contain the request headers and the request body (if configured).
     [HttPost]
-    [ExcludeRequestTracking(ExcludeFilter.ExcludeResponseBody)]
+    [RequestTracking(Exclude.ResponseBody)]
     public async Task<IActionResult> BigResponseBodyPost()
     {
         Stream responseBody = ...
