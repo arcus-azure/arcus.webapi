@@ -4,13 +4,13 @@ using Microsoft.AspNetCore.Mvc;
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
     [ApiController]
-    public class SkipRequestTrackingOnMethodController : ControllerBase
+    [ExcludeRequestTracking]
+    public class ExcludeRequestTrackingOnClassController : ControllerBase
     {
-        public const string Route = "requesttracking/skip-onmethod";
+        public const string Route = "requesttracking/skip-onclass";
 
         [HttpPost]
         [Route(Route)]
-        [SkipRequestTracking]
         public IActionResult Post([FromBody] string body)
         {
             return Ok();

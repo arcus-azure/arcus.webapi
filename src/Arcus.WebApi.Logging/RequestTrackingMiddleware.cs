@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -58,32 +57,54 @@ namespace Arcus.WebApi.Logging
             var endpoint = httpContext.Features.Get<IEndpointFeature>();
             if (endpoint is null)
             {
-                _logger.LogTrace(
-                    "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
-                    nameof(SkipRequestTrackingAttribute));
+                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
+                await TrackRequest(httpContext, Exclude.None);
             }
-            
-            var skipRequestTrackingAttribute = endpoint?.Endpoint.Metadata.GetMetadata<SkipRequestTrackingAttribute>();
-            if (skipRequestTrackingAttribute != null)
+            else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
             {
-                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(SkipRequestTrackingAttribute));
+                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint?.Endpoint?.DisplayName, nameof(ExcludeRequestTrackingAttribute));
                 await _next(httpContext);
             }
             else
             {
-                await TrackRequest(httpContext);
+                Exclude filter = DetermineExclusionFilter(endpoint);
+                await TrackRequest(httpContext, filter);
             }
         }
 
-        private async Task TrackRequest(HttpContext httpContext)
+        private Exclude DetermineExclusionFilter(IEndpointFeature endpoint)
+        {
+            if (endpoint is null)
+            {
+                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
+                return Exclude.None;
+            }
+
+            RequestTrackingAttribute[] excludeRequestTrackingAttributes = 
+                endpoint.Endpoint.Metadata.OfType<RequestTrackingAttribute>().ToArray();
+            
+            if (excludeRequestTrackingAttributes.Length <= 0)
+            {
+                _logger.LogTrace("No '{Attribute}' found on endpoint, continue with request tracking", nameof(ExcludeRequestTrackingAttribute));
+                return Exclude.None;
+            }
+            
+            Exclude filter = excludeRequestTrackingAttributes.Aggregate(Exclude.None, (acc, item) => acc | item.Filter);
+            return filter;
+        }
+
+        private async Task TrackRequest(HttpContext httpContext, Exclude excludeFilter)
         {
             var stopwatch = Stopwatch.StartNew();
 
             string requestBody = null;
-            if (_options.IncludeRequestBody)
+            bool includeRequestBody = _options.IncludeRequestBody && excludeFilter.HasFlag(Exclude.RequestBody) == false;
+            bool includeResponseBody = _options.IncludeResponseBody && excludeFilter.HasFlag(Exclude.ResponseBody) == false;
+            
+            if (includeRequestBody)
             {
                 httpContext.Request.EnableBuffering();
-                requestBody = await GetRequestBodyAsync(httpContext);
+                requestBody = await GetRequestBodyAsync(httpContext, includeRequestBody);
             }
 
             // Response body doesn't support (built-in) buffering and is not seekable, so we're storing temporary the response stream in our own seekable stream,
@@ -91,9 +112,9 @@ namespace Arcus.WebApi.Logging
             // If we don't store it in our own seekable stream first, we would read the response stream for tracking and could not use the same stream to respond to the request.
             
             Stream originalResponseBodyStream = null;
-            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
+            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer(includeResponseBody))
             {
-                if (_options.IncludeResponseBody)
+                if (includeResponseBody)
                 {
                     originalResponseBodyStream = httpContext.Response.Body;
                     httpContext.Response.Body = temporaryResponseBodyStream;
@@ -105,12 +126,12 @@ namespace Arcus.WebApi.Logging
                 }
                 finally
                 {
-                    string responseBody = await GetResponseBodyAsync(httpContext);
+                    string responseBody = await GetResponseBodyAsync(httpContext, includeResponseBody);
 
                     stopwatch.Stop();
                     LogRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
 
-                    if (_options.IncludeResponseBody)
+                    if (includeResponseBody)
                     {
                         // (*) Copy back the seekable/temporary response body stream to the original response body stream,
                         // for the remaining middleware components that comes after this one.
@@ -120,9 +141,9 @@ namespace Arcus.WebApi.Logging
             }
         }
 
-        private Stream DetermineResponseBodyBuffer()
+        private static Stream DetermineResponseBodyBuffer(bool includeResponseBody)
         {
-            if (_options.IncludeResponseBody)
+            if (includeResponseBody)
             {
                 var responseBodyBuffer = new MemoryStream();
                 return responseBodyBuffer;
@@ -177,9 +198,9 @@ namespace Arcus.WebApi.Logging
             return new Dictionary<string, StringValues>();
         }
 
-        private async Task<string> GetRequestBodyAsync(HttpContext httpContext)
+        private async Task<string> GetRequestBodyAsync(HttpContext httpContext, bool includeRequestBody)
         {
-            if (_options.IncludeRequestBody)
+            if (includeRequestBody)
             {
                 string sanitizedBody = await GetBodyAsync(httpContext.Request.Body, _options.RequestBodyBufferSize, "Request");
                 return sanitizedBody;
@@ -188,9 +209,9 @@ namespace Arcus.WebApi.Logging
             return null;
         }
 
-        private async Task<string> GetResponseBodyAsync(HttpContext httpContext)
+        private async Task<string> GetResponseBodyAsync(HttpContext httpContext, bool includeResponseBody)
         {
-            if (_options.IncludeResponseBody)
+            if (includeResponseBody)
             {
                 string sanitizedBody = await GetBodyAsync(httpContext.Response.Body, _options.ResponseBodyBufferSize, "Response");
                 return sanitizedBody;
@@ -222,7 +243,7 @@ namespace Arcus.WebApi.Logging
             return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
         }
 
-        private async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
+        private static async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
         {
             if (!stream.CanRead)
             {
