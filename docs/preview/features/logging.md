@@ -168,8 +168,8 @@ public class OrderController : ControllerBase
 }
 ```
 
-When used as in the example above, the all routes of the controller will be excluded from the telemtry tracking. 
-You can also opt for a more finer grained control over what part of the request should be excluded, by using the `RequestTrackingAttribute`.
+When used as in the example above, then all routes of the controller will be excluded from the telemetry tracking. 
+The exclude attribute allows you to specify on a more specific level what part of the request should be excluded.
 
 ```csharp
 [ApiController]
