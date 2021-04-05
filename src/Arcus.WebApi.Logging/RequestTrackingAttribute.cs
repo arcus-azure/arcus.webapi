@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using GuardNet;
 
 namespace Arcus.WebApi.Logging
@@ -9,7 +10,7 @@ namespace Arcus.WebApi.Logging
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class RequestTrackingAttribute : Attribute
     {
-        private static readonly string ExcludeFilterNames = String.Join(", ", Enum.GetNames(typeof(Exclude)));
+        private static readonly string ExcludeFilterNames = String.Join(", ", Enum.GetNames(typeof(Exclude)).Where(name => name != Exclude.None.ToString()));
         
         /// <summary>
         /// Initializes a new instance of the <see cref="ExcludeRequestTrackingAttribute" /> class
@@ -20,8 +21,8 @@ namespace Arcus.WebApi.Logging
         public RequestTrackingAttribute(Exclude filter)
         {
             Guard.For<ArgumentOutOfRangeException>(
-                () => !Enum.IsDefined(typeof(Exclude), filter),
-                $"Requires the exclusion filter to be within the bounds of the enumeration '{ExcludeFilterNames}'");
+                () => !Enum.IsDefined(typeof(Exclude), filter) || filter is Exclude.None,
+                $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed");
 
             Filter = filter;
         }
