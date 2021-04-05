@@ -11,6 +11,9 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Specifies that nothing will be excluded from the request tracking.
         /// </summary>
+        /// <remarks>
+        ///     This enumeration member value is normally not used within normal circumstances as it indicates that the request tracking will not exclude anything.
+        /// </remarks>
         None = 0,
         
         /// <summary>
