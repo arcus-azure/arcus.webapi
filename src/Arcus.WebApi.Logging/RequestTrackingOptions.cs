@@ -11,8 +11,7 @@ namespace Arcus.WebApi.Logging
     /// </summary>
     public class RequestTrackingOptions
     {
-        private int? _requestBodyBufferSize,
-                     _responseBodyBufferSize;
+        private int? _requestBodyBufferSize, _responseBodyBufferSize;
 
         /// <summary>
         /// Gets or sets the value indicating whether or not the HTTP request headers should be tracked.

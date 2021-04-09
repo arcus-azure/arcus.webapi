@@ -261,8 +261,11 @@ namespace Arcus.WebApi.Logging
 
         private bool AllowedToTrackStatusCode(HttpContext httpContext, IEnumerable<HttpStatusCode> attributeTrackedStatusCodes)
         {
+            IEnumerable<HttpStatusCode> optionsTrackedStatusCodes = 
+                _options.TrackedStatusCodes ?? Enumerable.Empty<HttpStatusCode>();
+            
             HttpStatusCode[] combinedStatusCodes = 
-                _options.TrackedStatusCodes.Concat(attributeTrackedStatusCodes).Distinct().ToArray();
+                optionsTrackedStatusCodes.Concat(attributeTrackedStatusCodes).Distinct().ToArray();
 
             bool allowedToTrackStatusCode = 
                 combinedStatusCodes.Length <= 0
