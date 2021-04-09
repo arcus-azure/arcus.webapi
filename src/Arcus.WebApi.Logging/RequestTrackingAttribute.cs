@@ -31,8 +31,13 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestTrackingAttribute" /> class.
         /// </summary>
+        /// <param name="trackedStatusCodes">The HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="trackedStatusCodes"/> is <c>null</c> or empty.</exception>
         public RequestTrackingAttribute(params HttpStatusCode[] trackedStatusCodes)
         {
+            Guard.NotNull(trackedStatusCodes, nameof(trackedStatusCodes), "Requires a set of response HTTP status codes that determines which endpoints the request tracking should track");
+            Guard.NotAny(trackedStatusCodes, nameof(trackedStatusCodes), "Requires at least a single response HTTP status code that determines which endpoints the request tracking should track");
+            
             TrackedStatusCodes = trackedStatusCodes;
         }
 
@@ -42,7 +47,7 @@ namespace Arcus.WebApi.Logging
         public Exclude Filter { get; } = Exclude.None;
 
         /// <summary>
-        /// 
+        /// Gets the HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
         /// </summary>
         public HttpStatusCode[] TrackedStatusCodes { get; } = Array.Empty<HttpStatusCode>();
     }
