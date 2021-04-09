@@ -358,6 +358,59 @@ namespace Arcus.WebApi.Tests.Unit.Logging
                 Assert.DoesNotContain(ResponseBodyKey, eventContext);
             }
         }
+        
+        [Theory]
+        [InlineData(TrackedStatusCodeOnMethodController.Route200Ok, HttpStatusCode.OK)]
+        [InlineData(TrackedStatusCodeOnMethodController.Route201Created, HttpStatusCode.Created)]
+        [InlineData(TrackedStatusCodeOnMethodController.Route202Accepted, HttpStatusCode.Accepted)]
+        [InlineData(TrackedStatusCodeOnClassController.Route200Ok, HttpStatusCode.OK)]
+        [InlineData(TrackedStatusCodeOnClassController.Route202Accepted, HttpStatusCode.Accepted)]
+        public async Task PostWithResponseBodyWithinLimitedStatusCodes_TracksRequest_ReturnsSuccess(string route, HttpStatusCode trackedStatusCode)
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            string requestBody = $"request-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeRequestBody = true;
+                options.IncludeResponseBody = true;
+            }));
+
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, requestBody, route, trackedStatusCode))
+            {
+                // Assert
+                string responseBody = await response.Content.ReadAsStringAsync();
+                Assert.Equal(requestBody.Replace("request", "response"), responseBody);
+                IDictionary<string, string> eventContext = GetLoggedEventContext();
+                Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+                Assert.Equal(requestBody, Assert.Contains(RequestBodyKey, eventContext));
+                Assert.Equal(responseBody, Assert.Contains(ResponseBodyKey, eventContext));
+            }
+        }
+
+        [Theory]
+        [InlineData(DiscardedStatusCodeOnMethodController.Route)]
+        [InlineData(DiscardedStatusCodeOnClassController.Route)]
+        public async Task PostWithResponseBodyOutsideLimitedStatusCodes_DoesntTrackRequest_ReturnsSuccess(string route)
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options =>
+            {
+                options.IncludeRequestBody = true;
+                options.IncludeResponseBody = true;
+            }));
+            HttpStatusCode responseStatusCode = _bogusGenerator.Random.Enum(exclude: HttpStatusCode.OK);
+            var requestBody = ((int) responseStatusCode).ToString();
+            
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, requestBody, route, responseStatusCode))
+            {
+                // Assert
+                Assert.False(ContainsLoggedEventContext(), "Should not contain logged event context when the status code is discarded from request tracking");
+            }
+        }
 
         private async Task PostTrackedRequestAsync(string headerName, string headerValue, string requestBody)
         {
@@ -376,7 +429,12 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
-        private async Task<HttpResponseMessage> PostRequestAsync(string headerName, string headerValue, string requestBody, string route = EchoController.Route)
+        private async Task<HttpResponseMessage> PostRequestAsync(
+            string headerName, 
+            string headerValue, 
+            string requestBody, 
+            string route = EchoController.Route,
+            HttpStatusCode responseStatusCode = HttpStatusCode.OK)
         {
             using (HttpClient client = _testServer.CreateClient())
             using (var requestContents = new StringContent($"\"{requestBody}\"", Encoding.UTF8, "application/json"))
@@ -387,7 +445,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             })
             {
                 HttpResponseMessage response = await client.SendAsync(request);
-                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(responseStatusCode, response.StatusCode);
 
                 return response;
             }

@@ -168,6 +168,8 @@ public class OrderController : ControllerBase
 }
 ```
 
+#### Excluding request/response bodies
+
 When used as in the example above, then all routes of the controller will be excluded from the telemetry tracking. 
 The exclude attribute allows you to specify on a more specific level what part of the request should be excluded.
 
@@ -254,6 +256,75 @@ public class Startup
 So the resulting log message becomes:
 
 `HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [X-Api-Key,])`
+
+#### Tracked HTTP status codes
+
+By default, all the responded HTTP status codes will be tracked but this can be altered according to your chosing.
+
+Consider the following API controller. When we configure request tracking, both the `400 BadRequest` response as the `201 Created` response will be tracked.
+
+```csharp
+[ApiController]
+public class OrderController : ControllerBase
+{
+    [HttpPost]
+    public IActionResult Create([FromBody] Order order)
+    {
+        if (order.Id is null)
+        {
+            // Request tracking will happen on this response.
+            return BadRequest("Order ID should be filled out");
+        }
+
+        // Request tracking will happend on this response.
+        return Created($"/orders/{order.Id}", order);
+    }
+}
+```
+
+Let's change the request tracking to only track successful '201 Created' responses.
+This can be changed via the options:
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+
+public class Startup
+{
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+    {
+        app.UseRequestTracking(options => options.TrackedStatusCodes.Add(HttpStatusCode.Created));
+    }
+}
+```
+
+This means that every endpoint will only track `201 Created` responses. Changing this in the options usually for when you want to straightline your entire application and only allow a certain set of status codes to be tracked.
+More grainer control can be achieved via placing an attribute on either the controller's class definition or the endpoint method:
+
+```csharp
+using Arcus.WebApi.Logging;
+
+[ApiController]
+public class OrderController : ControllerBase
+{
+    [HttpPost]
+    [RequestTracking(HttpStatusCode.Created)]
+    public IActionResult Create([FromBody] Order order)
+    {
+        if (order.Id is null)
+        {
+            // No request tracking will apear in the logs.
+            return BadRequest("Order ID should be filled out");
+        }
+
+        // Request tracking will only happen on this response.
+        return Created($"/orders/{order.Id}", order);
+    }
+}
+```
+
+> Note that this `RequestTracking` attribute can be added multiple times and works together with the configured options. 
+> The end result will be the accumulated result of all the applied attributes, both on the method and on the controller, and the configured options.
 
 ## Tracking application version
 

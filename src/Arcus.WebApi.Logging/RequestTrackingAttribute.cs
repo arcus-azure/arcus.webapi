@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Net;
 using GuardNet;
 
 namespace Arcus.WebApi.Logging
@@ -28,8 +29,21 @@ namespace Arcus.WebApi.Logging
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="RequestTrackingAttribute" /> class.
+        /// </summary>
+        public RequestTrackingAttribute(params HttpStatusCode[] trackedStatusCodes)
+        {
+            TrackedStatusCodes = trackedStatusCodes;
+        }
+
+        /// <summary>
         /// Gets or sets the exclusion filter that determines which part of the request and response should be excluded from the request tracking.
         /// </summary>
-        public Exclude Filter { get; }
+        public Exclude Filter { get; } = Exclude.None;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public HttpStatusCode[] TrackedStatusCodes { get; } = Array.Empty<HttpStatusCode>();
     }
 }
