@@ -257,7 +257,7 @@ So the resulting log message becomes:
 
 `HTTP Request POST http://localhost:5000/weatherforecast completed with 200 in 00:00:00.0191554 at 03/23/2020 10:12:55 +00:00 - (Context: [X-Api-Key,])`
 
-#### Tracked HTTP status codes
+#### Reducing requests to specific HTTP status code(s)
 
 By default, all the responded HTTP status codes will be tracked but this can be altered according to your chosing.
 
