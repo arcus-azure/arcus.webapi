@@ -108,7 +108,12 @@ namespace Arcus.WebApi.Logging
                 return Array.Empty<HttpStatusCode>();
             }
 
-            HttpStatusCode[] statusCodes = attributes.SelectMany(attribute => attribute.TrackedStatusCodes).Distinct().ToArray();
+            HttpStatusCode[] statusCodes = 
+                attributes.Where(attribute => attribute.TrackedStatusCode.HasValue)
+                          .Select(attribute => attribute.TrackedStatusCode.Value)
+                          .Distinct()
+                          .ToArray();
+            
             return statusCodes;
         }
 

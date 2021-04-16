@@ -15,23 +15,13 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             Assert.ThrowsAny<ArgumentException>(() => new RequestTrackingAttribute(filter));
         }
-
-        [Fact]
-        public void CreateAttribute_WithNullResponseStatusCodes_Fails()
-        {
-            Assert.ThrowsAny<ArgumentException>(() => new RequestTrackingAttribute(trackedStatusCodes: null));
-        }
-
-        [Fact]
-        public void CreateAttribute_WithoutResponseStatusCodes_Fails()
-        {
-            Assert.ThrowsAny<ArgumentException>(() => new RequestTrackingAttribute());
-        }
         
-        [Fact]
-        public void CreateAttribute_WithZeroResponseStatusCodes_Fails()
+        [Theory]
+        [InlineData(HttpStatusCode.Created | HttpStatusCode.AlreadyReported)]
+        [InlineData((HttpStatusCode) 600)]
+        public void CreateAttribute_WithHttpStatusCodeOutOfExpectedRange_Fails(HttpStatusCode statusCode)
         {
-            Assert.ThrowsAny<ArgumentException>(() => new RequestTrackingAttribute(Array.Empty<HttpStatusCode>()));
+            Assert.ThrowsAny<ArgumentException>(() => new RequestTrackingAttribute(statusCode));
         }
     }
 }

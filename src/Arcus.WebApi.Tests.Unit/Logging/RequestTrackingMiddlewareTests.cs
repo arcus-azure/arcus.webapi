@@ -361,7 +361,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         
         [Theory]
         [InlineData(TrackedStatusCodeOnMethodController.Route200Ok, HttpStatusCode.OK)]
-        [InlineData(TrackedStatusCodeOnMethodController.Route201Created, HttpStatusCode.Created)]
         [InlineData(TrackedStatusCodeOnMethodController.Route202Accepted, HttpStatusCode.Accepted)]
         [InlineData(TrackedStatusCodeOnClassController.Route200Ok, HttpStatusCode.OK)]
         [InlineData(TrackedStatusCodeOnClassController.Route202Accepted, HttpStatusCode.Accepted)]
