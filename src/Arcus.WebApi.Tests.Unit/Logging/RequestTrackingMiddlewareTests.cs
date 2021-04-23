@@ -380,6 +380,23 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         }
 
         [Theory]
+        [InlineData(EchoController.Route)]
+        [InlineData("/echo")]
+        public async Task RequestWithOmittedRouteWithBody_DoesntTracksRequest_ReturnsSuccess(string omittedRoute)
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            string body = $"body-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedRoutes.Add(omittedRoute)));
+
+            // Act
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
+            
+            // Assert
+            Assert.False(ContainsLoggedEventContext(), "No event context should be logged when the omitted route is applied");
+        }
+
+        [Theory]
         [InlineData("apiz")]
         [InlineData("/")]
         [InlineData(null)]
