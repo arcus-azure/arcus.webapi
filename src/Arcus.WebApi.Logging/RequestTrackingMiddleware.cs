@@ -1,12 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -54,22 +57,50 @@ namespace Arcus.WebApi.Logging
             Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
-            var endpoint = httpContext.Features.Get<IEndpointFeature>();
-            if (endpoint is null)
+            if (IsRequestPathOmitted(httpContext.Request))
             {
-                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
-                await TrackRequest(httpContext, Exclude.None);
-            }
-            else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
-            {
-                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint?.Endpoint?.DisplayName, nameof(ExcludeRequestTrackingAttribute));
                 await _next(httpContext);
             }
             else
             {
-                Exclude filter = DetermineExclusionFilter(endpoint);
-                await TrackRequest(httpContext, filter);
+                var endpoint = httpContext.Features.Get<IEndpointFeature>();
+                if (endpoint is null)
+                {
+                    _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
+                    await TrackRequest(httpContext, Exclude.None);
+                }
+                else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
+                {
+                    _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint?.Endpoint?.DisplayName, nameof(ExcludeRequestTrackingAttribute));
+                    await _next(httpContext);
+                }
+                else
+                {
+                    Exclude filter = DetermineExclusionFilter(endpoint);
+                    await TrackRequest(httpContext, filter);
+                }
             }
+        }
+
+        private bool IsRequestPathOmitted(HttpRequest request)
+        {
+            IEnumerable<string> allOmittedRoutes = _options.OmittedRoutes ?? new Collection<string>();
+            string[] matchedOmittedRoutes = 
+                allOmittedRoutes
+                    .Select(omittedRoute => omittedRoute?.StartsWith("/") == true ? omittedRoute : "/" + omittedRoute)
+                    .Where(omittedRoute => request.Path.StartsWithSegments(omittedRoute, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+
+            if (matchedOmittedRoutes.Length > 0)
+            {
+                string endpoint = request.GetDisplayUrl();
+                string formattedOmittedRoutes = String.Join(", ", matchedOmittedRoutes);
+                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to an omitted route(s) '{OmittedRoutes}' specified in the options", endpoint, formattedOmittedRoutes);
+                
+                return true;
+            }
+            
+            return false;
         }
 
         private Exclude DetermineExclusionFilter(IEndpointFeature endpoint)

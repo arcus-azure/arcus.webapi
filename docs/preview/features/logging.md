@@ -139,6 +139,10 @@ public class Startup
             // Size of the response body buffer (in bytes) hwhich should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
             // (default: no limit)
             options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
+
+            // All omitted HTTP routes that should be excluded from the request tracking logging emits.
+            // (default: no routes).
+            options.OmittedRoutes.Add("/api/v1/health");
         });
 
         ...
