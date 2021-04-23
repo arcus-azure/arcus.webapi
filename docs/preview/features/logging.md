@@ -41,15 +41,15 @@ public class Startup
 {
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
-       app.UseExceptionHandling();
+        app.UseExceptionHandling();
 
-       ...
-       app.UseMvc();
+        ...
+        app.UseMvc();
     }
 }
 ```
 
-If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as the first one.
+If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as soon as possible.
 By doing so, unhandled exceptions that might occur in other middleware components will also be logged by the `ExceptionHandlingMiddleware` component.
 
 ## Logging incoming requests
@@ -88,8 +88,10 @@ public class Startup
 
         app.UseRequestTracking();
 
-        ...
+        // Make sure that the exception handling is placed after the request tracking because otherwise unhandled exceptions that result in 500 response status codes will not be tracked.
+        app.UseExceptionHandling();
         app.UseMvc();
+        ...
     }
 }
 ```
@@ -139,6 +141,10 @@ public class Startup
             // Size of the response body buffer (in bytes) hwhich should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
             // (default: no limit)
             options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
+
+            // All omitted HTTP routes that should be excluded from the request tracking logging emits.
+            // (default: no routes).
+            options.OmittedRoutes.Add("/api/v1/health");
         });
 
         ...

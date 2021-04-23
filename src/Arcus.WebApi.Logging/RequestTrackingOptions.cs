@@ -11,7 +11,8 @@ namespace Arcus.WebApi.Logging
     /// </summary>
     public class RequestTrackingOptions
     {
-        private int? _requestBodyBufferSize, _responseBodyBufferSize;
+        private int? _requestBodyBufferSize,
+                     _responseBodyBufferSize;
 
         /// <summary>
         /// Gets or sets the value indicating whether or not the HTTP request headers should be tracked.
@@ -55,7 +56,7 @@ namespace Arcus.WebApi.Logging
                 _responseBodyBufferSize = value;
             }
         }
-
+        
         /// <summary>
         /// Gets or sets the HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
         /// </summary>
@@ -65,5 +66,10 @@ namespace Arcus.WebApi.Logging
         /// Gets or sets the HTTP request headers names that will be omitted during request tracking.
         /// </summary>
         public ICollection<string> OmittedHeaderNames { get; set; } = new Collection<string> { "Authentication", "Authorization", "X-Api-Key", "X-ARR-ClientCert", "Ocp-Apim-Subscription-Key" };
+
+        /// <summary>
+        /// Gets or sets the HTTP endpoint routes that will be omitted during request tracking.
+        /// </summary>
+        public ICollection<string> OmittedRoutes { get; set; } = new Collection<string>();
     }
 }
