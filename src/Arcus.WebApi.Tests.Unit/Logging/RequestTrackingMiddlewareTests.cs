@@ -31,7 +31,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking());
             
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, body);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -48,7 +48,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking<NoHeadersRequestTrackingMiddleware>());
            
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, body);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -69,7 +69,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking());
             
             // Act
-            await PostTrackedRequestAsync(customHeaderName, customHeaderValue, body);
+            await PostTrackedRequestEchoAsync(customHeaderName, customHeaderValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -87,7 +87,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedHeaderNames.Add(customHeaderName)));
             
             // Act
-            await PostTrackedRequestAsync(customHeaderName, customHeaderValue, body);
+            await PostTrackedRequestEchoAsync(customHeaderName, customHeaderValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -104,7 +104,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.IncludeRequestHeaders = false));
             
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, body);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -121,7 +121,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             _testServer.AddConfigure(app => app.UseRequestTracking(options => options.IncludeRequestBody = true));
             
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, body);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -144,7 +144,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }));
             
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, requestBody);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, requestBody);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -167,7 +167,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }));
 
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, requestBody);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, requestBody);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -190,7 +190,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }));
             
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, requestBody);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, requestBody);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -215,7 +215,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }));
 
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, body);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -240,7 +240,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }));
             
             // Act
-            await PostTrackedRequestAsync(headerName, headerValue, requestBody);
+            await PostTrackedRequestEchoAsync(headerName, headerValue, requestBody);
             
             // Assert
             IDictionary<string, string> eventContext = GetLoggedEventContext();
@@ -359,7 +359,70 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
-        private async Task PostTrackedRequestAsync(string headerName, string headerValue, string requestBody)
+        [Theory]
+        [InlineData(HealthController.Route)]
+        [InlineData("/api/v1")]
+        [InlineData("/api")]
+        [InlineData("api")]
+        public async Task RequestWithOmittedRoute_DoesntTracksRequest_ReturnsSuccess(string omittedRoute)
+        {
+            // Arrange
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedRoutes.Add(omittedRoute)));
+
+            // Act
+            using (HttpClient client = _testServer.CreateClient())
+            using (HttpResponseMessage response = await client.GetAsync(HealthController.Route))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.False(ContainsLoggedEventContext(), "No event context should be logged when the omitted route is applied");
+            }
+        }
+
+        [Theory]
+        [InlineData(EchoController.Route)]
+        [InlineData("/echo")]
+        public async Task RequestWithOmittedRouteWithBody_DoesntTracksRequest_ReturnsSuccess(string omittedRoute)
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            string body = $"body-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedRoutes.Add(omittedRoute)));
+
+            // Act
+            await PostTrackedRequestEchoAsync(headerName, headerValue, body);
+            
+            // Assert
+            Assert.False(ContainsLoggedEventContext(), "No event context should be logged when the omitted route is applied");
+        }
+
+        [Theory]
+        [InlineData("apiz")]
+        [InlineData("/")]
+        [InlineData(null)]
+        [InlineData("")]
+        public async Task RequestWithWrongOmittedRoute_TracksRequest_ReturnsSuccess(string omittedRoute)
+        {
+            // Arrange
+            const string headerName = "x-custom-header", headerValue = "custom header value";
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.OmittedRoutes.Add(omittedRoute)));
+
+            // Act
+            using (HttpClient client = _testServer.CreateClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
+            {
+                request.Headers.Add(headerName, headerValue);
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    IDictionary<string, string> eventContext = GetLoggedEventContext();
+                    Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+                }
+            }
+        }
+
+        private async Task PostTrackedRequestEchoAsync(string headerName, string headerValue, string requestBody)
         {
             using (HttpClient client = _testServer.CreateClient())
             using (var requestContents = new StringContent($"\"{requestBody}\"", Encoding.UTF8, "application/json"))
@@ -376,7 +439,11 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
-        private async Task<HttpResponseMessage> PostRequestAsync(string headerName, string headerValue, string requestBody, string route = EchoController.Route)
+        private async Task<HttpResponseMessage> PostRequestAsync(
+            string headerName, 
+            string headerValue, 
+            string requestBody, 
+            string route = EchoController.Route)
         {
             using (HttpClient client = _testServer.CreateClient())
             using (var requestContents = new StringContent($"\"{requestBody}\"", Encoding.UTF8, "application/json"))

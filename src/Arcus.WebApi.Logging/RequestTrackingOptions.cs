@@ -60,5 +60,10 @@ namespace Arcus.WebApi.Logging
         /// Gets or sets the HTTP request headers names that will be omitted during request tracking.
         /// </summary>
         public ICollection<string> OmittedHeaderNames { get; set; } = new Collection<string> { "Authentication", "Authorization", "X-Api-Key", "X-ARR-ClientCert", "Ocp-Apim-Subscription-Key" };
+
+        /// <summary>
+        /// Gets or sets the HTTP endpoint routes that will be omitted during request tracking.
+        /// </summary>
+        public ICollection<string> OmittedRoutes { get; set; } = new Collection<string>();
     }
 }
