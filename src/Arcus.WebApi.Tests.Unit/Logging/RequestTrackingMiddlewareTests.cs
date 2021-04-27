@@ -18,6 +18,7 @@ using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
+    [Collection("Request tracking")]
     public class RequestTrackingMiddlewareTests : IDisposable
     {
         private const string RequestBodyKey = "RequestBody",
