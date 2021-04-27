@@ -3,7 +3,7 @@ using System.Net;
 using Arcus.WebApi.Logging;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcus.WebApi.Tests.Unit.Logging
+namespace Arcus.WebApi.Tests.Unit.Logging.Controllers
 {
     [ApiController]
     [RequestTracking(HttpStatusCode.OK)]

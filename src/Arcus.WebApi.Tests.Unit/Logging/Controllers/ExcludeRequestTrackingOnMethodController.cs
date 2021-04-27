@@ -1,8 +1,7 @@
-﻿using System.IO;
-using Arcus.WebApi.Logging;
+﻿using Arcus.WebApi.Logging;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Arcus.WebApi.Tests.Unit.Logging
+namespace Arcus.WebApi.Tests.Unit.Logging.Controllers
 {
     [ApiController]
     public class ExcludeRequestTrackingOnMethodController : ControllerBase

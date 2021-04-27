@@ -58,10 +58,15 @@ namespace Arcus.WebApi.Logging
         }
         
         /// <summary>
-        /// Gets or sets the HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
+        /// Gets or sets the allowed HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
         /// </summary>
         public ICollection<HttpStatusCode> TrackedStatusCodes { get; set; } = new Collection<HttpStatusCode>();
 
+        /// <summary>
+        /// Gets or sets allowed HTTP response status code ranges that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
+        /// </summary>
+        public ICollection<StatusCodeRange> TrackedStatusCodeRanges { get; set; } = new Collection<StatusCodeRange>();
+        
         /// <summary>
         /// Gets or sets the HTTP request headers names that will be omitted during request tracking.
         /// </summary>

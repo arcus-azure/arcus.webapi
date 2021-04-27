@@ -31,15 +31,42 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Initializes a new instance of the <see cref="RequestTrackingAttribute" /> class.
         /// </summary>
-        /// <param name="trackedStatusCode">The HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="trackedStatusCode"/> is <c>null</c> or empty.</exception>
-        public RequestTrackingAttribute(HttpStatusCode trackedStatusCode)
+        /// <param name="trackedStatusCode">The HTTP response status code that should be tracked.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="trackedStatusCode"/> is outside the expected range (100-599).</exception>
+        public RequestTrackingAttribute(HttpStatusCode trackedStatusCode) : this((int) trackedStatusCode)
         {
-            Guard.For<ArgumentOutOfRangeException>(
-                () => !Enum.IsDefined(typeof(HttpStatusCode), trackedStatusCode),
-                "Requires the HTTP status code to be within these bounds of the enumeration");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestTrackingAttribute" /> class.
+        /// </summary>
+        /// <param name="trackedStatusCode">The HTTP response status code that should be tracked.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="trackedStatusCode"/> is outside the expected range (100-599).</exception>
+        public RequestTrackingAttribute(int trackedStatusCode)
+        {
+            Guard.NotLessThan(trackedStatusCode, 100, nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to not be less than 100");
+            Guard.NotGreaterThan(trackedStatusCode, 599, nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to not be greater than 599");
             
-            TrackedStatusCode = trackedStatusCode;
+            StatusCodeRange = new StatusCodeRange(trackedStatusCode);
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RequestTrackingAttribute" /> class.
+        /// </summary>
+        /// <param name="minimumStatusCode">The minimum HTTP status code threshold of the range of allowed tracked HTTP status codes.</param>
+        /// <param name="maximumStatusCode">The maximum HTTP status code threshold of the range of allowed tracked HTTP status codes.</param>
+        /// <exception cref="ArgumentOutOfRangeException">
+        ///     Thrown when the <paramref name="minimumStatusCode"/> is less than 100,
+        ///     or the <paramref name="maximumStatusCode"/> is greater than 599,
+        ///     or the <paramref name="minimumStatusCode"/> is greater than the <paramref name="maximumStatusCode"/>.
+        /// </exception>
+        public RequestTrackingAttribute(int minimumStatusCode, int maximumStatusCode)
+        {
+            Guard.NotLessThan(minimumStatusCode, 100, nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold not be less than 100");
+            Guard.NotGreaterThan(maximumStatusCode, 599, nameof(maximumStatusCode), "Requires the maximum HTTP status code threshold not be greater than 599");
+            Guard.NotGreaterThan(minimumStatusCode, maximumStatusCode, nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            
+            StatusCodeRange = new StatusCodeRange(minimumStatusCode, maximumStatusCode);
         }
 
         /// <summary>
@@ -48,8 +75,8 @@ namespace Arcus.WebApi.Logging
         public Exclude Filter { get; } = Exclude.None;
 
         /// <summary>
-        /// Gets the HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
+        /// Gets the HTTP status code ranges that are allowed to be tracked. IF not defined, all HTTP status codes are considered included and will all be tracked.
         /// </summary>
-        public HttpStatusCode? TrackedStatusCode { get; }
+        public StatusCodeRange StatusCodeRange { get; }
     }
 }

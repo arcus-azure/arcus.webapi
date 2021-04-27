@@ -1,13 +1,16 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
+using Arcus.WebApi.Logging;
 using Arcus.WebApi.Tests.Unit.Correlation;
 using Arcus.WebApi.Tests.Unit.Hosting;
+using Arcus.WebApi.Tests.Unit.Logging.Controllers;
 using Bogus;
 using Microsoft.AspNetCore.Builder;
 using Serilog.Events;
@@ -474,6 +477,141 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             }
         }
 
+        [Theory]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithMinMax, 100, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithFixed, 100, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithFixed, 501, 599)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithCombined, 100, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 100, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 501, 549)]
+        [InlineData(TrackedClientErrorStatusCodesOnClassController.Route, 100, 399)]
+        [InlineData(TrackedNotFoundStatusCodeOnClassController.Route, 100, 403)]
+        [InlineData(TrackedNotFoundStatusCodeOnClassController.Route, 405, 599)]
+        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 100, 403)]
+        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 405, 449)]
+        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 500, 599)]
+        public async Task PostWithResponseOutsideStatusCodeRangesAttribute_DoesntTrackRequest_ReturnsSuccess(string route, int minimum, int maximum)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking());
+            int statusCode = _bogusGenerator.Random.Int(minimum, maximum);
+
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, statusCode.ToString(), route, (HttpStatusCode) statusCode)) 
+            {
+                // Assert
+                Assert.False(ContainsLoggedEventContext(), "Should not contain logged event context when the status code is outside the configured range from request tracking");
+            }
+        }
+
+        [Theory]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithMinMax, 500, 599)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithFixed, 500, 500)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithCombined, 500, 599)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 550, 599)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 500, 500)]
+        [InlineData(TrackedClientErrorStatusCodesOnClassController.Route, 400, 499)]
+        [InlineData(TrackedNotFoundStatusCodeOnClassController.Route, 404, 404)]
+        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 404, 404)]
+        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 451, 499)]
+        public async Task PostWithResponseInsideStatusCodeRangesAttribute_TracksRequest_ReturnsSuccess(string route, int mimimum, int maximum)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking());
+            int statusCode = _bogusGenerator.Random.Int(mimimum, maximum);
+
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, statusCode.ToString(), route, (HttpStatusCode) statusCode)) 
+            {
+                // Assert
+                IDictionary<string, string> eventContext = GetLoggedEventContext();
+                Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.OK)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.InternalServerError)]
+        public async Task PostWithResponseOutsideStatusCodesOptions_TracksRequest_ReturnsSuccess(HttpStatusCode trackedStatusCode)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.TrackedStatusCodes.Add(trackedStatusCode)));
+            var responseStatusCode = _bogusGenerator.Random.Enum(trackedStatusCode);
+            string route = StubbedStatusCodeController.Route;
+            
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, ((int) responseStatusCode).ToString(), route, responseStatusCode))
+            {
+                // Assert
+                Assert.False(ContainsLoggedEventContext(), "Should not contain logged event context when the status code is outside the configured range from request tracking");
+            }
+        }
+        
+        [Theory]
+        [InlineData(HttpStatusCode.OK)]
+        [InlineData(HttpStatusCode.NotFound)]
+        [InlineData(HttpStatusCode.InternalServerError)]
+        public async Task PostWithResponseInsideStatusCodesOptions_TracksRequest_ReturnsSuccess(HttpStatusCode trackedStatusCode)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.TrackedStatusCodes.Add(trackedStatusCode)));
+            string route = StubbedStatusCodeController.Route;
+            
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, ((int) trackedStatusCode).ToString(), route, trackedStatusCode))
+            {
+                // Assert
+                IDictionary<string, string> eventContext = GetLoggedEventContext();
+                Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            }
+        }
+        
+        [Theory]
+        [InlineData(500, 599, 200)]
+        [InlineData(450, 599, 315)]
+        [InlineData(100, 598, 599)]
+        [InlineData(200, 399, 500)]
+        public async Task PostWithResponseOutsideStatusCodeRangesOptions_TracksRequest_ReturnsSuccess(int minimumThreshold, int maximumThreshold, int responseStatusCode)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.TrackedStatusCodeRanges.Add(new StatusCodeRange(minimumThreshold, maximumThreshold))));
+            string route = StubbedStatusCodeController.Route;
+            
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, responseStatusCode.ToString(), route, (HttpStatusCode) responseStatusCode))
+            {
+                // Assert
+                Assert.False(ContainsLoggedEventContext(), "Should not contain logged event context when the status code is outside the configured range from request tracking");
+            }
+        }
+
+        [Theory]
+        [InlineData(500, 599, 550)]
+        [InlineData(500, 500, 500)]
+        [InlineData(200, 399, 202)]
+        [InlineData(100, 599, 315)]
+        public async Task PostWithResponseInsideStatusCodeRangesOptions_TracksRequest_ReturnsSuccess(int minimumThreshold, int maximumThreshold, int responseStatusCode)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.TrackedStatusCodeRanges.Add(new StatusCodeRange(minimumThreshold, maximumThreshold))));
+            string route = StubbedStatusCodeController.Route;
+            
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, responseStatusCode.ToString(), route, (HttpStatusCode) responseStatusCode))
+            {
+                // Assert
+                IDictionary<string, string> eventContext = GetLoggedEventContext();
+                Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            }
+        }
+        
         private async Task PostTrackedRequestEchoAsync(string headerName, string headerValue, string requestBody)
         {
             using (HttpClient client = _testServer.CreateClient())

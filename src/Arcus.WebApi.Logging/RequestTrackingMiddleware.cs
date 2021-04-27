@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Logging
                 if (endpoint is null)
                 {
                     _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
-                    await TrackRequest(httpContext, Exclude.None, Array.Empty<HttpStatusCode>());
+                    await TrackRequest(httpContext, Exclude.None, Array.Empty<StatusCodeRange>());
                 }
                 else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
                 {
@@ -78,9 +78,9 @@ namespace Arcus.WebApi.Logging
                 {
                     RequestTrackingAttribute[] attributes = DetermineAppliedAttributes(endpoint);
                     Exclude filter = DetermineExclusionFilter(attributes);
-                    HttpStatusCode[] trackedStatusCodes = DetermineTrackedStatusCodes(attributes);
+                    StatusCodeRange[] trackedStatusCodeRanges = DetermineTrackedStatusCodeRanges(attributes);
                 
-                    await TrackRequest(httpContext, filter, trackedStatusCodes);
+                    await TrackRequest(httpContext, filter, trackedStatusCodeRanges);
                 }
             }
         }
@@ -130,24 +130,23 @@ namespace Arcus.WebApi.Logging
             return filter;
         }
 
-        private HttpStatusCode[] DetermineTrackedStatusCodes(RequestTrackingAttribute[] attributes)
+        private StatusCodeRange[] DetermineTrackedStatusCodeRanges(RequestTrackingAttribute[] attributes)
         {
             if (attributes.Length <= 0)
             {
                 _logger.LogTrace("No '{Attribute}' found on endpoint, continue with request tracking including all HTTP status codes", nameof(ExcludeRequestTrackingAttribute));
-                return Array.Empty<HttpStatusCode>();
+                return Array.Empty<StatusCodeRange>();
             }
-
-            HttpStatusCode[] statusCodes = 
-                attributes.Where(attribute => attribute.TrackedStatusCode.HasValue)
-                          .Select(attribute => attribute.TrackedStatusCode.Value)
-                          .Distinct()
+            
+            StatusCodeRange[] statusCodes = 
+                attributes.Where(attribute => attribute.StatusCodeRange != null)
+                          .Select(attribute => attribute.StatusCodeRange)
                           .ToArray();
             
             return statusCodes;
         }
 
-        private async Task TrackRequest(HttpContext httpContext, Exclude attributeExcludeFilter, HttpStatusCode[] attributeTrackedStatusCodes)
+        private async Task TrackRequest(HttpContext httpContext, Exclude attributeExcludeFilter, StatusCodeRange[] attributeTrackedStatusCodes)
         {
             var stopwatch = Stopwatch.StartNew();
             bool includeRequestBody = ShouldIncludeRequestBody(attributeExcludeFilter);
@@ -294,26 +293,33 @@ namespace Arcus.WebApi.Logging
             return null;
         }
 
-        private bool AllowedToTrackStatusCode(HttpContext httpContext, IEnumerable<HttpStatusCode> attributeTrackedStatusCodes)
+        private bool AllowedToTrackStatusCode(HttpContext httpContext, IEnumerable<StatusCodeRange> attributeTrackedStatusCodes)
         {
             IEnumerable<HttpStatusCode> optionsTrackedStatusCodes = 
                 _options.TrackedStatusCodes ?? Enumerable.Empty<HttpStatusCode>();
+
+            IEnumerable<StatusCodeRange> optionsTrackedStatusCodeRanges =
+                _options.TrackedStatusCodeRanges ?? Enumerable.Empty<StatusCodeRange>();
             
-            HttpStatusCode[] combinedStatusCodes = 
-                optionsTrackedStatusCodes.Concat(attributeTrackedStatusCodes).Distinct().ToArray();
+            StatusCodeRange[] combinedStatusCodeRanges = 
+                optionsTrackedStatusCodes
+                    .Select(code => new StatusCodeRange((int) code))
+                    .Concat(optionsTrackedStatusCodeRanges)
+                    .Concat(attributeTrackedStatusCodes)
+                    .Distinct().ToArray();
 
             bool allowedToTrackStatusCode = 
-                combinedStatusCodes.Length <= 0
-                || combinedStatusCodes.Contains((HttpStatusCode) httpContext.Response.StatusCode);
+                combinedStatusCodeRanges.Length <= 0
+                || combinedStatusCodeRanges.Any(range => range.IsWithinRange(httpContext.Response.StatusCode));
 
-            string formattedStatusCodes = String.Join(", ", combinedStatusCodes.Select(code => (int) code));
+            string formattedStatusCodes = String.Join(", ", combinedStatusCodeRanges.Select(range => range.ToString()));
             if (allowedToTrackStatusCode)
             {
-                _logger.LogTrace("Request tracking for this endpoint is allowed as the response status code '{ResponseStatusCode}' is within  the allowed tracked status codes '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
+                _logger.LogTrace("Request tracking for this endpoint is allowed as the response status code '{ResponseStatusCode}' is within  the allowed tracked status code ranges '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
             }
             else
             {
-                _logger.LogTrace("Request tracking for this endpoint is disallowed as the response status code '{ResponseStatusCode}' is not within the allowed tracked status codes '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
+                _logger.LogTrace("Request tracking for this endpoint is disallowed as the response status code '{ResponseStatusCode}' is not within the allowed tracked status code ranges '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
             }
             
             return allowedToTrackStatusCode;
