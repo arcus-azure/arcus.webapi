@@ -142,7 +142,17 @@ public class Startup
             // (default: no limit)
             options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
 
-            // All omitted HTTP routes that should be excluded from the request tracking logging emits.
+            // All response HTTP status codes that should be tracked. If not defined, all status codes are considered included and will all be tracked.
+            // (default: empty list, which means all will be tracked)
+            // Following example will change the default behavior so that only HTTP responses with the status code 500 `InternalServerError` will be tracked.
+            options.TrackedStatusCodes.Add(HttpStatusCode.InternalServerError);
+
+            // All response HTTP status code ranges that should be tracked. If not defined, all status codes are considered included and will be tracked.
+            // (default: empty list, which means all will be tracked)
+            // Following example will change the default behavior so that only HTTP response status codes in the range of 500 to 599 (inconclusive) will be tracked.
+            options.TrackedStatusCodeRanges.Add(new StatusCodeRange(500, 599));
+
+             // All omitted HTTP routes that should be excluded from the request tracking logging emits.
             // (default: no routes).
             options.OmittedRoutes.Add("/api/v1/health");
         });
@@ -174,7 +184,7 @@ public class OrderController : ControllerBase
 }
 ```
 
-#### Excluding request/response bodies
+#### Excluding request/response bodies on specific routes
 
 When used as in the example above, then all routes of the controller will be excluded from the telemetry tracking. 
 The exclude attribute allows you to specify on a more specific level what part of the request should be excluded.
@@ -202,6 +212,33 @@ public class OrderController : ControllerBase
         Stream responseBody = ...
         responseBody.CopyToAsync(Response.Body);
 
+        return Ok();
+    }
+}
+```
+
+#### Including HTTP status codes/status code ranges on specific routes
+
+With the `RequestTracking` attribute, you can include a fixed HTTP status code or a range of HTTP status codes on a specfic route.
+This allows for a more finer grained control of the request tracking than to specify these status codes in the request tracking options.
+
+```csharp
+[ApiController]
+public class OrderController : ControllerBase
+{
+    // Only when the response returns a 500 `InternalServerError` will the request tracking occur for this endpoint.
+    [HttpPost]
+    [RequestTracking(HttpStatusCode.InternalServerError)]
+    public IActionResult PostThatTracksInternalServerError()
+    {
+        return Ok();
+    }
+
+    // Only when the response returns a HTTP status code in the range of 500 to 599 (inconclusive) wll the request tracking occur for this endpoint.
+    [HttpPost]
+    [RequestTracking(500, 599)]
+    public IActionResult PostThatTracksServerErrors()
+    {
         return Ok();
     }
 }
