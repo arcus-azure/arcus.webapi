@@ -306,6 +306,7 @@ namespace Arcus.WebApi.Logging
                     .Select(code => new StatusCodeRange((int) code))
                     .Concat(optionsTrackedStatusCodeRanges)
                     .Concat(attributeTrackedStatusCodes)
+                    .Where(range => range != null)
                     .Distinct().ToArray();
 
             bool allowedToTrackStatusCode = 

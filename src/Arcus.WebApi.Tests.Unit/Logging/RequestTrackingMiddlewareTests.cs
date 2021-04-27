@@ -18,6 +18,7 @@ using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
+    [Collection("Request tracking")]
     public class RequestTrackingMiddlewareTests : IDisposable
     {
         private const string RequestBodyKey = "RequestBody",
@@ -605,6 +606,25 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             
             // Act
             using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, responseStatusCode.ToString(), route, (HttpStatusCode) responseStatusCode))
+            {
+                // Assert
+                IDictionary<string, string> eventContext = GetLoggedEventContext();
+                Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+            }
+        }
+
+        [Theory]
+        [InlineData(HttpStatusCode.InternalServerError)]
+        [InlineData(HttpStatusCode.OK)]
+        public async Task PostWithResponseNullStatusCodeRangeOptions_TracksAllRequest_ReturnsSuccess(HttpStatusCode responseStatusCode)
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            _testServer.AddConfigure(app => app.UseRequestTracking(options => options.TrackedStatusCodeRanges.Add(null)));
+            string route = StubbedStatusCodeController.Route;
+            
+            // Act
+            using (HttpResponseMessage response = await PostRequestAsync(headerName, headerValue, ((int) responseStatusCode).ToString(), route, responseStatusCode))
             {
                 // Assert
                 IDictionary<string, string> eventContext = GetLoggedEventContext();
