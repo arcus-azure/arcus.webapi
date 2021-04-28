@@ -54,7 +54,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
                 using (HttpResponseMessage response = await client.SendAsync(request))
                 {
                     // Assert
-                    Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
                     IDictionary<string, string> eventContext = GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                 }
