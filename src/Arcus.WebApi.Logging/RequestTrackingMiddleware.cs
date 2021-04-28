@@ -66,7 +66,7 @@ namespace Arcus.WebApi.Logging
                 var endpoint = httpContext.Features.Get<IEndpointFeature>();
                 if (endpoint?.Endpoint?.Metadata is null)
                 {
-                    _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(ExcludeRequestTrackingAttribute));
+                    _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware; or the route was not found", nameof(ExcludeRequestTrackingAttribute));
                     await TrackRequest(httpContext, Exclude.None, Array.Empty<StatusCodeRange>());
                 }
                 else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
@@ -110,7 +110,7 @@ namespace Arcus.WebApi.Logging
         {
             if (endpoint?.Endpoint?.Metadata is null)
             {
-                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{OptionsAttribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware", nameof(RequestTrackingAttribute));
+                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{OptionsAttribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware; or the route was not found", nameof(RequestTrackingAttribute));
                 return Array.Empty<RequestTrackingAttribute>();
             }
             
