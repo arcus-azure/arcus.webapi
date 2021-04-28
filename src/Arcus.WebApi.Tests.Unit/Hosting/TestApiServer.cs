@@ -158,7 +158,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
 
             builder.Configure(app =>
             {
-                app.UseExceptionHandling();
                 app.UseMiddleware<TraceIdentifierMiddleware>();
                 app.UseHttpCorrelation();
 
@@ -172,6 +171,8 @@ namespace Arcus.WebApi.Tests.Unit.Hosting
                 {
                     configure(app);
                 }
+                
+                app.UseExceptionHandling();
 
 #if NETCOREAPP3_1
                 app.UseEndpoints(endpoints => endpoints.MapControllers());

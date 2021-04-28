@@ -13,6 +13,9 @@ using Arcus.WebApi.Tests.Unit.Hosting;
 using Arcus.WebApi.Tests.Unit.Logging.Controllers;
 using Bogus;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Serilog.Events;
 using Xunit;
 
@@ -26,6 +29,37 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         
         private readonly TestApiServer _testServer = new TestApiServer();
         private readonly Faker _bogusGenerator = new Faker();
+
+        [Fact]
+        public async Task GetRequestWithInvalidEndpointFeature_TracksRequest_ReturnsSuccess()
+        {
+            // Arrange
+            string headerName = $"x-custom-header-{Guid.NewGuid()}", headerValue = $"header-{Guid.NewGuid()}";
+            _testServer.AddConfigure(app =>
+            {
+                app.Use((ctx, next) =>
+                {
+                    ctx.Features.Set(Mock.Of<IEndpointFeature>());
+                    return next();
+                });
+                app.UseRequestTracking();
+            });
+
+            // Act
+            using (HttpClient client = _testServer.CreateClient())
+            using (var request = new HttpRequestMessage(HttpMethod.Get, HealthController.Route))
+            {
+                request.Headers.Add(headerName, headerValue);
+
+                using (HttpResponseMessage response = await client.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                    IDictionary<string, string> eventContext = GetLoggedEventContext();
+                    Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
+                }
+            }
+        }
         
         [Fact]
         public async Task GetRequest_TracksRequest_ReturnsSuccess()
