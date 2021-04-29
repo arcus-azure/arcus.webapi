@@ -99,6 +99,7 @@ public class MyApiController : ControllerBase
 The package supports different scenarios for specifying the shared access key parameter and is supported for global or per controller/operation use cases.
 
 - **Use header only** - Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
+
 ```csharp
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
@@ -113,9 +114,9 @@ public class Startup
     }
 }
 ```
-<br/>
 
 - **Use query parameter only** - Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
+
 ```csharp
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
@@ -130,9 +131,9 @@ public class Startup
     }
 }
 ```
-<br/>
 
 - **Support both header & query parameter** - Both the specified request header and query parameter  will be validated for the shared access key.
+
 ```csharp
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
@@ -147,8 +148,9 @@ public class Startup
     }
 }
 ```
+
 If both header and query parameter are specified, they must both be valid or an `Unauthorized` will be returned.
-<br/>
+
 
 ## Bypassing authentication
 The package supports a way to bypass the shared access key authentication for certain endponts.
