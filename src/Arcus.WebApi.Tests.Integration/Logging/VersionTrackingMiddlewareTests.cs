@@ -15,6 +15,7 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
+    [Collection("Integration")]
     public class VersionTrackingMiddlewareTests
     {
         private const string DefaultHeaderName = "X-Version";

@@ -21,6 +21,7 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 {
+    [Collection("Integration")]
     public class JwtTokenAuthorizationFilterTests
     {
         private readonly ILogger _logger;
