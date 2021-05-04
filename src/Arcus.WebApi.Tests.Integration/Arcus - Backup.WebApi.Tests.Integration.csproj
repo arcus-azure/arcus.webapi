@@ -2,10 +2,6 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
-    <DocumentationFile>Arcus.WebApi.Tests.Integration.Open-Api.xml</DocumentationFile>
-    <NoWarn>CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
@@ -15,16 +11,21 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!--<PackageReference Include="Arcus.Observability.Correlation" Version="0.4.0" />-->
     <PackageReference Include="Arcus.Testing.Logging" Version="0.2.0-preview-2" />
     <PackageReference Include="Arcus.Testing.Security" Version="0.2.0-preview-2" />
-    <PackageReference Include="Bogus" Version="29.0.2" />
+    <!--<PackageReference Include="Guard.Net" Version="1.2.0" />-->
+    <!--<PackageReference Include="Moq" Version="4.13.1" />-->
+    <!--<PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" Condition="'$(TargetFramework)' == 'netcoreapp2.2'" />-->
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
-    <PackageReference Include="IdentityServer4" Version="4.1.1" />
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
-    <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />
-    <PackageReference Include="Moq" Version="4.13.1" />
-    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" />
+    <PackageReference Include="Serilog.AspNetCore" Version="3.4.0" />
+    <!--<PackageReference Include="System.Web.Http" Version="4.0.0" />-->
+    <!--<PackageReference Include="Microsoft.AspNetCore.Mvc" Version="2.2.0" />-->
+    <!--<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="2.2.0" Condition="'$(TargetFramework)' == 'netcoreapp2.2'" />-->
+    <!--<PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.0" Condition="'$(TargetFramework)' == 'netcoreapp3.0'" />-->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
+    <!--<PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />-->
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
@@ -34,6 +35,5 @@
     <ProjectReference Include="..\Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
-    <ProjectReference Include="..\Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj" />
   </ItemGroup>
 </Project>
