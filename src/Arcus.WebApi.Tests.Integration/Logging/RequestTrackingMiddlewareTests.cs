@@ -728,8 +728,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
-                   headerValue = $"header-{Guid.NewGuid()}", 
-                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(options =>
@@ -813,7 +812,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
-                   headerValue = $"header-{Guid.NewGuid()}",;
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking())
