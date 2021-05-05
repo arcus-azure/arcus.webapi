@@ -24,6 +24,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
     [Collection("Integration")]
+    [Trait("Category", "Integration")]
     public class RequestTrackingMiddlewareTests
     {
         private const string RequestBodyKey = "RequestBody",
@@ -758,22 +759,22 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
 
         [Theory]
-        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithMinMax, 100, 499)]
-        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithFixed, 100, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithMinMax, 200, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithFixed, 200, 499)]
         [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithFixed, 501, 599)]
-        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithCombined, 100, 499)]
-        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 100, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithCombined, 200, 499)]
+        [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 200, 499)]
         [InlineData(TrackedServerErrorStatusCodesOnMethodController.RouteWithAll, 501, 549)]
-        [InlineData(TrackedClientErrorStatusCodesOnClassController.Route, 100, 399)]
-        [InlineData(TrackedNotFoundStatusCodeOnClassController.Route, 100, 403)]
+        [InlineData(TrackedClientErrorStatusCodesOnClassController.Route, 200, 399)]
+        [InlineData(TrackedNotFoundStatusCodeOnClassController.Route, 200, 403)]
         [InlineData(TrackedNotFoundStatusCodeOnClassController.Route, 405, 599)]
-        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 100, 403)]
+        [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 200, 403)]
         [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 405, 449)]
         [InlineData(TrackedNotFoundAndClientErrorsSubsetStatusCodesOnClassController.Route, 500, 599)]
         public async Task PostWithResponseOutsideStatusCodeRangesAttribute_DoesntTrackRequest_ReturnsSuccess(string route, int minimum, int maximum)
         {
             // Arrange
-            string headerName = "x-custom-header", 
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
@@ -786,7 +787,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(statusCode.ToString());
+                    .WithParameter("responseStatusCode", statusCode);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -811,7 +812,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseInsideStatusCodeRangesAttribute_TracksRequest_ReturnsSuccess(string route, int mimimum, int maximum)
         {
             // Arrange
-            string headerName = "x-custom-header", 
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()

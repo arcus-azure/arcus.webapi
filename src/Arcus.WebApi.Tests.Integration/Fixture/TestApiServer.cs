@@ -6,6 +6,8 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
+using Arcus.WebApi.Tests.Integration.Controllers;
+using Bogus;
 using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -13,18 +15,28 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Polly;
 
 namespace Arcus.WebApi.Tests.Integration.Fixture
 {
     public class ServerOptions
     {
-        internal const string Url = "http://localhost:5198/";
-        
+        private readonly Faker _bogusGenerator = new Faker();
         private readonly ICollection<Action<IServiceCollection>> _configureServices = new Collection<Action<IServiceCollection>>();
         private readonly ICollection<Action<IApplicationBuilder>> _preconfigures = new Collection<Action<IApplicationBuilder>>();
         private readonly ICollection<Action<IApplicationBuilder>> _configures = new Collection<Action<IApplicationBuilder>>();
         private readonly ICollection<Action<IHostBuilder>> _hostingConfigures = new Collection<Action<IHostBuilder>>();
         private readonly ICollection<Action<IConfigurationBuilder>> _appConfigures = new Collection<Action<IConfigurationBuilder>>();
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ServerOptions" /> class.
+        /// </summary>
+        public ServerOptions()
+        {
+            Url = $"http://localhost:{_bogusGenerator.Random.Int(1000, 5999)}/";
+        }
+        
+        internal string Url { get; }
         
         /// <summary>
         /// <para>Adds a function to configure the dependency services on the test API server.</para>
@@ -147,15 +159,15 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             return new HttpRequestBuilder(HttpMethod.Post, path);
         }
         
-        public HttpRequestBuilder WithHeader(string headerName, string headerValue)
+        public HttpRequestBuilder WithHeader(string headerName, object headerValue)
         {
-            _headers.Add(new KeyValuePair<string, string>(headerName, headerValue));
+            _headers.Add(new KeyValuePair<string, string>(headerName, headerValue.ToString()));
             return this;
         }
 
-        public HttpRequestBuilder WithParameter(string parameterName, string parameterValue)
+        public HttpRequestBuilder WithParameter(string parameterName, object parameterValue)
         {
-            _parameters.Add(new KeyValuePair<string, string>(parameterName, parameterValue));
+            _parameters.Add(new KeyValuePair<string, string>(parameterName, parameterValue.ToString()));
             return this;
         }
 
@@ -203,10 +215,12 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
 
         private static readonly HttpClient HttpClient = new HttpClient();
 
-        private TestApiServer(IHost host)
+        private TestApiServer(IHost host, ServerOptions options, ILogger logger)
         {
             Guard.NotNull(host, nameof(host), "Requires a 'IHost' instance to start/stop the test API server");
             _host = host;
+            _options = options;
+            _logger = logger;
         }
         
         public static async Task<TestApiServer> StartNewAsync(ServerOptions options, ILogger logger)
@@ -217,7 +231,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
                 services.AddLogging(logging => logging.AddProvider(new CustomLoggerProvider(logger))));
 
             IHost host = builder.Build();
-            var server = new TestApiServer(host);
+            var server = new TestApiServer(host, options, logger);
             await host.StartAsync();
 
             return server;
@@ -225,10 +239,17 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
 
         public async Task<HttpResponseMessage> SendAsync(HttpRequestBuilder builder)
         {
-            HttpRequestMessage request = builder.Build(ServerOptions.Url);
-
-            HttpResponseMessage response = await HttpClient.SendAsync(request);
-            return response;
+            HttpRequestMessage request = builder.Build(_options.Url);
+            try
+            {
+                HttpResponseMessage response = await HttpClient.SendAsync(request);
+                return response;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogCritical(exception, "Cannot connect to HTTP endpoint {Method} '{Uri}'", request.Method, request.RequestUri);
+                throw;
+            }
         }
         
         /// <summary>

@@ -14,9 +14,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
 
         [HttpPost]
         [Route(Route)]
-        public IActionResult Post([FromBody] string responseStatusCode)
+        public IActionResult Post([FromQuery] int responseStatusCode)
         {
-            return StatusCode(Convert.ToInt32(responseStatusCode), $"response-{Guid.NewGuid()}");
+            return StatusCode(responseStatusCode, "response");
         }
     }
 }
