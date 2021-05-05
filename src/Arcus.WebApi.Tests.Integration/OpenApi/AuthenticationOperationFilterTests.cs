@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Tests.Integration.OpenApi
         {
             // Arrange
             string assemblyName = typeof(AuthenticationOperationFilterTests).Assembly.GetName().Name;
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
                     var openApiInformation = new OpenApiInfo {Title = assemblyName, Version = "v1"};
@@ -88,7 +88,7 @@ namespace Arcus.WebApi.Tests.Integration.OpenApi
         {
             // Arrange
              string assemblyName = typeof(AuthenticationOperationFilterTests).Assembly.GetName().Name;
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
                     var openApiInformation = new OpenApiInfo {Title = assemblyName, Version = "v1"};

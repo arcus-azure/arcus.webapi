@@ -46,7 +46,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions();
+            var options = new TestApiServerOptions();
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -72,7 +72,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -97,7 +97,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSecretStore(stores => stores.AddInMemory(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -120,7 +120,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSecretStore(stores => stores.AddInMemory(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -148,7 +148,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -172,7 +172,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSecretStore(stores => stores.AddInMemory(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -197,7 +197,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -224,7 +224,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             string secretValue = "secret";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddSecretStore(stores => stores.AddInMemory(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -250,7 +250,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         public async Task SharedAccessKeyAuthorizedRoute_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName))));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -273,7 +273,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             string requestUri = parameterName == null ? route : route + $"?{parameterName}={parameterValue}";
 
-            var options = new ServerOptions();
+            var options = new TestApiServerOptions();
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {

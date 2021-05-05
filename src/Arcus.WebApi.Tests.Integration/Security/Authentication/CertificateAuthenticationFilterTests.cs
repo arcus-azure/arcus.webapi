@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             string subjectKey = "subject", subjectValue = $"subject-{Guid.NewGuid()}";
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator = 
@@ -80,7 +80,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             {
                 const string thumbprintKey = "thumbprint";
                 
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator =
@@ -125,7 +125,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             const string subjectKey = "subject", issuerKey = "issuer";
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator =
@@ -175,7 +175,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             const string subjectKey = "subject", issuerKey = "issuer";
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject"),
@@ -225,7 +225,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             const string subjectKey = "subject", issuerKey = "issuer";
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
@@ -265,7 +265,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailOnInvalidBase64Format()
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
                     var certificateValidator =
@@ -299,7 +299,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             const string subjectKey = "subject", issuerKey = "issuer";
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("known-issuername", "known-subject"))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
@@ -345,7 +345,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             const string issuerKey = "issuer";
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("issuer", "subject"))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator =

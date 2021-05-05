@@ -42,7 +42,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation())
                 .PreConfigure(app => app.UseHttpCorrelation())
                 .ConfigureHost(host => host.UseSerilog((context, serviceProvider, config) =>
@@ -69,7 +69,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation())
                 .PreConfigure(app => app.UseHttpCorrelation())
                 .ConfigureHost(host => host.UseSerilog((context, serviceProvider, config) =>
@@ -108,7 +108,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation())
                 .PreConfigure(app => app.UseHttpCorrelation())
                 .ConfigureHost(host => host.UseSerilog((context, serviceProvider, config) =>

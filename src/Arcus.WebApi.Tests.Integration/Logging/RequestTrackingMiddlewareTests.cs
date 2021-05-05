@@ -47,7 +47,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string headerName = $"x-custom-header-{Guid.NewGuid()}", headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app =>
                 {
                     app.Use((ctx, next) =>
@@ -83,7 +83,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 headerValue = $"header-{Guid.NewGuid()}",
                 requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking())
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -114,7 +114,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}",
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking<NoHeadersRequestTrackingMiddleware>())
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -149,7 +149,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}",
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking())
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -181,7 +181,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 headerValue = $"header-{Guid.NewGuid()}",
                 requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.OmittedHeaderNames.Add(headerName)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -212,7 +212,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 headerValue = $"header-{Guid.NewGuid()}",
                 requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.IncludeRequestHeaders = false))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -243,7 +243,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 headerValue = $"header-{Guid.NewGuid()}",
                 requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.IncludeRequestBody = true))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -274,7 +274,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}",
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -310,7 +310,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeResponseBody = true;
@@ -344,7 +344,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeResponseBody = true;
@@ -381,7 +381,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    body = $"body-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -416,7 +416,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -459,7 +459,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking())
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -492,7 +492,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -531,7 +531,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -564,7 +564,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -601,7 +601,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.OmittedRoutes.Add(omittedRoute)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -629,7 +629,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.OmittedRoutes.Add(omittedRoute)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -660,7 +660,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.OmittedRoutes.Add(omittedRoute)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -693,7 +693,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                    headerValue = $"header-{Guid.NewGuid()}", 
                    requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
                 {
                     opt.IncludeRequestBody = true;
@@ -731,7 +731,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(options =>
                 {
                     options.IncludeRequestBody = true;
@@ -777,7 +777,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking())
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -815,7 +815,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking())
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -847,7 +847,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodes.Add(trackedStatusCode)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -878,7 +878,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodes.Add(trackedStatusCode)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -910,7 +910,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodeRanges.Add(new StatusCodeRange(minimumThreshold, maximumThreshold))))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -942,7 +942,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodeRanges.Add(new StatusCodeRange(minimumThreshold, maximumThreshold))))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -971,7 +971,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodeRanges.Add(null)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 

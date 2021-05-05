@@ -45,7 +45,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             const string expectedSubject = "known-subject";
             using (var cert = SelfSignedCertificate.CreateWithSubject(expectedSubject))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator =
@@ -83,7 +83,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator =
@@ -129,7 +129,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         var certificateValidator =
@@ -184,7 +184,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
                     {
                         new KeyValuePair<string, string>(SubjectKey, "CN=subject"),
@@ -239,7 +239,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerName, subjectName))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
                     {
                         new KeyValuePair<string, string>(SubjectKey, "CN=subject")

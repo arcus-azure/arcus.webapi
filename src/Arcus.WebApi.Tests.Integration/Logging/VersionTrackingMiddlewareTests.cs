@@ -35,7 +35,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             string expected = $"version-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddAppVersion(provider => new StubAppVersion(expected)))
                 .Configure(app => app.UseVersionTracking());
 
@@ -60,7 +60,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string headerName = $"header-name-{Guid.NewGuid()}";
             string expected = $"version-{Guid.NewGuid()}";
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddAppVersion(provider => new StubAppVersion(expected)))
                 .Configure(app => app.UseVersionTracking(opt => opt.HeaderName = headerName));
 
@@ -85,7 +85,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithVersionTrackingForBlankVersion_DoesntAddApplicationVersionToResponse(string version)
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddAppVersion(provider => new StubAppVersion(version)))
                 .Configure(app => app.UseVersionTracking());
 
@@ -104,7 +104,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SetupApi_WithoutApplicationVersion_Throws()
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .Configure(app => app.UseVersionTracking());
 
             // Act / Assert

@@ -45,7 +45,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 
             await using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_logger))
             {
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         TokenValidationParameters tokenValidationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
@@ -74,7 +74,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithNullReaderAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
                     services.AddMvc(opt =>
@@ -108,7 +108,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             {
                 TokenValidationParameters validationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         services.AddMvc(opt =>
@@ -138,7 +138,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         public async Task GetHealthWithCorrectBearerToken_WithInjectedAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
                     services.AddMvc(opt =>
@@ -176,7 +176,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 TokenValidationParameters validationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
 
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         services.AddMvc(opt =>
@@ -206,7 +206,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         public async Task GetHealthWithIncorrectBase64BearerToken_WithAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()));
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -244,7 +244,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 };
 
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader));
@@ -282,7 +282,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 };
                 var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
 
-                var options = new ServerOptions()
+                var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
                         services.AddMvc(opt =>
@@ -312,7 +312,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         public async Task JwtAuthorizedRoute_WithBypassAttribute_SkipsAuthorization(string route)
         {
             // Arrange
-            var options = new ServerOptions()
+            var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
