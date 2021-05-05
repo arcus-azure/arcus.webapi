@@ -773,7 +773,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseOutsideStatusCodeRangesAttribute_DoesntTrackRequest_ReturnsSuccess(string route, int minimum, int maximum)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+            string headerName = "x-custom-header", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
@@ -811,7 +811,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseInsideStatusCodeRangesAttribute_TracksRequest_ReturnsSuccess(string route, int mimimum, int maximum)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+            string headerName = "x-custom-header", 
                    headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
