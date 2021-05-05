@@ -454,8 +454,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostRequestWithExcludeAttributeOnMethod_SkipsRequestTracking_ReturnsSuccess(string route)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
-            string requestBody = $"body-{Guid.NewGuid()}";
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking())
@@ -486,8 +487,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             bool includeResponseBody)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
-            string requestBody = $"body-{Guid.NewGuid()}";
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
@@ -524,8 +526,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostRequestWithExcludeFilterAttributeOnMethod_GetsIgnoredWhileExcludeAttributeOnClass_ReturnsSuccess()
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
-            string requestBody = $"body-{Guid.NewGuid()}";
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
@@ -556,8 +559,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostRequestWithExcludedFilterAttributeOnMethod_GetsUsedWhileExcludedAttributeOnClass_ReturnsSuccess()
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
-            string requestBody = $"body-{Guid.NewGuid()}";
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
@@ -620,9 +624,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task RequestWithOmittedRouteWithBody_DoesntTracksRequest_ReturnsSuccess(string omittedRoute)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
-            string requestBody = $"body-{Guid.NewGuid()}";
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.OmittedRoutes.Add(omittedRoute)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
@@ -651,7 +656,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task RequestWithWrongOmittedRoute_TracksRequest_ReturnsSuccess(string omittedRoute)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.OmittedRoutes.Add(omittedRoute)))
@@ -682,7 +688,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseBodyWithinLimitedStatusCodes_TracksRequest_ReturnsSuccess(string route, HttpStatusCode trackedStatusCode)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt =>
@@ -694,7 +702,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                string requestBody = $"request-{Guid.NewGuid()}";
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
@@ -720,7 +727,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseBodyOutsideLimitedStatusCodes_DoesntTrackRequest_ReturnsSuccess(string route)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}", 
+                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(options =>
@@ -765,7 +774,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseOutsideStatusCodeRangesAttribute_DoesntTrackRequest_ReturnsSuccess(string route, int minimum, int maximum)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking())
@@ -802,7 +812,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseInsideStatusCodeRangesAttribute_TracksRequest_ReturnsSuccess(string route, int mimimum, int maximum)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}",;
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking())
@@ -833,7 +844,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseOutsideStatusCodesOptions_TracksRequest_ReturnsSuccess(HttpStatusCode trackedStatusCode)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodes.Add(trackedStatusCode)))
@@ -863,7 +875,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseInsideStatusCodesOptions_TracksRequest_ReturnsSuccess(HttpStatusCode trackedStatusCode)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodes.Add(trackedStatusCode)))
@@ -894,7 +907,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseOutsideStatusCodeRangesOptions_TracksRequest_ReturnsSuccess(int minimumThreshold, int maximumThreshold, int responseStatusCode)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodeRanges.Add(new StatusCodeRange(minimumThreshold, maximumThreshold))))
@@ -925,7 +939,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseInsideStatusCodeRangesOptions_TracksRequest_ReturnsSuccess(int minimumThreshold, int maximumThreshold, int responseStatusCode)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodeRanges.Add(new StatusCodeRange(minimumThreshold, maximumThreshold))))
@@ -953,7 +968,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task PostWithResponseNullStatusCodeRangeOptions_TracksAllRequest_ReturnsSuccess(HttpStatusCode responseStatusCode)
         {
             // Arrange
-            string headerName = $"x-custom-header-{Guid.NewGuid():N}", headerValue = _bogusGenerator.Lorem.Sentence();
+            string headerName = $"x-custom-header-{Guid.NewGuid():N}", 
+                   headerValue = $"header-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new ServerOptions()
                 .Configure(app => app.UseRequestTracking(opt => opt.TrackedStatusCodeRanges.Add(null)))
