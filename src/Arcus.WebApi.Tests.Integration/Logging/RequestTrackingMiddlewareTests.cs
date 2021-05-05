@@ -825,7 +825,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(statusCode.ToString());
+                    .WithParameter("responseStatusCode", statusCode);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
