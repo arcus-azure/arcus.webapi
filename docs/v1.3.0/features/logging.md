@@ -79,16 +79,16 @@ public class Startup
     public void Configure(IApplicationBuilder app, IWebHostEvironment env)
     {
          // In versions less than .NET Core 3.0:
-        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
         app.UseEndpointRouting();
 
         // In versions starting from .NET Core 3.0:
-        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
         app.UseRouting();
 
         app.UseRequestTracking();
 
-        // Make sure that the exception handling is placed after the request tracking because otherwise unhandled exceptions that result in 500 response status codes will not be tracked.
+        // Make sure that the exception handling is placed after the UseRequestTracking() method because otherwise unhandled exceptions that result in 500 response status codes will not be tracked.
         app.UseExceptionHandling();
         app.UseMvc();
         ...
@@ -109,11 +109,11 @@ public class Startup
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         // In versions less than .NET Core 3.0:
-        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
         app.UseEndpointRouting();
 
         // In versions starting from .NET Core 3.0:
-        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
         app.UseRouting();
 
         app.UseRequestTracking(options =>
@@ -281,11 +281,11 @@ public class Startup
     public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
          // In versions less than .NET Core 3.0:
-        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
         app.UseEndpointRouting();
 
         // In versions starting from .NET Core 3.0:
-        // make sure that the endpoint routing is specified before the `UseRequestRouting` if you want to make use of the `SkipRequestTrackingAttribute`.
+        // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
         app.UseRouting();
 
         app.UseRequestTracking<EmptyButNotOmitRequestTrackingMiddleware>(options => options.OmittedHeaderNames.Clear());
