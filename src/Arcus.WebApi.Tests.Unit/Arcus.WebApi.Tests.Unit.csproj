@@ -9,7 +9,6 @@
   <ItemGroup>
     <PackageReference Include="Arcus.Testing.Logging" Version="0.1.0" />
     <PackageReference Include="Bogus" Version="29.0.2" />
-    <PackageReference Include="BouncyCastle" Version="1.8.5" />
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
     <PackageReference Include="IdentityModel" Version="4.4.0" />
     <PackageReference Include="IdentityServer4" Version="4.1.1" />

@@ -33,8 +33,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         }
 
         /// <summary>
-        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.</
-        /// summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
         public void Dispose()
         {
             _logEvents.Clear();

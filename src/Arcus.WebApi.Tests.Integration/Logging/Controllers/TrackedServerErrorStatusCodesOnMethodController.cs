@@ -18,7 +18,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         [RequestTracking(500, 599)]
         public IActionResult PostMinMax([FromQuery] int responseStatusCode)
         {
-            return StatusCode(responseStatusCode);
+            return CreateStatusCodeResult(responseStatusCode);
         }
 
         [HttpPost]
@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         [RequestTracking(500)]
         public IActionResult PostFixed([FromQuery] int responseStatusCode)
         {
-            return StatusCode(responseStatusCode);
+            return CreateStatusCodeResult(responseStatusCode);
         }
 
         [HttpPost]
@@ -35,7 +35,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         [RequestTracking(550, 599)]
         public IActionResult PostCombined([FromQuery] int responseStatusCode)
         {
-            return StatusCode(responseStatusCode);
+            return CreateStatusCodeResult(responseStatusCode);
         }
 
         [HttpPost]
@@ -45,10 +45,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         [RequestTracking(HttpStatusCode.InternalServerError)]
         public IActionResult PostAll([FromQuery] int responseStatusCode)
         {
-            return StatusCode(responseStatusCode);
+            return CreateStatusCodeResult(responseStatusCode);
         }
         
-        private IActionResult StatusCode(int responseStatusCode)
+        private IActionResult CreateStatusCodeResult(int responseStatusCode)
         {
             return StatusCode(responseStatusCode, "response");
         }
