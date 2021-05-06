@@ -853,7 +853,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var responseStatusCode = _bogusGenerator.Random.Enum(trackedStatusCode);
+                var responseStatusCode = _bogusGenerator.Random.Int(201, 403);
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
@@ -902,7 +902,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         [Theory]
         [InlineData(500, 599, 200)]
         [InlineData(450, 599, 315)]
-        [InlineData(100, 598, 599)]
+        [InlineData(200, 598, 599)]
         [InlineData(200, 399, 500)]
         public async Task PostWithResponseOutsideStatusCodeRangesOptions_TracksRequest_ReturnsSuccess(int minimumThreshold, int maximumThreshold, int responseStatusCode)
         {
@@ -935,7 +935,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         [InlineData(500, 599, 550)]
         [InlineData(500, 500, 500)]
         [InlineData(200, 399, 202)]
-        [InlineData(100, 599, 315)]
+        [InlineData(200, 599, 315)]
         public async Task PostWithResponseInsideStatusCodeRangesOptions_TracksRequest_ReturnsSuccess(int minimumThreshold, int maximumThreshold, int responseStatusCode)
         {
             // Arrange
