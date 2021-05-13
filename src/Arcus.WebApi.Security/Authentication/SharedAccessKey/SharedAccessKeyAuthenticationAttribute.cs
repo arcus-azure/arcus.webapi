@@ -36,7 +36,8 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                 () => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), 
                 "Requires either a non-blank header name or query parameter name");
 
-            Arguments = new object[] { headerName?? String.Empty, queryParameterName?? String.Empty, secretName };
+            const bool emitSecurityEvents = false;
+            Arguments = new object[] { headerName?? String.Empty, queryParameterName?? String.Empty, secretName, emitSecurityEvents };
         }
 
         /// <summary>
@@ -45,7 +46,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         public bool EmitSecurityEvents
         {
             get => Arguments?.LastOrDefault() is bool emitSecurityEvents && emitSecurityEvents;
-            set => Arguments = Arguments?.Append(value).ToArray();
+            set => Arguments = Arguments?.Take(3).Append(value).ToArray();
         }
     }
 }
