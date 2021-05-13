@@ -440,7 +440,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
                     services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
                             .AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter(emitsSecurityEvents)));
                 })
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
