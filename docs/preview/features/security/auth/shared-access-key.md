@@ -46,8 +46,34 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
+        // Recommended to use the Arcus secret store instead.
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+        
+        services.AddMvc(options => 
+        {
+            // Adds shared access key authentication to the request pipeline where both the request header as the query string parameter will be verified 
+            // if they contain the expected secret value, retrievable with the given secret name.
+            options.Filters.Add(
+                new SharedAccessKeyAuthenticationFilter(
+                    headerName: "http-request-header-name", 
+                    queryParameterName: "api-key", 
+                    secretName: "shared-access-key-name")));
+
+            // Adds shared access key authentication to the request pipeline where only the request header will be verified if it contains the expected secret value.
+            options.Filters.Add(
+                new SharedAccessAuthenticationFilter(
+                    headerName: "http-request-header-name",
+                    queryParameterName: null,
+                    secretName: "shared-access-key-name"));
+
+            // Adds shared access key authentication with emitting security events during the authentication of the request.
+            // (default: `false`)
+            options.Filters.Add(
+                new SharedAccessKeyAuthenticationFilter(
+                    ...,
+                    emitSecurityEvents: true));
+        }
     }
 }
 ```
@@ -71,7 +97,10 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
+        // Recommended to use the Arcus secret store instead.
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+        
         services.AddMvc();
     }
 }
@@ -88,11 +117,21 @@ public class MyApiController : ControllerBase
 {
     [HttpGet]
     [Route("authz/shared-access-key")]
-    public Task<IActionResult> AuthorizedGet()
+    public IActionResult AuthorizedGet()
     {
-        return Task.FromResult<IActionResult>(Ok());
+        return Ok();
     }
 }
+```
+
+#### Configuration
+
+Some additional configuration options are available on the attribute.
+
+```csharp
+// Adds shared access key authentication with emitting of security events during the authentication of the request.
+// (default: `false`)
+[SharedAccessKeyAuthentication(..., EmitSecurityEvents: true)]
 ```
 
 ## Behavior in validating shared access key parameter
@@ -110,6 +149,7 @@ public class Startup
     public void ConfigureServices(IServiceCollections services)
     {
         services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        
         services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
     }
 }

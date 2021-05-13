@@ -8,14 +8,23 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers
     [ApiController]
     public class CertificateAuthenticationOnMethodController : ControllerBase
     {
-        public const string AuthorizedGetRoute = "authz/certificate";
+        public const string AuthorizedGetRoute = "authz/certificate",
+                            AuthorizedGetRouteEmitSecurityEvents = "authz/certificate/emit-security-events";
 
         [HttpGet]
         [Route(AuthorizedGetRoute)]
         [CertificateAuthentication]
-        public Task<IActionResult> TestCertificateAuthentication(HttpRequestMessage message)
+        public IActionResult TestCertificateAuthentication()
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route(AuthorizedGetRouteEmitSecurityEvents)]
+        [CertificateAuthentication(EmitSecurityEvents = true)]
+        public IActionResult TestEmitSecurityEvents()
+        {
+            return Ok();
         }
     }
 }

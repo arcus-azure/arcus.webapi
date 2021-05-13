@@ -56,18 +56,27 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+        // Recommended to use the Arcus secret store instead.
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
+        services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
 
-        var certificateAuthenticationConfig = 
-            new CertificateAuthenticationConfigBuilder()
-                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-                .Build();
+        var certificateValidator =
+            new CertificateAuthenticationValidator(
+                new CertificateAuthenticationConfigBuilder()
+                    .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+                    .Build());
 
-        services.AddScoped<CertificateAuthenticationValidator>(
-            serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
+        services.AddSingleton(certificateValidator);
 
-        services.AddMvc(
-            options => options.Filters.Add(new CertificateAuthenticationFilter()));
+        services.AddMvc(options => 
+        {
+            // Adds certificate authentication to the request pipeline.
+            options.Filters.Add(new CertificateAuthenticationFilter());
+
+            // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
+            // (default: `false`)
+            options.Filters.Add(new CertificateAuthenticationFilter(emitSecurityEvents: true));
+        });
     }
 }
 ```
@@ -97,15 +106,17 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
+        // Recommended to use the Arcus secret store instead.
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSingleton<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
-        var certificateAuthenticationConfig = 
-            new CertificateAuthenticationConfigBuilder()
-                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-                .Build();
+        var certificateValidator = 
+            new CertificateAuthenticationValidator(
+                new CertificateAuthenticationConfigBuilder()
+                    .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+                    .Build());
 
-        services.AddScoped<CertificateAuthenticationValidator>(
-            serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
+        services.AddSingleton(certificateValidator);
     
         services.AddMvc();
     }
@@ -123,11 +134,21 @@ public class MyApiController : ControllerBase
 {
     [HttpGet]
     [Route("authz/certificate")]
-    public Task<IActionResult> AuthorizedGet()
+    public IActionResult AuthorizedGet()
     {
-        return Task.FromResult<IActionResult>(Ok());
+        return Ok();
     }
 }
+```
+
+#### Configuration
+
+Some additional configuration options are available on the attribute.
+
+```csharp
+// Adds certificate authentication to the request pipeline with emitting of security events during the authentication of the request.
+// (default: `false`)
+[CertificateAuthentication(EmitSecurityEvents = true)]
 ```
 
 ## Bypassing authentication

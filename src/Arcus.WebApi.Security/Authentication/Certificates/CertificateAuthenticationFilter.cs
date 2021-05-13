@@ -28,6 +28,26 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         private const string Base64Pattern = @"^[a-zA-Z0-9\+/]*={0,3}$";
         private static readonly Regex Base64Regex = new Regex(Base64Pattern, RegexOptions.Compiled);
 
+        private readonly bool _emitSecurityEvents;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
+        /// </summary>
+        public CertificateAuthenticationFilter() : this(emitSecurityEvents: false)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
+        /// </summary>
+        /// <param name="emitSecurityEvents">
+        ///     The flag indicating whether or not the certificate authentication should emit security events during the authentication process of the request.
+        /// </param>
+        public CertificateAuthenticationFilter(bool emitSecurityEvents)
+        {
+            _emitSecurityEvents = emitSecurityEvents;
+        }
+
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
@@ -117,8 +137,13 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             return false;
         }
 
-        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
+        private void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
+            if (!_emitSecurityEvents)
+            {
+                return;
+            }
+            
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",

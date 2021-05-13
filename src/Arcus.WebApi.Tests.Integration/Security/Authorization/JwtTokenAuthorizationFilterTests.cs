@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -7,16 +9,20 @@ using Arcus.WebApi.Security.Authorization;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
 using Arcus.WebApi.Tests.Integration.Security.Authorization.Controllers;
 using Arcus.WebApi.Tests.Integration.Security.Authorization.Fixture;
 using Bogus;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Serilog;
+using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
 // ReSharper disable AccessToDisposedClosure
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authorization
@@ -324,6 +330,73 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
+            }
+        }
+        
+        [Fact]
+        public async Task JwtAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthorization()
+        {
+            // Arrange
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()))
+                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+            
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
+                var request = HttpRequestBuilder
+                    .Get(HealthController.GetRoute)
+                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.DoesNotContain(logEvents, logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    });
+                }
+            }
+        }
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task JwtAuthorizedRoute_EmitSecurityEventsWhenRequested_RunsAuthorization(bool emitSecurityEvents)
+        {
+            // Arrange
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services =>
+                {
+                    services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.EmitSecurityEvents = emitSecurityEvents));
+                })
+                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+            
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
+                var request = HttpRequestBuilder
+                    .Get(HealthController.GetRoute)
+                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.True(emitSecurityEvents == logEvents.Any(logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    }));
                 }
             }
         }

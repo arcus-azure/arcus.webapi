@@ -95,6 +95,11 @@ namespace Arcus.WebApi.Security.Authorization
                 _createJwtTokenReader = null;
             }
         }
+        
+        /// <summary>
+        /// Gets or sets the flag indicating whether or not the JWT authorization should emit security events when authorizing the request.
+        /// </summary>
+        public bool EmitSecurityEvents { get; set; }
 
         /// <summary>
         /// Use the provided <typeparamref name="TImplementation"/> instance to verify the token from the HTTP request header,

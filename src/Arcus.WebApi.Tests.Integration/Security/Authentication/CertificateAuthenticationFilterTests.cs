@@ -1,20 +1,27 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Security.Authentication.Certificates;
+using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
+
 // ReSharper disable AccessToDisposedClosure
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
@@ -56,7 +63,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.Route);
+                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
@@ -97,7 +104,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.Route);
+                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
@@ -147,7 +154,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.Route);
+                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
@@ -197,7 +204,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.Route);
+                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
@@ -247,7 +254,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.Route);
+                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
@@ -280,7 +287,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
-                    .Get(NoneAuthenticationController.Route)
+                    .Get(NoneAuthenticationController.GetRoute)
                     .WithHeader("X-ARR-ClientCert", "something not even close to an client certificate export");
 
                 // Act
@@ -322,7 +329,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 {
                     string base64String = Convert.ToBase64String(clientCertificate.Export(X509ContentType.Pkcs12), Base64FormattingOptions.None);
                     var request = HttpRequestBuilder
-                        .Get(NoneAuthenticationController.Route)
+                        .Get(NoneAuthenticationController.GetRoute)
                         .WithHeader("X-ARR-ClientCert", base64String);
 
                     // Act
@@ -370,6 +377,88 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         // Assert
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     }
+                }
+            }
+        }
+        
+        [Fact]
+        public async Task SharedAccessKeyAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
+        {
+            // Arrange
+            const string issuerKey = "issuer";
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services =>
+                {
+                    var certificateValidator =
+                        new CertificateAuthenticationValidator(
+                            new CertificateAuthenticationConfigBuilder()
+                                .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)
+                                .Build());
+
+                    services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
+                            .AddSingleton(certificateValidator)
+                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                })
+                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
+                
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.DoesNotContain(logEvents, logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    });
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task SharedAccessKeyAuthorizedRoute_EmitsSecurityEventsWhenRequested_RunsAuthentication(bool emitsSecurityEvents)
+        {
+            // Arrange
+            const string issuerKey = "issuer";
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services =>
+                {
+                    var certificateValidator =
+                        new CertificateAuthenticationValidator(
+                            new CertificateAuthenticationConfigBuilder()
+                                .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)
+                                .Build());
+
+                    services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
+                            .AddSingleton(certificateValidator)
+                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                })
+                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
+                
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.True(emitsSecurityEvents == logEvents.Any(logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    }));
                 }
             }
         }

@@ -24,6 +24,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private readonly string _headerName, _queryParameterName, _secretName;
+        private readonly bool _emitSecurityEvents;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
@@ -31,19 +32,33 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
-        /// <exception cref="ArgumentException">When the both <paramref name="headerName"/> and <paramref name="queryParameterName"/> are <c>null</c> or blank.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="secretName"/> is <c>null</c> or blank.</exception>
+        /// <exception cref="ArgumentException">Thrown when the both <paramref name="headerName"/> and <paramref name="queryParameterName"/> are blank.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="secretName"/> is blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName)
+            : this(headerName, queryParameterName, secretName, emitSecurityEvents: false)
         {
-            Guard.For<ArgumentException>(
-                () => String.IsNullOrWhiteSpace(headerName) 
-                      && String.IsNullOrWhiteSpace(queryParameterName), 
-                "Requires either a header name or query parameter name");
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
+        /// </summary>
+        /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
+        /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
+        /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
+        /// <param name="emitSecurityEvents">The flag indicating whether or not this authentication filter should emit security events during processing of requests.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="secretName"/> is blank.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> and <paramref name="queryParameterName"/> are blank.</exception>
+        public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName, bool emitSecurityEvents)
+        {
             Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Requires a non-blank secret name");
+            Guard.For<ArgumentException>(
+                () => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), 
+                "Requires either a non-blank header name or query parameter name");
 
             _headerName = headerName;
             _queryParameterName = queryParameterName;
             _secretName = secretName;
+            _emitSecurityEvents = emitSecurityEvents;
         }
 
         /// <summary>
@@ -165,8 +180,13 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
         }
 
-        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
+        private void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
+            if (!_emitSecurityEvents)
+            {
+                return;
+            }
+            
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",

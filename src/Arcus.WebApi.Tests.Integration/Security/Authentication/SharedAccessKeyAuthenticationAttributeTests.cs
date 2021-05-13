@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -8,14 +9,18 @@ using Arcus.Security.Core.Caching;
 using Arcus.Testing.Logging;
 using Arcus.Testing.Security.Providers.InMemory;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
+using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 {
@@ -25,9 +30,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         private const string HeaderName = "x-shared-access-key",
                              HeaderNameUpper = "X-SHARED-ACCESS-KEY",
                              SecretName = "custom-access-key-name",
-                             AuthorizedRoute = "/authz/shared-access-key",
-                             AuthorizedRouteHeader = "/authz/shared-access-key-header",
-                             AuthorizedRouteQueryString = "/authz/shared-access-key-querystring",
                              ParameterName = "api-key",
                              ParameterNameUpper = "API-KEY";
 
@@ -242,49 +244,61 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 }
             }
         }
-
-        [Theory]
-        [InlineData(BypassOnMethodController.SharedAccessKeyRoute)]
-        [InlineData(BypassSharedAccessKeyController.BypassOverAuthenticationRoute)]
-        [InlineData(AllowAnonymousSharedAccessKeyController.Route)]
-        public async Task SharedAccessKeyAuthorizedRoute_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
+        
+        [Fact]
+        public async Task SharedAccessKeyAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
         {
             // Arrange
+            var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName))));
+                .ConfigureServices(services => services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}")))
+                .ConfigureHost(host => host.UseSerilog((context, config) => 
+                    config.WriteTo.Sink(spySink)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(route);
+                var request = HttpRequestBuilder.Get(SharedAccessKeyAuthenticationController.AuthorizedGetRoute);
+                
+                // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.DoesNotContain(logEvents, logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    });
                 }
             }
         }
 
-        private async Task<HttpResponseMessage> SendAuthorizedHttpRequest(string route, string headerName = null, string headerValue = null, string parameterName = null, string parameterValue = null)
+        [Fact]
+        public async Task SharedAccessKeyAuthorizedRoute_EmitsSecurityEventsWhenRequested_RunsAuthentication()
         {
-            return await SendAuthorizedHttpRequest(route, headerName, new[] { headerValue }, parameterName, parameterValue);
-        }
+            // Arrange
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services => services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}")))
+                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
-        private async Task<HttpResponseMessage> SendAuthorizedHttpRequest(string route, string headerName = null, IEnumerable<string> headerValues = null, string parameterName = null, string parameterValue = null)
-        {
-            string requestUri = parameterName == null ? route : route + $"?{parameterName}={parameterValue}";
-
-            var options = new TestApiServerOptions();
-            
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(requestUri);
-
-                if (headerName != null)
+                var request = HttpRequestBuilder.Get(SharedAccessKeyAuthenticationController.AuthorizedGetRouteEmitSecurityEvents);
+                
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
                 {
-                    request.WithHeader(headerName, String.Join(";", headerValues));
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.Contains(logEvents, logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    });
                 }
-
-                return await server.SendAsync(request);
             }
         }
     }

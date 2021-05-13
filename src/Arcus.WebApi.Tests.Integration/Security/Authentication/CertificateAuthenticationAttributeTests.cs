@@ -7,14 +7,17 @@ using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
+using Serilog;
+using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
+using ILogger = Microsoft.Extensions.Logging.ILogger;
 // ReSharper disable AccessToDisposedClosure
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
@@ -270,6 +273,90 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         Assert.True(
                             (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
                             $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
+                    }
+                }
+            }
+        }
+        
+        [Fact]
+        public async Task CertificateAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
+        {
+            // Arrange
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
+            {
+                var spySink = new InMemorySink();
+                var options = new TestApiServerOptions()
+                    .ConfigureServices(services =>
+                    {
+                        var certificateValidator =
+                            new CertificateAuthenticationValidator(
+                                new CertificateAuthenticationConfigBuilder()
+                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
+                                    .Build());
+
+                        services.AddSecretStore(stores => stores.AddInMemory(SubjectKey, "CN=subject"))
+                                .AddClientCertificate(clientCertificate)
+                                .AddSingleton(certificateValidator);
+                    })
+                    .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+
+                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+                {
+                    var request = HttpRequestBuilder.Get(CertificateAuthenticationOnMethodController.AuthorizedGetRoute);
+
+                    // Act
+                    using (HttpResponseMessage response = await server.SendAsync(request))
+                    {
+                        // Assert
+                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                        IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                        Assert.DoesNotContain(logEvents, logEvent =>
+                        {
+                            string message = logEvent.RenderMessage();
+                            return message.Contains("EventType") && message.Contains("Security");
+                        });
+                    }
+                }
+            }
+        }
+        
+        [Fact]
+        public async Task CertificateAuthorizedRoute_EmitsSecurityEventsWhenRequested_RunsAuthentication()
+        {
+            // Arrange
+            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
+            {
+                var spySink = new InMemorySink();
+                var options = new TestApiServerOptions()
+                    .ConfigureServices(services =>
+                    {
+                        var certificateValidator =
+                            new CertificateAuthenticationValidator(
+                                new CertificateAuthenticationConfigBuilder()
+                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
+                                    .Build());
+
+                        services.AddSecretStore(stores => stores.AddInMemory(SubjectKey, "CN=subject"))
+                                .AddClientCertificate(clientCertificate)
+                                .AddSingleton(certificateValidator);
+                    })
+                    .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+
+                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+                {
+                    var request = HttpRequestBuilder.Get(CertificateAuthenticationOnMethodController.AuthorizedGetRouteEmitSecurityEvents);
+
+                    // Act
+                    using (HttpResponseMessage response = await server.SendAsync(request))
+                    {
+                        // Assert
+                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                        IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                        Assert.Contains(logEvents, logEvent =>
+                        {
+                            string message = logEvent.RenderMessage();
+                            return message.Contains("EventType") && message.Contains("Security");
+                        });
                     }
                 }
             }
