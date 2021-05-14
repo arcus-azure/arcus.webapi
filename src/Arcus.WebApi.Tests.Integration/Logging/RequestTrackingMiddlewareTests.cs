@@ -741,8 +741,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                HttpStatusCode responseStatusCode = _bogusGenerator.Random.Enum(exclude: HttpStatusCode.OK);
-                var requestBody = ((int) responseStatusCode).ToString();
+                int responseStatusCode = _bogusGenerator.Random.Int(201, 599);
+                var requestBody =  responseStatusCode.ToString();
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
@@ -751,7 +751,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
-                    Assert.Equal(responseStatusCode, response.StatusCode);
+                    Assert.Equal(responseStatusCode, (int) response.StatusCode);
                     Assert.False(ContainsLoggedEventContext(spySink), 
                         "Should not contain logged event context when the status code is discarded from request tracking");
                 }
