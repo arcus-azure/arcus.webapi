@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 
 namespace Arcus.WebApi.Security.Authorization
 {
-   [Obsolete("Renamed to " + nameof(JwtTokenAuthorizationFilter))]
+    [Obsolete("Renamed to " + nameof(JwtTokenAuthorizationFilter))]
     public class AzureManagedIdentityAuthorizationFilter : IAsyncAuthorizationFilter
     {
         public const string DefaultHeaderName = "x-managed-identity-token";
