@@ -18,7 +18,8 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter))
         {
-            Arguments = new object[] { /* emitSecurityEvents: */ false };
+            var options = new CertificateAuthenticationOptions();
+            Arguments = new object[] { options };
         }
 
         /// <summary>
@@ -26,8 +27,14 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         public bool EmitSecurityEvents
         {
-            get => Arguments?.FirstOrDefault() is bool emitSecurityEvents && emitSecurityEvents;
-            set => Arguments = new object[] { value };
+            get => Arguments?.FirstOrDefault() is CertificateAuthenticationOptions options && options.EmitSecurityEvents;
+            set
+            {
+                if (Arguments?.FirstOrDefault() is CertificateAuthenticationOptions options)
+                {
+                    options.EmitSecurityEvents = value;
+                }
+            }
         }
     }
 }

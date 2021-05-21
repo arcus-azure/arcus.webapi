@@ -24,7 +24,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private readonly string _headerName, _queryParameterName, _secretName;
-        private readonly bool _emitSecurityEvents;
+        private readonly SharedAccessKeyAuthenticationOptions _options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationFilter"/> class.
@@ -35,7 +35,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <exception cref="ArgumentException">Thrown when the both <paramref name="headerName"/> and <paramref name="queryParameterName"/> are blank.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="secretName"/> is blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName)
-            : this(headerName, queryParameterName, secretName, emitSecurityEvents: false)
+            : this(headerName, queryParameterName, secretName, new SharedAccessKeyAuthenticationOptions())
         {
         }
 
@@ -45,10 +45,10 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
-        /// <param name="emitSecurityEvents">The flag indicating whether or not this authentication filter should emit security events during processing of requests.</param>
+        /// <param name="options">The flag indicating whether or not this authentication filter should emit security events during processing of requests.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="secretName"/> is blank.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> and <paramref name="queryParameterName"/> are blank.</exception>
-        public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName, bool emitSecurityEvents)
+        public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName, SharedAccessKeyAuthenticationOptions options)
         {
             Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Requires a non-blank secret name");
             Guard.For<ArgumentException>(
@@ -58,7 +58,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             _headerName = headerName;
             _queryParameterName = queryParameterName;
             _secretName = secretName;
-            _emitSecurityEvents = emitSecurityEvents;
+            _options = options;
         }
 
         /// <summary>
@@ -182,7 +182,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
 
         private void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
-            if (!_emitSecurityEvents)
+            if (!_options.EmitSecurityEvents)
             {
                 return;
             }

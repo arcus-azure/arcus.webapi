@@ -98,9 +98,12 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => 
+                .ConfigureServices(services =>
+                {
+                    var authOptions = new SharedAccessKeyAuthenticationOptions {EmitSecurityEvents = emitsSecurityEvents};
                     services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
-                            .AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName, emitsSecurityEvents))))
+                            .AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName, authOptions)));
+                })
                 .ConfigureHost(host => host.UseSerilog((context, config) => 
                     config.WriteTo.Sink(spySink)));
 

@@ -438,9 +438,10 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)
                                 .Build());
 
+                    var authOptions = new CertificateAuthenticationOptions {EmitSecurityEvents = emitsSecurityEvents};
                     services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
                             .AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter(emitsSecurityEvents)));
+                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter(authOptions)));
                 })
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 

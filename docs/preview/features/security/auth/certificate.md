@@ -68,14 +68,20 @@ public class Startup
 
         services.AddSingleton(certificateValidator);
 
-        services.AddMvc(options => 
+        services.AddMvc(mvcOptions => 
         {
             // Adds certificate authentication to the request pipeline.
-            options.Filters.Add(new CertificateAuthenticationFilter());
+            mvcOptions.Filters.Add(new CertificateAuthenticationFilter());
 
-            // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
-            // (default: `false`)
-            options.Filters.Add(new CertificateAuthenticationFilter(emitSecurityEvents: true));
+            // Additional consumer-configurable options to change the behavior of the authentication filter.
+            var authOptions = new CertificateAuthenticationOptions
+            {
+                // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
+                // (default: `false`)
+                EmitSecurityEvents = true;
+            };
+
+            mvcOptions.Filters.Add(new CertificateAuthenticationFilter(authOptions));
         });
     }
 }

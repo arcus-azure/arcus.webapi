@@ -28,24 +28,23 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         private const string Base64Pattern = @"^[a-zA-Z0-9\+/]*={0,3}$";
         private static readonly Regex Base64Regex = new Regex(Base64Pattern, RegexOptions.Compiled);
 
-        private readonly bool _emitSecurityEvents;
+        private readonly CertificateAuthenticationOptions _options;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
         /// </summary>
-        public CertificateAuthenticationFilter() : this(emitSecurityEvents: false)
+        public CertificateAuthenticationFilter() : this(new CertificateAuthenticationOptions())
         {
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
         /// </summary>
-        /// <param name="emitSecurityEvents">
-        ///     The flag indicating whether or not the certificate authentication should emit security events during the authentication process of the request.
-        /// </param>
-        public CertificateAuthenticationFilter(bool emitSecurityEvents)
+        /// <param name="options">The set of additional consumer-configurable options to change the behavior of the certificate authentication.</param>
+        public CertificateAuthenticationFilter(CertificateAuthenticationOptions options)
         {
-            _emitSecurityEvents = emitSecurityEvents;
+            Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
+            _options = options;
         }
 
         /// <summary>
@@ -139,7 +138,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
         private void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
-            if (!_emitSecurityEvents)
+            if (!_options.EmitSecurityEvents)
             {
                 return;
             }
