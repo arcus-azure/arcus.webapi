@@ -23,12 +23,17 @@ namespace Arcus.WebApi.OpenApi.Extensions
         private readonly SecuritySchemeType _securitySchemeType;
 #endif
 
+#if NETCOREAPP3_1
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationOperationFilter"/> class.
         /// </summary>
         /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"certificate"</c>.</param>
-#if NETCOREAPP3_1
         /// <param name="securitySchemeType">The type of the security scheme. Default value is <c>ApiKey</c>.</param>
+#else
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationOperationFilter"/> class.
+        /// </summary>
+        /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"certificate"</c>.</param>
 #endif
         public CertificateAuthenticationOperationFilter(
 #if NETCOREAPP3_1
