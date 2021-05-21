@@ -31,7 +31,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             attribute.EmitSecurityEvents = true;
             
             // Assert
-            Assert.True(attribute.EmitSecurityEvents);
+            Assert.False(attribute.EmitSecurityEvents);
         }
 
         [Fact]
