@@ -45,7 +45,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="queryParameterName">The name of the query parameter which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
-        /// <param name="options">The flag indicating whether or not this authentication filter should emit security events during processing of requests.</param>
+        /// <param name="options">The set of additional consumer-configurable options to change the behavior of the shared access authentication.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="secretName"/> is blank.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> and <paramref name="queryParameterName"/> are blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName, SharedAccessKeyAuthenticationOptions options)
