@@ -63,20 +63,6 @@ public class Startup
                     headerName: "http-request-header-name",
                     queryParameterName: null,
                     secretName: "shared-access-key-name"));
-
-
-            // Additional consumer-configurable options to change the behavior of the authentication filter.
-            var options = new SharedAccessKeyAuthenticationOptions
-            {
-                // Adds shared access key authentication with emitting security events during the authentication of the request.
-                // (default: `false`)
-                EmitSecurityEvents = true
-            };
-
-            options.Filters.Add(
-                new SharedAccessKeyAuthenticationFilter(
-                    ...,
-                    options: options));
         }
     }
 }
