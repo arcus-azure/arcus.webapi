@@ -19,6 +19,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter))
         {
+            _options = new CertificateAuthenticationOptions();
             Arguments = new object[] { _options };
         }
 
