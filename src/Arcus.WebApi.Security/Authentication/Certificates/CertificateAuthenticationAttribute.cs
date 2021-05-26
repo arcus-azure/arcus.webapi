@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
@@ -13,13 +12,14 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class CertificateAuthenticationAttribute : TypeFilterAttribute
     {
+        private readonly CertificateAuthenticationOptions _options;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationAttribute"/> class.
         /// </summary>
         public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter))
         {
-            var options = new CertificateAuthenticationOptions();
-            Arguments = new object[] { options };
+            Arguments = new object[] { _options };
         }
 
         /// <summary>
@@ -27,14 +27,8 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         public bool EmitSecurityEvents
         {
-            get => Arguments?.FirstOrDefault() is CertificateAuthenticationOptions options && options.EmitSecurityEvents;
-            set
-            {
-                if (Arguments?.FirstOrDefault() is CertificateAuthenticationOptions options)
-                {
-                    options.EmitSecurityEvents = value;
-                }
-            }
+            get => _options.EmitSecurityEvents;
+            set => _options.EmitSecurityEvents = value;
         }
     }
 }

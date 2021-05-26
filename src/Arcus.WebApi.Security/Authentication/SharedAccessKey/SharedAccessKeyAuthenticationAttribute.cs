@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using Arcus.Security.Core;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
@@ -12,6 +11,8 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
     public class SharedAccessKeyAuthenticationAttribute : TypeFilterAttribute
     {
+        private readonly SharedAccessKeyAuthenticationOptions _options;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttribute"/> class.
         /// </summary>
@@ -36,8 +37,8 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                 () => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), 
                 "Requires either a non-blank header name or query parameter name");
 
-            var options = new SharedAccessKeyAuthenticationOptions();
-            Arguments = new object[] { headerName?? String.Empty, queryParameterName?? String.Empty, secretName, options };
+            _options = new SharedAccessKeyAuthenticationOptions();
+            Arguments = new object[] { headerName?? String.Empty, queryParameterName?? String.Empty, secretName, _options };
         }
 
         /// <summary>
@@ -45,14 +46,8 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// </summary>
         public bool EmitSecurityEvents
         {
-            get => Arguments?.LastOrDefault() is SharedAccessKeyAuthenticationOptions options && options.EmitSecurityEvents;
-            set
-            {
-                if (Arguments?.LastOrDefault() is SharedAccessKeyAuthenticationOptions options)
-                {
-                    options.EmitSecurityEvents = value;
-                }
-            }
+            get => _options.EmitSecurityEvents;
+            set => _options.EmitSecurityEvents = value;
         }
     }
 }
