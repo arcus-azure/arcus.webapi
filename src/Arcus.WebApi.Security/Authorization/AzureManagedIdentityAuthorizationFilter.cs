@@ -4,6 +4,7 @@ using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+#pragma warning disable 1591 // Ignore public XML code docs warnings.
 
 namespace Arcus.WebApi.Security.Authorization
 {
