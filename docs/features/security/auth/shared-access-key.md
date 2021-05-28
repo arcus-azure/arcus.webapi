@@ -34,11 +34,9 @@ This filter will then add authentication to all endpoints via a shared access ke
 
 ### Usage
 
-The authentication requires an `ICachedSecretProvider` or `ISecretProvider` dependency to be registered with the services container of the ASP.NET request pipeline.  This is typically done in the `ConfigureServices` method of the `Startup` class.
-Once this is done, the `SharedAccessKeyAuthenticationFilter` can be added to the filters that will be applied to all actions:
+We created a `SharedAccessKeyAuthenticationFilter` MVC filter which will be applied to all actions:
 
 ```csharp
-using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -46,7 +44,9 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+
         services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
     }
 }
@@ -71,7 +71,9 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new CachedSecretProvider(new MySecretProvider()));
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+
         services.AddMvc();
     }
 }
@@ -101,7 +103,6 @@ The package supports different scenarios for specifying the shared access key pa
 - **Use header only** - Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
 
 ```csharp
-using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -109,7 +110,9 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+
         services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
     }
 }
@@ -118,7 +121,6 @@ public class Startup
 - **Use query parameter only** - Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
 
 ```csharp
-using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -126,7 +128,9 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+       // See https://security.arcus-azure.net/features/secret-store/ for more information.
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+
         services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
     }
 }
@@ -135,7 +139,6 @@ public class Startup
 - **Support both header & query parameter** - Both the specified request header and query parameter  will be validated for the shared access key.
 
 ```csharp
-using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Microsoft.Extensions.DepdendencyInjection;
 
@@ -143,7 +146,9 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddSingleton<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        // See https://security.arcus-azure.net/features/secret-store/ for more information.
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+
         services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
     }
 }

@@ -36,7 +36,7 @@ This filter will then add authentication to all endpoints via one or many certif
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider.
+- Arcus secret store: see [our offical documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 - `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
 - `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values.
 
@@ -48,7 +48,6 @@ This mapping of what service which property uses, is defined in an `CertificateA
 Once this is done, the `CertificateAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
-using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -56,9 +55,8 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        // Recommended to use the Arcus secret store instead.
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddScoped<ICachedSecretProvider>(serviceProvider => new MyCachedSecretProvider());
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
         var certificateValidator =
             new CertificateAuthenticationValidator(
@@ -97,14 +95,13 @@ This certificate authentication will then be applied to the endpoint(s) that are
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- `ICachedSecretProvider` or `ISecretProvider`: built-in or you implementation of the secret provider.
+- Arcus secret store: see [our offical documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 - `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
 - `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values
 
 This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class:
 
 ```csharp
-using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -112,9 +109,8 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        // Recommended to use the Arcus secret store instead.
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSingleton<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
         var certificateValidator = 
             new CertificateAuthenticationValidator(
