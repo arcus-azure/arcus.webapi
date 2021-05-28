@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using GuardNet;
 #if NETCOREAPP3_1
-using Microsoft.OpenApi.Models;    
-#endif
+using System;
+using Microsoft.OpenApi.Models;
+#else
 using Swashbuckle.AspNetCore.Swagger;
+#endif
 using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace Arcus.WebApi.OpenApi.Extensions
@@ -16,41 +17,43 @@ namespace Arcus.WebApi.OpenApi.Extensions
     /// </summary>
     public class SharedAccessKeyAuthenticationOperationFilter : IOperationFilter
     {
+#if NETCOREAPP3_1
         private const string DefaultSecuritySchemeName = "sharedaccesskey";
 
-        private readonly string _securitySchemeName;
-#if NETCOREAPP3_1
         private readonly SecuritySchemeType _securitySchemeType;
 #endif
+        private readonly string _securitySchemeName;
 
+#if NETCOREAPP3_1
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationOperationFilter"/> class.
         /// </summary>
         /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"sharedaccesskey"</c>.</param>
-#if NETCOREAPP3_1
         /// <param name="securitySchemeType">The type of the security scheme. Default value is <c>ApiKey</c>.</param>
-#endif
         public SharedAccessKeyAuthenticationOperationFilter(
-#if NETCOREAPP3_1
             string securitySchemeName = DefaultSecuritySchemeName,
-            SecuritySchemeType securitySchemeType = SecuritySchemeType.ApiKey
-#else
-            string securitySchemeName = DefaultSecuritySchemeName
-#endif
-        )
+            SecuritySchemeType securitySchemeType = SecuritySchemeType.ApiKey)
         {
             Guard.NotNullOrWhitespace(securitySchemeName, nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
-
-            _securitySchemeName = securitySchemeName;
-
-#if NETCOREAPP3_1
             Guard.For<ArgumentException>(
                 () => !Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType), 
                 "Requires a security scheme type for the Shared Access Key authentication that is within the bounds of the enumeration");
 
+            _securitySchemeName = securitySchemeName;
             _securitySchemeType = securitySchemeType;
-#endif
         }
+#else
+        /// <summary>
+        /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationOperationFilter"/> class.
+        /// </summary>
+        /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"sharedaccesskey"</c>.</param>
+        public SharedAccessKeyAuthenticationOperationFilter(string securitySchemeName)
+        {
+            Guard.NotNullOrWhitespace(securitySchemeName, nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
+
+            _securitySchemeName = securitySchemeName;
+        } 
+#endif
 
         /// <summary>
         /// Applies the OperationFilter to the API <paramref name="operation"/>.
