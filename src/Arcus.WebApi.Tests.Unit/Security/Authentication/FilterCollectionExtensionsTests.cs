@@ -15,7 +15,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                filters.AddSharedAccessAuthenticationOnHeader(headerName, "MySecret"));
+                filters.AddSharedAccessKeyAuthenticationOnHeader(headerName, "MySecret"));
         }
         
         [Theory]
@@ -27,7 +27,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                filters.AddSharedAccessAuthenticationOnHeader(headerName, "MySecret", options => options.EmitSecurityEvents = true));
+                filters.AddSharedAccessKeyAuthenticationOnHeader(headerName, "MySecret", options => options.EmitSecurityEvents = true));
         }
         
         [Theory]
@@ -39,7 +39,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                filters.AddSharedAccessAuthenticationOnHeader("x-api-key", secretName));
+                filters.AddSharedAccessKeyAuthenticationOnHeader("x-api-key", secretName));
         }
         
         [Theory]
@@ -51,7 +51,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                filters.AddSharedAccessAuthenticationOnHeader("x-api-key", secretName, options => options.EmitSecurityEvents = true));
+                filters.AddSharedAccessKeyAuthenticationOnHeader("x-api-key", secretName, options => options.EmitSecurityEvents = true));
         }
         
         [Theory]
@@ -63,7 +63,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                filters.AddSharedAccessAuthenticationOnHeader(parameterName, "MySecret"));
+                filters.AddSharedAccessKeyAuthenticationOnHeader(parameterName, "MySecret"));
         }
         
         [Theory]
