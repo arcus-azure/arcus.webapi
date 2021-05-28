@@ -13,6 +13,7 @@ using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -58,7 +59,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         services.AddSecretStore(stores => stores.AddInMemory(subjectKey, subjectValue))
                                 .AddSingleton(certificateValidator)
                                 .AddClientCertificate(clientCertificate)
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -99,7 +100,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         services.AddSecretStore(stores => stores.AddInMemory(thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise))
                                 .AddSingleton(certificateValidator)
                                 .AddClientCertificate(clientCertificate)
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
                 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -149,7 +150,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                     [subjectKey] = "CN=known-subject",
                                     [issuerKey] = "CN=known-issuername"
                                 }))
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
                 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -199,7 +200,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
                         services.AddSingleton(certificateValidator)
                                 .AddClientCertificate(clientCertificate)
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -249,7 +250,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=known-issuername"))
                                 .AddClientCertificate(clientCertificate)
                                 .AddSingleton(certificateValidator)
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -281,7 +282,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 .Build());
 
                     services.AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                            .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                 });
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -322,7 +323,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         
                         services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=known-issuername"))
                                 .AddSingleton(certificateValidator)
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
                 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -364,7 +365,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
                                 .AddClientCertificate(clientCertificate)
                                 .AddSingleton(certificateValidator)
-                                .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -398,7 +399,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
                     services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
                             .AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter()));
+                            .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
                 })
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -438,10 +439,12 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 .WithIssuer(X509ValidationLocation.SecretProvider, issuerKey)
                                 .Build());
 
-                    var authOptions = new CertificateAuthenticationOptions {EmitSecurityEvents = emitsSecurityEvents};
                     services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
                             .AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.Add(new CertificateAuthenticationFilter(authOptions)));
+                            .AddMvc(opt => opt.Filters.AddCertificateAuthentication(authOptions =>
+                            {
+                                authOptions.EmitSecurityEvents = emitsSecurityEvents;
+                            }));
                 })
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 

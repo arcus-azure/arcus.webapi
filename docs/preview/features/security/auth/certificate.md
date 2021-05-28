@@ -69,17 +69,15 @@ public class Startup
         services.AddMvc(mvcOptions => 
         {
             // Adds certificate authentication to the request pipeline.
-            mvcOptions.Filters.Add(new CertificateAuthenticationFilter());
+            mvcOptions.Filters.AddCertificateAuthentication());
 
             // Additional consumer-configurable options to change the behavior of the authentication filter.
-            var authOptions = new CertificateAuthenticationOptions
+            mvcOptions.Filters.AddCertificateAuthentication(configureOptions: options =>
             {
                 // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
                 // (default: `false`)
-                EmitSecurityEvents = true;
-            };
-
-            mvcOptions.Filters.Add(new CertificateAuthenticationFilter(authOptions));
+                options.EmitSecurityEvents = true;
+            }));
         });
     }
 }

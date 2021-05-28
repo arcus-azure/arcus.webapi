@@ -49,33 +49,24 @@ public class Startup
 
         services.AddMvc(options => 
         {
-            // Adds shared access key authentication to the request pipeline where both the request header as the query string parameter will be verified 
-            // if they contain the expected secret value, retrievable with the given secret name.
-            options.Filters.Add(
-                new SharedAccessKeyAuthenticationFilter(
-                    headerName: "http-request-header-name", 
-                    queryParameterName: "api-key", 
-                    secretName: "shared-access-key-name")));
+            // Adds shared access key authentication to the request pipeline where the request query string parameter will be verified 
+            // if the query parameter value contain the expected secret value, retrievable with the given secret name.
+            options.Filters.AddSharedAccessAuthenticationOnQuery(
+                queryParameterName: "api-key", 
+                secretName: "shared-access-key-name")));
 
             // Adds shared access key authentication to the request pipeline where only the request header will be verified if it contains the expected secret value.
-            options.Filters.Add(
-                new SharedAccessAuthenticationFilter(
-                    headerName: "http-request-header-name",
-                    queryParameterName: null,
-                    secretName: "shared-access-key-name"));
+            options.Filters.AddSharedAccessAuthenticationOnHeader(
+                headerName: "http-request-header-name",
+                secretName: "shared-access-key-name"));
 
             // Additional consumer-configurable options to change the behavior of the authentication filter.
-            var options = new SharedAccessKeyAuthenticationOptions
+            options.Filters.AddSharedAccessAuthenticationOnHeader(..., configureOptions: options =>
             {
                 // Adds shared access key authentication with emitting security events during the authentication of the request.
                 // (default: `false`)
-                EmitSecurityEvents = true
-            };
-
-            options.Filters.Add(
-                new SharedAccessKeyAuthenticationFilter(
-                    ...,
-                    options: options));
+                options.EmitSecurityEvents = true
+            }));
         }
     }
 }
@@ -140,7 +131,7 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
         
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+        services.AddMvc(options => options.Filters.AddSharedAccessKeyAuthenticationOnHeader(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
     }
 }
 ```
@@ -158,7 +149,7 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
+        services.AddMvc(options => options.Filters.AddSharedAccessKeyAuthenticationOnQuery(queryParameterName: "api-key", secretName: "shared-access-key-name")));
     }
 }
 ```
@@ -176,7 +167,11 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+        services.AddMvc(options => options.Filters.Add(
+            new SharedAccessKeyAuthenticationFilter(
+                headerName: "http-request-header-name", 
+                queryParameterName: "api-key", 
+                secretName: "shared-access-key-name")));
     }
 }
 ```

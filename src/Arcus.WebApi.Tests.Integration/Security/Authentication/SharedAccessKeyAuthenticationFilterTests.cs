@@ -10,6 +10,7 @@ using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
+using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -44,7 +45,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName))));
+                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -67,7 +68,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => 
                     services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
-                            .AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName))))
+                            .AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName)))
                 .ConfigureHost(host => host.UseSerilog((context, config) => 
                     config.WriteTo.Sink(spySink)));
 
@@ -100,9 +101,11 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
-                    var authOptions = new SharedAccessKeyAuthenticationOptions {EmitSecurityEvents = emitsSecurityEvents};
                     services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
-                            .AddMvc(opt => opt.Filters.Add(new SharedAccessKeyAuthenticationFilter(HeaderName, queryParameterName: null, SecretName, authOptions)));
+                            .AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName, authOptions =>
+                            {
+                                authOptions.EmitSecurityEvents = emitsSecurityEvents;
+                            }));
                 })
                 .ConfigureHost(host => host.UseSerilog((context, config) => 
                     config.WriteTo.Sink(spySink)));
