@@ -29,7 +29,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
 
             return AddSharedAccessKeyAuthenticationOnHeader(filters, headerName, secretName, configureOptions: null);
         }
-        
+
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="filters"/> that authenticates the incoming HTTP request on its header.
         /// </summary>
@@ -57,7 +57,6 @@ namespace Microsoft.AspNetCore.Mvc.Filters
             filters.Add(new SharedAccessKeyAuthenticationFilter(headerName, queryParameterName: null, secretName, options));
             return filters;
         }
-
 
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="filters"/> that authenticates the incoming HTTP request on its query.
