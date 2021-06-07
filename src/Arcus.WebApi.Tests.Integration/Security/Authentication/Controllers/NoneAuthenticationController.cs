@@ -1,19 +1,17 @@
-﻿using System.Net.Http;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers
 {
     [ApiController]
     public class NoneAuthenticationController : ControllerBase
     {
-        public const string Route = "autzh/none";
+        public const string GetRoute = "autzh/none";
 
         [HttpGet]
-        [Route(Route)]
-        public Task<IActionResult> NoneControllerAuthentication(HttpRequestMessage message)
+        [Route(GetRoute)]
+        public IActionResult NoneControllerAuthentication()
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
         }
     }
 }

@@ -42,34 +42,35 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollection services)
     {
-        // Default configuration:
-        // By default, the JWT authorization filter will use the Microsoft 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration' OpenID endpoint to request the configuration.
-        services.AddMvc(mvcOptions => mvcOptions.Filters.AddJwtTokenAuthorization());
-
-        // Default configuration with validation parameters:
-        // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters to manipulate how the JWT token should be validated.
-        services.AddMvc(mvcOptions => 
+        services.AddMvc(mvcOptions =>
         {
-            var parameters = new TokenValidationParameters();
-            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters));
-        });
+            // Default configuration:
+            // By default, the JWT authorization filter will use the Microsoft 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration' OpenID endpoint to request the configuration.
+            mvcOptions.Filters.AddJwtTokenAuthorization();
 
-        // Default configuration with application ID:
-        // One can use the Microsoft OpenID endpoint and provide just the application ID as input for the validation parameters. 
-        // By default will only the issuer singing keys and lifetime be validated.
-        services.AddMvc(mvcOptions => 
-        {
-            string applicationId = "e98s9-sadf8981-asd8f79-ahtew8";
-            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(applicationId));
-        });
+            mvcOptions.Filters.AddJwtTokenAuthorization(options =>
+            {
+                // Default configuration with validation parameters:
+                // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters to manipulate how the JWT token should be validated.
+                var parameters = new TokenValidationParameters();
+                options.JwtTokenReader = new JwtTokenReader(parameters);
 
-        // Custom OpenID endpoint:
-        // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters how the JWT token should be validated.
-        services.AddMvc(mvcOptions => 
-        {
-            var parameters = new TokenValidationParameters();
-            string endpoint = "https://localhost:5000/.well-known/openid-configuration";
-            mvcOptions.Filters.AddJwtTokenAuthorization(options => options.JwtTokenReader = new JwtTokenReader(parameters, endpoint));
+                // Default configuration with application ID:
+                // One can use the Microsoft OpenID endpoint and provide just the application ID as input for the validation parameters. 
+                // By default will only the issuer singing keys and lifetime be validated.
+                string applicationId = "e98s9-sadf8981-asd8f79-ahtew8";
+                options.JwtTokenReader = new JwtTokenReader(applicationId);
+
+                // Custom OpenID endpoint:
+                // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters how the JWT token should be validated.
+                var parameters = new TokenValidationParameters();
+                string endpoint = "https://localhost:5000/.well-known/openid-configuration";
+                options.JwtTokenReader = new JwtTokenReader(parameters, endpoint);
+
+                // Emitting security events:
+                // One can opt-in for security events during the authorization of the request (default: `false`).
+                options.EmitSecurityEvents = true;
+            });
         });
     }
 }

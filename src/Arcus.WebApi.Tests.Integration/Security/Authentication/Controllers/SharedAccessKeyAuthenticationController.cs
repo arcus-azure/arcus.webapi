@@ -10,30 +10,43 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers
     {
         public const string AuthorizedGetRoute = "/authz/shared-access-key",
                             AuthorizedGetRouteHeader = "/authz/shared-access-key-header",
-                            AuthorizedGetRouteQueryString = "/authz/shared-access-key-querystring";
+                            AuthorizedGetRouteQueryString = "/authz/shared-access-key-querystring",
+                            AuthorizedGetRouteEmitSecurityEvents = "/authz/shared-access-key/emit-security-events";
+        
+        public const string HeaderName = "x-shared-access-key",
+                            ParameterName = "api-key",
+                            SecretName = "custom-access-key-name";
 
         [HttpGet]
         [Route(AuthorizedGetRoute)]
-        [SharedAccessKeyAuthentication(headerName: "x-shared-access-key", queryParameterName: "api-key", secretName: "custom-access-key-name")]
-        public Task<IActionResult> TestHardCodedConfiguredSharedAccessKey()
+        [SharedAccessKeyAuthentication(headerName: HeaderName, queryParameterName: ParameterName, secretName: SecretName)]
+        public IActionResult TestHardCodedConfiguredSharedAccessKey()
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
         }
 
         [HttpGet]
         [Route(AuthorizedGetRouteHeader)]
-        [SharedAccessKeyAuthentication(headerName: "x-shared-access-key", secretName: "custom-access-key-name")]
-        public Task<IActionResult> TestHardCodedConfiguredHeaderSharedAccessKey(HttpRequestMessage message)
+        [SharedAccessKeyAuthentication(headerName: HeaderName, secretName: SecretName)]
+        public IActionResult TestHardCodedConfiguredHeaderSharedAccessKey()
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
         }
 
         [HttpGet]
         [Route(AuthorizedGetRouteQueryString)]
-        [SharedAccessKeyAuthentication(queryParameterName: "api-key", secretName: "custom-access-key-name")]
-        public Task<IActionResult> TestHardCodedConfiguredQueryStringSharedAccessKey(HttpRequestMessage message)
+        [SharedAccessKeyAuthentication(queryParameterName: ParameterName, secretName: SecretName)]
+        public IActionResult TestHardCodedConfiguredQueryStringSharedAccessKey()
         {
-            return Task.FromResult<IActionResult>(Ok());
+            return Ok();
+        }
+
+        [HttpGet]
+        [Route(AuthorizedGetRouteEmitSecurityEvents)]
+        [SharedAccessKeyAuthentication(headerName: HeaderName, secretName: SecretName, EmitSecurityEvents = true)]
+        public IActionResult TestEmitSecurityEvents()
+        {
+            return Ok();
         }
     }
 }

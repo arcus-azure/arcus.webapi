@@ -79,7 +79,7 @@ namespace Arcus.WebApi.Security.Authorization
             }
         }
 
-        private static async Task ValidateJwtTokenAsync(IJwtTokenReader reader, AuthorizationFilterContext context, StringValues jwtString, ILogger logger)
+        private async Task ValidateJwtTokenAsync(IJwtTokenReader reader, AuthorizationFilterContext context, StringValues jwtString, ILogger logger)
         {
             if (String.IsNullOrWhiteSpace(jwtString))
             {
@@ -109,8 +109,13 @@ namespace Arcus.WebApi.Security.Authorization
             }
         }
 
-        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
+        private void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
+            if (!_authorizationOptions.EmitSecurityEvents)
+            {
+                return;
+            }
+            
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",

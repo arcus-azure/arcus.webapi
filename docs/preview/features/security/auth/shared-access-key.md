@@ -46,23 +46,27 @@ public class Startup
     {
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
-        
+
         services.AddMvc(options => 
         {
-            // Adds shared access key authentication to the request pipeline where both the request header as the query string parameter will be verified 
-            // if they contain the expected secret value, retrievable with the given secret name.
-            options.Filters.Add(
-                new SharedAccessKeyAuthenticationFilter(
-                    headerName: "http-request-header-name", 
-                    queryParameterName: "api-key", 
-                    secretName: "shared-access-key-name")));
+            // Adds shared access key authentication to the request pipeline where the request query string parameter will be verified 
+            // if the query parameter value contain the expected secret value, retrievable with the given secret name.
+            options.Filters.AddSharedAccessAuthenticationOnQuery(
+                queryParameterName: "api-key", 
+                secretName: "shared-access-key-name")));
 
             // Adds shared access key authentication to the request pipeline where only the request header will be verified if it contains the expected secret value.
-            options.Filters.Add(
-                new SharedAccessAuthenticationFilter(
-                    headerName: "http-request-header-name",
-                    queryParameterName: null,
-                    secretName: "shared-access-key-name"));
+            options.Filters.AddSharedAccessAuthenticationOnHeader(
+                headerName: "http-request-header-name",
+                secretName: "shared-access-key-name"));
+
+            // Additional consumer-configurable options to change the behavior of the authentication filter.
+            options.Filters.AddSharedAccessAuthenticationOnHeader(..., configureOptions: options =>
+            {
+                // Adds shared access key authentication with emitting security events during the authentication of the request.
+                // (default: `false`)
+                options.EmitSecurityEvents = true
+            }));
         }
     }
 }
@@ -91,15 +95,25 @@ public class MyApiController : ControllerBase
 {
     [HttpGet]
     [Route("authz/shared-access-key")]
-    public Task<IActionResult> AuthorizedGet()
+    public IActionResult AuthorizedGet()
     {
-        return Task.FromResult<IActionResult>(Ok());
+        return Ok();
     }
 }
 ```
 
 For this setup to work, an Arcus secret store is required as the provided secret name (in this case `"shared-access-key-name"`) will be looked up.
 See [our offical documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
+
+#### Configuration
+
+Some additional configuration options are available on the attribute.
+
+```csharp
+// Adds shared access key authentication with emitting of security events during the authentication of the request.
+// (default: `false`)
+[SharedAccessKeyAuthentication(..., EmitSecurityEvents: true)]
+```
 
 ## Behavior in validating shared access key parameter
 The package supports different scenarios for specifying the shared access key parameter and is supported for global or per controller/operation use cases.
@@ -117,7 +131,7 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
         
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
+        services.AddMvc(options => options.Filters.AddSharedAccessKeyAuthenticationOnHeader(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
     }
 }
 ```
@@ -135,7 +149,7 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(queryParameterName: "api-key", secretName: "shared-access-key-name")));
+        services.AddMvc(options => options.Filters.AddSharedAccessKeyAuthenticationOnQuery(queryParameterName: "api-key", secretName: "shared-access-key-name")));
     }
 }
 ```
@@ -153,7 +167,11 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
-        services.AddMvc(options => options.Filters.Add(new SharedAccessKeyAuthenticationFilter(headerName: "http-request-header-name", queryParameterName: "api-key", secretName: "shared-access-key-name")));
+        services.AddMvc(options => options.Filters.Add(
+            new SharedAccessKeyAuthenticationFilter(
+                headerName: "http-request-header-name", 
+                queryParameterName: "api-key", 
+                secretName: "shared-access-key-name")));
     }
 }
 ```

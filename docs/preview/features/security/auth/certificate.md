@@ -69,7 +69,15 @@ public class Startup
         services.AddMvc(mvcOptions => 
         {
             // Adds certificate authentication to the request pipeline.
-            mvcOptions.Filters.Add(new CertificateAuthenticationFilter());
+            mvcOptions.Filters.AddCertificateAuthentication());
+
+            // Additional consumer-configurable options to change the behavior of the authentication filter.
+            mvcOptions.Filters.AddCertificateAuthentication(configureOptions: options =>
+            {
+                // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
+                // (default: `false`)
+                options.EmitSecurityEvents = true;
+            }));
         });
     }
 }
@@ -102,13 +110,13 @@ public class Startup
         // See https://security.arcus-azure.net/features/secret-store/ for more information.
         services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 
-        var certificateAuthenticationConfig = 
-            new CertificateAuthenticationConfigBuilder()
-                .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-                .Build();
+        var certificateValidator = 
+            new CertificateAuthenticationValidator(
+                new CertificateAuthenticationConfigBuilder()
+                    .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+                    .Build());
 
-        services.AddScoped<CertificateAuthenticationValidator>(
-            serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
+        services.AddSingleton(certificateValidator);
     
         services.AddMvc();
     }
@@ -126,11 +134,21 @@ public class MyApiController : ControllerBase
 {
     [HttpGet]
     [Route("authz/certificate")]
-    public Task<IActionResult> AuthorizedGet()
+    public IActionResult AuthorizedGet()
     {
-        return Task.FromResult<IActionResult>(Ok());
+        return Ok();
     }
 }
+```
+
+#### Configuration
+
+Some additional configuration options are available on the attribute.
+
+```csharp
+// Adds certificate authentication to the request pipeline with emitting of security events during the authentication of the request.
+// (default: `false`)
+[CertificateAuthentication(EmitSecurityEvents = true)]
 ```
 
 ## Bypassing authentication
