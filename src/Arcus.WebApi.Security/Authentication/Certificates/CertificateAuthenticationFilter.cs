@@ -28,6 +28,26 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         private const string Base64Pattern = @"^[a-zA-Z0-9\+/]*={0,3}$";
         private static readonly Regex Base64Regex = new Regex(Base64Pattern, RegexOptions.Compiled);
 
+        private readonly CertificateAuthenticationOptions _options;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
+        /// </summary>
+        public CertificateAuthenticationFilter() : this(new CertificateAuthenticationOptions())
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
+        /// </summary>
+        /// <param name="options">The set of additional consumer-configurable options to change the behavior of the certificate authentication.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
+        public CertificateAuthenticationFilter(CertificateAuthenticationOptions options)
+        {
+            Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
+            _options = options;
+        }
+
         /// <summary>
         /// Called early in the filter pipeline to confirm request is authorized.
         /// </summary>
@@ -117,8 +137,13 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             return false;
         }
 
-        private static void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
+        private void LogSecurityEvent(ILogger logger, string description, HttpStatusCode? responseStatusCode = null)
         {
+            if (!_options.EmitSecurityEvents)
+            {
+                return;
+            }
+            
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Net;
 using GuardNet;
 
 namespace Arcus.WebApi.Logging
@@ -55,10 +56,25 @@ namespace Arcus.WebApi.Logging
                 _responseBodyBufferSize = value;
             }
         }
+        
+        /// <summary>
+        /// Gets or sets the allowed HTTP response status codes that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
+        /// </summary>
+        public ICollection<HttpStatusCode> TrackedStatusCodes { get; set; } = new Collection<HttpStatusCode>();
 
+        /// <summary>
+        /// Gets or sets allowed HTTP response status code ranges that should be tracked. If not defined, all HTTP status codes are considered included and will all be tracked.
+        /// </summary>
+        public ICollection<StatusCodeRange> TrackedStatusCodeRanges { get; set; } = new Collection<StatusCodeRange>();
+        
         /// <summary>
         /// Gets or sets the HTTP request headers names that will be omitted during request tracking.
         /// </summary>
-        public ICollection<string> OmittedHeaderNames { get; set; } = new Collection<string> { "Authentication", "X-Api-Key", "X-ARR-ClientCert" };
+        public ICollection<string> OmittedHeaderNames { get; set; } = new Collection<string> { "Authentication", "Authorization", "X-Api-Key", "X-ARR-ClientCert", "Ocp-Apim-Subscription-Key" };
+
+        /// <summary>
+        /// Gets or sets the HTTP endpoint routes that will be omitted during request tracking.
+        /// </summary>
+        public ICollection<string> OmittedRoutes { get; set; } = new Collection<string>();
     }
 }

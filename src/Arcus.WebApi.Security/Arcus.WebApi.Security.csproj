@@ -1,19 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-      <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
-      <Authors>Arcus</Authors>
-      <Company>Arcus</Company>
-      <RepositoryType>Git</RepositoryType>
-      <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
-      <Description>Provides capabilities to easily build Web APIs running in Azure.</Description>
-      <Copyright>Copyright (c) Arcus</Copyright>
-      <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
-      <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
-      <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
-      <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
-      <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-      <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TargetFrameworks>netstandard2.0;netcoreapp3.1</TargetFrameworks>
+    <Authors>Arcus</Authors>
+    <Company>Arcus</Company>
+    <RepositoryType>Git</RepositoryType>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API</PackageTags>
+    <Description>Provides capabilities to easily build Web APIs running in Azure.</Description>
+    <Copyright>Copyright (c) Arcus</Copyright>
+    <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
+    <PackageProjectUrl>https://github.com/arcus-azure/arcus.webapi</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>NU5125;NU5048</NoWarn>
   </PropertyGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'netcoreapp3.1'">
@@ -25,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.Security.Providers.AzureKeyVault" Version="1.4.0" />
+    <PackageReference Include="Arcus.Security.Providers.AzureKeyVault" Version="[1.4.0,2.0.0)" />
     <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="IdentityModel" Version="4.4.0" />
     <PackageReference Include="Microsoft.IdentityModel.Protocols.OpenIdConnect" Version="6.8.0" />

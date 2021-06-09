@@ -6,7 +6,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
-using Arcus.WebApi.Tests.Unit.Security.Extension;
 using IdentityModel;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Logging;

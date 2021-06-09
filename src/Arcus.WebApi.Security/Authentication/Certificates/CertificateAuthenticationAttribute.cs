@@ -12,9 +12,24 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     [AttributeUsage(AttributeTargets.Method | AttributeTargets.Class)]
     public class CertificateAuthenticationAttribute : TypeFilterAttribute
     {
+        private readonly CertificateAuthenticationOptions _options;
+        
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationAttribute"/> class.
         /// </summary>
-        public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter)) { }
+        public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter))
+        {
+            _options = new CertificateAuthenticationOptions();
+            Arguments = new object[] { _options };
+        }
+
+        /// <summary>
+        /// Gets or sets the flag indicating whether or not the certificate authentication should emit security events during the authentication process of the request.
+        /// </summary>
+        public bool EmitSecurityEvents
+        {
+            get => _options.EmitSecurityEvents;
+            set => _options.EmitSecurityEvents = value;
+        }
     }
 }

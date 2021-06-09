@@ -1,13 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net;
 using System.Threading.Tasks;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -55,45 +57,110 @@ namespace Arcus.WebApi.Logging
             Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
-            var endpoint = httpContext.Features.Get<IEndpointFeature>();
-            if (endpoint is null)
+            if (IsRequestPathOmitted(httpContext.Request))
             {
-                _logger.LogTrace(
-                    "Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware",
-                    nameof(SkipRequestTrackingAttribute));
-            }
-            
-            var skipRequestTrackingAttribute = endpoint?.Endpoint.Metadata.GetMetadata<SkipRequestTrackingAttribute>();
-            if (skipRequestTrackingAttribute != null)
-            {
-                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(SkipRequestTrackingAttribute));
                 await _next(httpContext);
             }
             else
             {
-                await TrackRequest(httpContext);
+                var endpoint = httpContext.Features.Get<IEndpointFeature>();
+                if (endpoint?.Endpoint?.Metadata is null)
+                {
+                    _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{Attribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware; or the route was not found", nameof(ExcludeRequestTrackingAttribute));
+                    await TrackRequest(httpContext, Exclude.None, Array.Empty<StatusCodeRange>());
+                }
+                else if (endpoint.Endpoint.Metadata.GetMetadata<ExcludeRequestTrackingAttribute>() != null)
+                {
+                    _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to the '{Attribute}' attribute on the endpoint", endpoint.Endpoint.DisplayName, nameof(ExcludeRequestTrackingAttribute));
+                    await _next(httpContext);
+                }
+                else
+                {
+                    RequestTrackingAttribute[] attributes = DetermineAppliedAttributes(endpoint);
+                    Exclude filter = DetermineExclusionFilter(attributes);
+                    StatusCodeRange[] trackedStatusCodeRanges = DetermineTrackedStatusCodeRanges(attributes);
+                
+                    await TrackRequest(httpContext, filter, trackedStatusCodeRanges);
+                }
             }
         }
 
-        private async Task TrackRequest(HttpContext httpContext)
+        private bool IsRequestPathOmitted(HttpRequest request)
+        {
+            IEnumerable<string> allOmittedRoutes = _options.OmittedRoutes ?? new Collection<string>();
+            string[] matchedOmittedRoutes = 
+                allOmittedRoutes
+                    .Select(omittedRoute => omittedRoute?.StartsWith("/") == true ? omittedRoute : "/" + omittedRoute)
+                    .Where(omittedRoute => request.Path.StartsWithSegments(omittedRoute, StringComparison.OrdinalIgnoreCase))
+                    .ToArray();
+
+            if (matchedOmittedRoutes.Length > 0)
+            {
+                string endpoint = request.GetDisplayUrl();
+                string formattedOmittedRoutes = String.Join(", ", matchedOmittedRoutes);
+                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to an omitted route(s) '{OmittedRoutes}' specified in the options", endpoint, formattedOmittedRoutes);
+                
+                return true;
+            }
+            
+            return false;
+        }
+
+        private RequestTrackingAttribute[] DetermineAppliedAttributes(IEndpointFeature endpoint)
+        {
+            if (endpoint?.Endpoint?.Metadata is null)
+            {
+                _logger.LogTrace("Cannot determine whether or not the endpoint contains the '{OptionsAttribute}' because the endpoint tracking (`IApplicationBuilder.UseRouting()` or `.UseEndpointRouting()`) was not activated before the request tracking middleware; or the route was not found", nameof(RequestTrackingAttribute));
+                return Array.Empty<RequestTrackingAttribute>();
+            }
+            
+            RequestTrackingAttribute[] attributes = endpoint.Endpoint.Metadata.OfType<RequestTrackingAttribute>().ToArray();
+            return attributes;
+        }
+
+        private Exclude DetermineExclusionFilter(RequestTrackingAttribute[] attributes)
+        {
+            if (attributes.Length <= 0)
+            {
+                _logger.LogTrace("No '{Attribute}' found on endpoint, continue with request tracking including both request and response bodies", nameof(ExcludeRequestTrackingAttribute));
+                return Exclude.None;
+            }
+            
+            Exclude filter = attributes.Aggregate(Exclude.None, (acc, item) => acc | item.Filter);
+            return filter;
+        }
+
+        private StatusCodeRange[] DetermineTrackedStatusCodeRanges(RequestTrackingAttribute[] attributes)
+        {
+            if (attributes.Length <= 0)
+            {
+                _logger.LogTrace("No '{Attribute}' found on endpoint, continue with request tracking including all HTTP status codes", nameof(ExcludeRequestTrackingAttribute));
+                return Array.Empty<StatusCodeRange>();
+            }
+            
+            StatusCodeRange[] statusCodes = 
+                attributes.Where(attribute => attribute.StatusCodeRange != null)
+                          .Select(attribute => attribute.StatusCodeRange)
+                          .ToArray();
+            
+            return statusCodes;
+        }
+
+        private async Task TrackRequest(HttpContext httpContext, Exclude attributeExcludeFilter, StatusCodeRange[] attributeTrackedStatusCodes)
         {
             var stopwatch = Stopwatch.StartNew();
-
-            string requestBody = null;
-            if (_options.IncludeRequestBody)
-            {
-                httpContext.Request.EnableBuffering();
-                requestBody = await GetRequestBodyAsync(httpContext);
-            }
+            bool includeRequestBody = ShouldIncludeRequestBody(attributeExcludeFilter);
+            bool includeResponseBody = ShouldIncludeResponseBody(attributeExcludeFilter);
+            
+            string requestBody = await GetPotentialRequestBodyAsync(httpContext, includeRequestBody);
 
             // Response body doesn't support (built-in) buffering and is not seekable, so we're storing temporary the response stream in our own seekable stream,
             // which we later (*) replace back with the original response stream.
             // If we don't store it in our own seekable stream first, we would read the response stream for tracking and could not use the same stream to respond to the request.
-            
             Stream originalResponseBodyStream = null;
-            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer())
+            using (Stream temporaryResponseBodyStream = DetermineResponseBodyBuffer(includeResponseBody))
             {
-                if (_options.IncludeResponseBody)
+                if (includeResponseBody)
                 {
                     originalResponseBodyStream = httpContext.Response.Body;
                     httpContext.Response.Body = temporaryResponseBodyStream;
@@ -105,12 +172,15 @@ namespace Arcus.WebApi.Logging
                 }
                 finally
                 {
-                    string responseBody = await GetResponseBodyAsync(httpContext);
+                    if (AllowedToTrackStatusCode(httpContext, attributeTrackedStatusCodes))
+                    {
+                        string responseBody = await GetPotentialResponseBodyAsync(httpContext, includeResponseBody);
 
-                    stopwatch.Stop();
-                    LogRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed);
+                        stopwatch.Stop();
+                        LogRequest(requestBody, responseBody, httpContext, stopwatch.Elapsed); 
+                    }
 
-                    if (_options.IncludeResponseBody)
+                    if (includeResponseBody)
                     {
                         // (*) Copy back the seekable/temporary response body stream to the original response body stream,
                         // for the remaining middleware components that comes after this one.
@@ -120,9 +190,31 @@ namespace Arcus.WebApi.Logging
             }
         }
 
-        private Stream DetermineResponseBodyBuffer()
+        private bool ShouldIncludeRequestBody(Exclude attributeExcludeFilter)
         {
-            if (_options.IncludeResponseBody)
+            bool includeRequestBody = _options.IncludeRequestBody && attributeExcludeFilter.HasFlag(Exclude.RequestBody) == false;
+            if (includeRequestBody)
+            {
+                _logger.LogTrace("Request tracking will include the request's body as the options '{OptionName}' = '{OptionValue}' and the '{Attribute}' doesn't exclude the request body", nameof(_options.IncludeRequestBody), _options.IncludeRequestBody, nameof(RequestTrackingAttribute));   
+            }
+            
+            return includeRequestBody;
+        }
+
+        private bool ShouldIncludeResponseBody(Exclude attributeExcludeFilter)
+        {
+            bool includeResponseBody = _options.IncludeResponseBody && attributeExcludeFilter.HasFlag(Exclude.ResponseBody) == false;
+            if (includeResponseBody)
+            {
+                _logger.LogTrace("Request tracking will include the response's body as the options '{OptionName}' = '{OptionValue}' and the '{Attribute}' doesn't exclude the response body", nameof(_options.IncludeResponseBody), _options.IncludeResponseBody, nameof(RequestTrackingAttribute));   
+            }
+
+            return includeResponseBody;
+        }
+
+        private static Stream DetermineResponseBodyBuffer(bool includeResponseBody)
+        {
+            if (includeResponseBody)
             {
                 var responseBodyBuffer = new MemoryStream();
                 return responseBodyBuffer;
@@ -177,10 +269,12 @@ namespace Arcus.WebApi.Logging
             return new Dictionary<string, StringValues>();
         }
 
-        private async Task<string> GetRequestBodyAsync(HttpContext httpContext)
+        private async Task<string> GetPotentialRequestBodyAsync(HttpContext httpContext, bool includeRequestBody)
         {
-            if (_options.IncludeRequestBody)
+            if (includeRequestBody)
             {
+                httpContext.Request.EnableBuffering();
+                
                 string sanitizedBody = await GetBodyAsync(httpContext.Request.Body, _options.RequestBodyBufferSize, "Request");
                 return sanitizedBody;
             }
@@ -188,15 +282,48 @@ namespace Arcus.WebApi.Logging
             return null;
         }
 
-        private async Task<string> GetResponseBodyAsync(HttpContext httpContext)
+        private async Task<string> GetPotentialResponseBodyAsync(HttpContext httpContext, bool includeResponseBody)
         {
-            if (_options.IncludeResponseBody)
+            if (includeResponseBody)
             {
                 string sanitizedBody = await GetBodyAsync(httpContext.Response.Body, _options.ResponseBodyBufferSize, "Response");
                 return sanitizedBody;
             }
-
+            
             return null;
+        }
+
+        private bool AllowedToTrackStatusCode(HttpContext httpContext, IEnumerable<StatusCodeRange> attributeTrackedStatusCodes)
+        {
+            IEnumerable<HttpStatusCode> optionsTrackedStatusCodes = 
+                _options.TrackedStatusCodes ?? Enumerable.Empty<HttpStatusCode>();
+
+            IEnumerable<StatusCodeRange> optionsTrackedStatusCodeRanges =
+                _options.TrackedStatusCodeRanges ?? Enumerable.Empty<StatusCodeRange>();
+            
+            StatusCodeRange[] combinedStatusCodeRanges = 
+                optionsTrackedStatusCodes
+                    .Select(code => new StatusCodeRange((int) code))
+                    .Concat(optionsTrackedStatusCodeRanges)
+                    .Concat(attributeTrackedStatusCodes)
+                    .Where(range => range != null)
+                    .Distinct().ToArray();
+
+            bool allowedToTrackStatusCode = 
+                combinedStatusCodeRanges.Length <= 0
+                || combinedStatusCodeRanges.Any(range => range.IsWithinRange(httpContext.Response.StatusCode));
+
+            string formattedStatusCodes = String.Join(", ", combinedStatusCodeRanges.Select(range => range.ToString()));
+            if (allowedToTrackStatusCode)
+            {
+                _logger.LogTrace("Request tracking for this endpoint is allowed as the response status code '{ResponseStatusCode}' is within  the allowed tracked status code ranges '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
+            }
+            else
+            {
+                _logger.LogTrace("Request tracking for this endpoint is disallowed as the response status code '{ResponseStatusCode}' is not within the allowed tracked status code ranges '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
+            }
+            
+            return allowedToTrackStatusCode;
         }
 
         private async Task<string> GetBodyAsync(Stream body, int? maxLength, string target)
@@ -219,10 +346,10 @@ namespace Arcus.WebApi.Logging
         /// <param name="requestHeaders">The headers of the current HTTP request.</param>
         protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
         {
-            return requestHeaders.Where(header => _options.OmittedHeaderNames.Contains(header.Key) == false);
+            return requestHeaders.Where(header => _options.OmittedHeaderNames?.Contains(header.Key) == false);
         }
 
-        private async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
+        private static async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
         {
             if (!stream.CanRead)
             {

@@ -10,7 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// <summary>
     /// Extensions on the <see cref="FilterCollection"/> related to authorization.
     /// </summary>
-    public static class FilterCollectionExtensions
+    public static partial class FilterCollectionExtensions
     {
         /// <summary>
         /// Adds JWT token authorization to the MVC <see cref="FilterCollection"/>.
