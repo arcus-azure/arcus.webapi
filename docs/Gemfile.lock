@@ -269,8 +269,8 @@ PLATFORMS
   x64-mingw32
 
 DEPENDENCIES
-  github-pages (>= 207)
+  github-pages (>= 214)
   nokogiri (>= 1.11.4)
 
 BUNDLED WITH
-   1.17.3
+   2.2.9
