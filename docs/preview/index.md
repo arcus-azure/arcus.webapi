@@ -32,6 +32,7 @@ For more granular packages we recommend reading the documentation.
 - **Logging**
     - [Logging unhandled exceptions](features/logging#logging-unhandled-exceptions)
     - [Logging incoming requests](features/logging#logging-incoming-requests)
+    - [Tracking application version](features/logging#tracking-application-version)
 - **OpenAPI**
     - [Exposing security information in Swashbuckle documentation](features/openapi/security-definitions)
 
