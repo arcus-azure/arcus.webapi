@@ -103,9 +103,9 @@ public class Startup
             // Configuration on operation parent ID request header (`Request-Id`).
             // ------------------------------------------------------------------
 
-            // Whether to extract the operation parent ID from the incoming request (default: true).
+            // Whether to extract the operation parent ID from the incoming request (default: false).
             // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
-            options.UpstreamService.ExtractFromRequest = false;
+            options.UpstreamService.ExtractFromRequest = true;
 
             // The header that will contain the operation parent ID in the HTTP request (default: Request-Id).
             options.UpstreamService.OperationParentIdHeaderName = "x-request-id";
