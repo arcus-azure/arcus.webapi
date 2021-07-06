@@ -11,13 +11,17 @@ using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Serilog;
 using Serilog.Configuration;
+using Serilog.Core;
 using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+#pragma warning disable 618 // disable obsolete warnings (for now) regarding the '.AddHttpCorrelation' extension.
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
