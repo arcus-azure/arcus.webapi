@@ -25,7 +25,8 @@ namespace Arcus.WebApi.Logging.Correlation
         private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
         private readonly ILogger<HttpCorrelation> _logger;
 
-        private static readonly Regex RequestIdRegex = new Regex(@"^(\|)?([a-zA-Z0-9\-]+(\.[a-zA-Z0-9\-]+)?)+(_|\.)?$", RegexOptions.Compiled);
+        private static readonly Regex RequestIdRegex = 
+            new Regex(@"^(\|)?([a-zA-Z0-9\-]+(\.[a-zA-Z0-9\-]+)?)+(_|\.)?$", RegexOptions.Compiled, matchTimeout: TimeSpan.FromSeconds(1));
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
@@ -141,7 +142,6 @@ namespace Arcus.WebApi.Logging.Correlation
                 if (!_options.Transaction.AllowInRequest)
                 {
                     _logger.LogError("No correlation request header '{HeaderName}' for transaction ID was allowed in request", _options.Transaction.HeaderName);
-
                     errorMessage = $"No correlation transaction ID request header '{_options.Transaction.HeaderName}' was allowed in the request";
                     return false;
                 }
@@ -156,6 +156,13 @@ namespace Arcus.WebApi.Logging.Correlation
             {
                 operationParentId = GetUpstreamOperationId(httpContext);
                 operationId = ExtractOperationIdFromOperationParentId(operationParentId);
+                
+                if (operationId is null)
+                {
+                    _logger.LogError("No operation parent ID with a correct format could be found in the request header '{HeaderName}' which means no operation ID could be extracted", _options.UpstreamService.OperationParentIdHeaderName);
+                    errorMessage = $"No correlation operation ID could be extracted from upstream service's '{_options.UpstreamService.OperationParentIdHeaderName}' request header";
+                    return false;
+                }
             }
             else
             {
@@ -165,7 +172,6 @@ namespace Arcus.WebApi.Logging.Correlation
 
             var correlation = new CorrelationInfo(operationId, transactionId, operationParentId);
             httpContext.Features.Set(correlation);
-
             AddCorrelationResponseHeaders(httpContext);
 
             errorMessage = null;
@@ -208,18 +214,35 @@ namespace Arcus.WebApi.Logging.Correlation
             if (context.Request.Headers.TryGetValue(_options.UpstreamService.OperationParentIdHeaderName, out StringValues requestId) 
                 && !String.IsNullOrWhiteSpace(requestId)
                 && requestId.Count > 0
-                && RequestIdRegex.IsMatch(requestId))
+                && MatchesRequestIdFormat(requestId))
             {
                 _logger.LogTrace("Found operation parent ID '{OperationParentId}' from upstream service in request's header '{HeaderName}'", requestId, _options.UpstreamService.OperationParentIdHeaderName);
                 return requestId;
             }
 
-            _logger.LogTrace("No operation parent ID found from upstream service in the request's header '{HeaderName}'", _options.UpstreamService.OperationParentIdHeaderName);
+            _logger.LogTrace("No operation parent ID found from upstream service in the request's header '{HeaderName}' that matches the expected format: |Guid.", _options.UpstreamService.OperationParentIdHeaderName);
             return null;
+        }
+
+        private static bool MatchesRequestIdFormat(string requestId)
+        {
+            try
+            {
+                return RequestIdRegex.IsMatch(requestId);
+            }
+            catch (RegexMatchTimeoutException)
+            {
+                return false;
+            }
         }
 
         private string ExtractOperationIdFromOperationParentId(string operationParentId)
         {
+            if (operationParentId is null)
+            {
+                return null;
+            }
+            
             // Returns the root ID from the '|' to the first '.' if any.
             // Ex. Request-Id=|7515DCD2-6340-41A9-AA4F-0E1DD28055B6.
             //     returns: 7515DCD2-6340-41A9-AA4F-0E1DD28055B6
