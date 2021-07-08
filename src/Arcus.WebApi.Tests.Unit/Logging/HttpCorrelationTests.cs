@@ -23,7 +23,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         [InlineData("", "")]
         [InlineData("|", ".other-id.")]
         [InlineData("|", ".other-id")]
-        public void TryCorrelate_WithCorrectOperationParentId_SetsOperationId(string prefix, string postfix)
+        public void TryCorrelate_WithCorrectOperationParentId_SetsOperationIds(string prefix, string postfix)
         {
             // Arrange
             var operationId = $"operation-{Guid.NewGuid()}";
