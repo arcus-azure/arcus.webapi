@@ -104,7 +104,6 @@ public class Startup
             // ------------------------------------------------------------------
 
             // Whether to extract the operation parent ID from the incoming request following W3C Trace-Context standard (default: true).
-            // We currently only support the W3C HTTP correlation standard for the `RequestId` ([see more info about this topic](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Diagnostics.DiagnosticSource/src/HttpCorrelationProtocol.md))
             // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
             options.UpstreamService.ExtractFromRequest = false;
 
