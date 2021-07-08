@@ -38,18 +38,54 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new DefaultCorrelationInfoAccessor();
             
-            var options = Options.Create(new HttpCorrelationInfoOptions { UpstreamService = { ExtractFromRequest = true} });
+            var options = Options.Create(new HttpCorrelationInfoOptions());
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act
             bool isCorrelated = correlation.TryHttpCorrelate(out string errorMessage);
             
             // Assert
-            Assert.True(isCorrelated);
+            Assert.True(isCorrelated, errorMessage);
             Assert.Null(errorMessage);
             var correlationInfo = context.Features.Get<CorrelationInfo>();
             Assert.Equal(operationId, correlationInfo.OperationId);
             Assert.Equal(operationParentId, correlationInfo.OperationParentId);
+        }
+
+        [Fact]
+        public void TryCorrelate_WithCorrectOperationParentIdWithDisabledUpstreamExtraction_DoesntSetExpectedOperationId()
+        {
+            // Arrange
+            var operationIdFromGeneration = $"operation-{Guid.NewGuid()}";
+            var operationIdFromUpstream = $"operation-{Guid.NewGuid()}";
+            string operationParentId = $"|{operationIdFromUpstream}.";
+            var headers = new Dictionary<string, StringValues>
+            {
+                ["Request-Id"] = operationParentId
+            };
+
+            HttpContext context = CreateHttpContext(headers);
+            var contextAccessor = new Mock<IHttpContextAccessor>();
+            contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
+            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            
+            var options = Options.Create(new HttpCorrelationInfoOptions
+            {
+                Operation = { GenerateId = () => operationIdFromGeneration },
+                UpstreamService = { ExtractFromRequest = false }
+            });
+            var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
+            
+            // Act
+            bool isCorrelated = correlation.TryHttpCorrelate(out string errorMessage);
+            
+            // Assert
+            Assert.True(isCorrelated, errorMessage);
+            Assert.Null(errorMessage);
+            var correlationInfo = context.Features.Get<CorrelationInfo>();
+            Assert.NotEqual(operationIdFromUpstream, correlationInfo.OperationId);
+            Assert.Equal(operationIdFromGeneration, correlationInfo.OperationId);
+            Assert.Null(correlationInfo.OperationParentId);
         }
 
         [Theory]
@@ -57,7 +93,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         [InlineData("|", "..")]
         [InlineData(".", "|")]
         [InlineData("|", ".other-id..")]
-        public void TryCorrelate_WithIncorrectOperationParentId_DoesntSetOperationId(string prefix, string postfix)
+        public void TryCorrelate_WithIncorrectOperationParentId_DoesntSetExpectedOperationId(string prefix, string postfix)
         {
             // Arrange
             var operationId = $"operation-{Guid.NewGuid()}";
@@ -71,12 +107,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new DefaultCorrelationInfoAccessor();
             
-            var options = Options.Create(new HttpCorrelationInfoOptions { UpstreamService = { ExtractFromRequest = true} });
+            var options = Options.Create(new HttpCorrelationInfoOptions());
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act / Assert
-            Assert.False(correlation.TryHttpCorrelate(out string errorMessage));
-            Assert.NotNull(errorMessage);
+            Assert.True(correlation.TryHttpCorrelate(out string errorMessage), errorMessage);
+            Assert.Null(errorMessage);
+            var correlationInfo = context.Features.Get<CorrelationInfo>();
+            Assert.NotEqual(operationId, correlationInfo.OperationId);
+            Assert.Null(correlationInfo.OperationParentId);
         }
 
         [Theory]
@@ -84,7 +123,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         public void TryCorrelate_WithBlankOperationParentId_DoesntSetOperationId(string operationParentId)
         {
             // Arrange
-            var operationId = $"operation-{Guid.NewGuid()}";
             var headers = new Dictionary<string, StringValues>
             {
                 ["Request-Id"] = operationParentId
@@ -95,12 +133,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new DefaultCorrelationInfoAccessor();
             
-            var options = Options.Create(new HttpCorrelationInfoOptions { UpstreamService = { ExtractFromRequest = true} });
+            var options = Options.Create(new HttpCorrelationInfoOptions());
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act / Assert
-            Assert.False(correlation.TryHttpCorrelate(out string errorMessage));
-            Assert.NotNull(errorMessage);
+            Assert.True(correlation.TryHttpCorrelate(out string errorMessage), errorMessage);
+            Assert.Null(errorMessage);
+            var correlationInfo = context.Features.Get<CorrelationInfo>();
+            Assert.NotNull(correlationInfo.OperationId);
+            Assert.Null(correlationInfo.OperationParentId);
         }
 
         private static HttpContext CreateHttpContext(Dictionary<string, StringValues> requestHeaders)

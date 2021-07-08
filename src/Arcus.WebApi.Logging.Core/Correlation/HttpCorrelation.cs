@@ -150,13 +150,11 @@ namespace Arcus.WebApi.Logging.Correlation
             }
 
             string transactionId = DetermineTransactionId(transactionIds);
-            string operationId, operationParentId;
+            string operationId, operationParentId = null;
 
-            if (_options.UpstreamService.ExtractFromRequest)
+            if (_options.UpstreamService.ExtractFromRequest && TryGetUpstreamOperationId(httpContext, out operationParentId))
             {
-                operationParentId = GetUpstreamOperationId(httpContext);
                 operationId = ExtractOperationIdFromOperationParentId(operationParentId);
-                
                 if (operationId is null)
                 {
                     _logger.LogError("No operation parent ID with a correct format could be found in the request header '{HeaderName}' which means no operation ID could be extracted", _options.UpstreamService.OperationParentIdHeaderName);
@@ -166,12 +164,10 @@ namespace Arcus.WebApi.Logging.Correlation
             }
             else
             {
-                operationParentId = null;
                 operationId = DetermineOperationIdWithoutUpstreamService(httpContext);
             }
 
-            var correlation = new CorrelationInfo(operationId, transactionId, operationParentId);
-            httpContext.Features.Set(correlation);
+            httpContext.Features.Set(new CorrelationInfo(operationId, transactionId, operationParentId));
             AddCorrelationResponseHeaders(httpContext);
 
             errorMessage = null;
@@ -198,8 +194,7 @@ namespace Arcus.WebApi.Logging.Correlation
                     return newlyGeneratedTransactionId;
                 }
 
-                _logger.LogTrace(
-                    "No transactional correlation ID found in request header '{HeaderName}' but since the correlation options specifies that no transactional ID should be generated, there will be no ID present", 
+                _logger.LogTrace("No transactional correlation ID found in request header '{HeaderName}' but since the correlation options specifies that no transactional ID should be generated, there will be no ID present", 
                     _options.Transaction.HeaderName);
                 
                 return null;
@@ -209,7 +204,7 @@ namespace Arcus.WebApi.Logging.Correlation
             return alreadyPresentTransactionId;
         }
 
-        private string GetUpstreamOperationId(HttpContext context)
+        private bool TryGetUpstreamOperationId(HttpContext context, out string operationParentId)
         {
             if (context.Request.Headers.TryGetValue(_options.UpstreamService.OperationParentIdHeaderName, out StringValues requestId) 
                 && !String.IsNullOrWhiteSpace(requestId)
@@ -217,21 +212,24 @@ namespace Arcus.WebApi.Logging.Correlation
                 && MatchesRequestIdFormat(requestId))
             {
                 _logger.LogTrace("Found operation parent ID '{OperationParentId}' from upstream service in request's header '{HeaderName}'", requestId, _options.UpstreamService.OperationParentIdHeaderName);
-                return requestId;
+                operationParentId = requestId;
+                return true;
             }
 
             _logger.LogTrace("No operation parent ID found from upstream service in the request's header '{HeaderName}' that matches the expected format: |Guid.", _options.UpstreamService.OperationParentIdHeaderName);
-            return null;
+            operationParentId = null;
+            return false;
         }
 
-        private static bool MatchesRequestIdFormat(string requestId)
+        private bool MatchesRequestIdFormat(string requestId)
         {
             try
             {
                 return RequestIdRegex.IsMatch(requestId);
             }
-            catch (RegexMatchTimeoutException)
+            catch (RegexMatchTimeoutException exception)
             {
+                _logger.LogTrace(exception, "Upstream service's '{HeaderName}' was timed-out during regular expression validation", _options.UpstreamService.OperationParentIdHeaderName);
                 return false;
             }
         }
