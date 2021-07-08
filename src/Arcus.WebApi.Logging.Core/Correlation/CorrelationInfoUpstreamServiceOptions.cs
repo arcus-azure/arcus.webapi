@@ -12,7 +12,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         private string _operationParentIdHeaderName = "Request-Id";
 
         /// <summary>
-        /// Gets or sets the flag indicating whether or not the upstream service information should be extracted from the <see cref="OperationParentIdHeaderName"/>. 
+        /// Gets or sets the flag indicating whether or not the upstream service information should be extracted from the <see cref="OperationParentIdHeaderName"/> following the W3C Trace-Context standard. 
         /// </summary>
         public bool ExtractFromRequest { get; set; } = true;
 
