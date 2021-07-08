@@ -245,7 +245,7 @@ namespace Arcus.WebApi.Logging.Correlation
             // Ex. Request-Id=|7515DCD2-6340-41A9-AA4F-0E1DD28055B6.
             //     returns: 7515DCD2-6340-41A9-AA4F-0E1DD28055B6
             
-            _logger.LogTrace("Extracting operation ID from operation parent ID '{OperationParentId}' from the upstream service", operationParentId);
+            _logger.LogTrace("Extracting operation ID from operation parent ID '{OperationParentId}' from the upstream service according to W3C Trace-Context standard", operationParentId);
             
             int rootStart;
             if (operationParentId[0] == '|')
