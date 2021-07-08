@@ -1,9 +1,11 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -20,11 +22,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The services collection containing the dependency injection services.</param>
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
+        [Obsolete("Use the " + nameof(AddHttpCorrelation) + " method overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
         public static IServiceCollection AddHttpCorrelation(
             this IServiceCollection services, 
             Action<CorrelationInfoOptions> configureOptions = null)
         {
-            Guard.NotNull(services, nameof(services));
+            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
 
             services.AddHttpContextAccessor();
             services.AddCorrelation(
@@ -32,9 +35,50 @@ namespace Microsoft.Extensions.DependencyInjection
                 {
                     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                     return new HttpCorrelationInfoAccessor(httpContextAccessor);
-                }, 
+                },
                 configureOptions);
-            services.AddScoped<HttpCorrelation>();
+            services.AddScoped(serviceProvider =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptions<CorrelationInfoOptions>>();
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor>();
+                var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
+                
+                return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
+            });
+
+            return services;
+        }
+
+        /// <summary>
+        /// Adds operation and transaction correlation to the application.
+        /// </summary>
+        /// <param name="services">The services collection containing the dependency injection services.</param>
+        /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddHttpCorrelation(
+            this IServiceCollection services,
+            Action<HttpCorrelationInfoOptions> configureOptions)
+        {
+            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
+
+            services.AddHttpContextAccessor();
+            services.AddCorrelation<HttpCorrelationInfoAccessor, CorrelationInfo, HttpCorrelationInfoOptions>(
+                serviceProvider =>
+                {
+                    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                    return new HttpCorrelationInfoAccessor(httpContextAccessor);
+                },
+                configureOptions);
+            services.AddScoped(serviceProvider =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptions<HttpCorrelationInfoOptions>>();
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor>();
+                var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
+                
+                return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
+            });
 
             return services;
         }

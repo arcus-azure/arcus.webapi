@@ -99,6 +99,16 @@ public class Startup
             // The function that will generate the operation ID header value.
             // (default: new `Guid`).
             options.Operation.GenerateId = () => $"Operation-{Guid.NewGuid()}";
+
+            // Configuration on operation parent ID request header (`Request-Id`).
+            // ------------------------------------------------------------------
+
+            // Whether to extract the operation parent ID from the incoming request following W3C Trace-Context standard (default: true).
+            // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
+            options.UpstreamService.ExtractFromRequest = false;
+
+            // The header that will contain the operation parent ID in the HTTP request (default: Request-Id).
+            options.UpstreamService.OperationParentIdHeaderName = "x-request-id";
         });
     }
 }

@@ -998,7 +998,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 testSink.DequeueLogEvents()
                         .SelectMany(ev => ev.Properties);
 
-            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.TelemetryContext);
+            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.RequestTracking.RequestLogEntry);
             return eventContexts.Any();
         }
 
@@ -1008,9 +1008,13 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 testSink.DequeueLogEvents()
                         .SelectMany(ev => ev.Properties);
 
-            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.TelemetryContext);
-            (string key, LogEventPropertyValue eventContext) = Assert.Single(eventContexts);
-            var dictionaryValue = Assert.IsType<DictionaryValue>(eventContext);
+            var logEntries = properties.Where(prop => prop.Key == ContextProperties.RequestTracking.RequestLogEntry);
+            (string key, LogEventPropertyValue logEntry) = Assert.Single(logEntries);
+            var requestLogEntry = Assert.IsType<StructureValue>(logEntry);
+            
+            LogEventProperty eventContext = 
+                Assert.Single(requestLogEntry.Properties, property => property.Name == ContextProperties.TelemetryContext);
+            var dictionaryValue = Assert.IsType<DictionaryValue>(eventContext.Value);
 
             return dictionaryValue.Elements.ToDictionary(
                 item => item.Key.ToStringValue(), 

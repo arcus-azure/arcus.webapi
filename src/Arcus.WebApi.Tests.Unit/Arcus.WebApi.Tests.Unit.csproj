@@ -29,4 +29,7 @@
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Logging\Fixture\" />
+  </ItemGroup>
 </Project>
