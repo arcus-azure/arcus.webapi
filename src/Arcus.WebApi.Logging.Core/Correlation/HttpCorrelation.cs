@@ -241,7 +241,7 @@ namespace Arcus.WebApi.Logging.Correlation
                 return null;
             }
             
-            // Returns the root ID from the '|' to the first '.' if any.
+            // Returns the root ID from the '|' to the first '.' if any, according to W3C Trace-Context standard
             // Ex. Request-Id=|7515DCD2-6340-41A9-AA4F-0E1DD28055B6.
             //     returns: 7515DCD2-6340-41A9-AA4F-0E1DD28055B6
             
