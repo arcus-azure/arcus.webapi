@@ -26,16 +26,12 @@ For more granular packages we recommend reading the documentation.
     - Authentication
         - [Shared access key authentication](features/security/auth/shared-access-key)
         - [Certificate authentication](features/security/auth/certificate)
-    - Authorization
-        - [JWT authorization](features/security/auth/jwt)
 - **Correlation**
     - [Provide request and/or transaction correlation ids](features/correlation)
 - **Telemetry**
     - [Enrich with telemetry information](features/telemetry)
 - **Logging**
     - [Logging unhandled exceptions](features/logging#logging-unhandled-exceptions)
-    - [Logging incoming requests](features/logging#logging-incoming-requests)
-    - [Tracking application version](features/logging#tracking-application-version)
 - **OpenAPI**
     - [Exposing security information in Swashbuckle documentation](features/openapi/security-definitions)
 

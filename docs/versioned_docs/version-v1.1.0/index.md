@@ -6,7 +6,7 @@ sidebar_label: Welcome
 sidebar_position: 1
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?packageVersion=1.1.0)](https://www.nuget.org/packages/Arcus.WebApi.All/1.1.0)
 
 # Installation
 
@@ -15,7 +15,7 @@ The Arcus.WebApi library can be installed via NuGet.
 To install all Arcus.WebApi packages:
 
 ```shell
-PM > Install-Package Arcus.WebApi.All
+PM > Install-Package Arcus.WebApi.All --Version 1.1.0
 ```
 
 For more granular packages we recommend reading the documentation.
