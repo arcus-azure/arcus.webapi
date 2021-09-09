@@ -92,7 +92,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -112,7 +112,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string headerName = $"x-cutom-header-{Guid.NewGuid()}",
                    headerValue = $"header-{Guid.NewGuid()}",
-                   requestBody = $"body-{_bogusGenerator.Random.AlphaNumeric(1000)}";
+                   requestBody = $"body-{Guid.NewGuid()}";
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking<NoHeadersRequestTrackingMiddleware>())
@@ -123,7 +123,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -158,7 +158,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -190,7 +190,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -221,7 +221,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -252,7 +252,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -287,7 +287,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -322,7 +322,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -357,7 +357,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -394,7 +394,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(body);
+                    .WithJsonTextBody(body);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -431,7 +431,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -468,7 +468,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -505,7 +505,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -544,7 +544,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(ExcludeFilterIgnoredWhileExcludedOnClassController.Route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -577,7 +577,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(ExcludeFilterUsedWhileExcludedOnClassController.Route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -638,7 +638,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Get(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -706,7 +706,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -746,7 +746,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonTextBody(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -857,7 +857,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(((int) responseStatusCode).ToString());
+                    .WithJsonTextBody(((int) responseStatusCode).ToString());
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -887,7 +887,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(((int) trackedStatusCode).ToString());
+                    .WithJsonTextBody(((int) trackedStatusCode).ToString());
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -919,7 +919,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(responseStatusCode.ToString());
+                    .WithJsonTextBody(responseStatusCode.ToString());
                 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -951,7 +951,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(responseStatusCode.ToString());
+                    .WithJsonTextBody(responseStatusCode.ToString());
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -980,7 +980,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(((int) responseStatusCode).ToString());
+                    .WithJsonTextBody(((int) responseStatusCode).ToString());
                 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
