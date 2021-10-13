@@ -298,7 +298,12 @@ namespace Arcus.WebApi.Logging.Correlation
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
-                    AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
+
+                    if (string.IsNullOrWhiteSpace(correlationInfo.OperationId) == false)
+                    {
+                        AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
+                    }
+
                     return Task.CompletedTask;
                 });
             }
@@ -309,7 +314,12 @@ namespace Arcus.WebApi.Logging.Correlation
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
-                    AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
+
+                    if (string.IsNullOrWhiteSpace(correlationInfo.TransactionId) == false)
+                    {
+                        AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
+                    }
+
                     return Task.CompletedTask;
                 });
             }
