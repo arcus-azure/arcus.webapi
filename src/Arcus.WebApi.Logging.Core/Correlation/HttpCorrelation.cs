@@ -22,7 +22,7 @@ namespace Arcus.WebApi.Logging.Correlation
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpCorrelationInfoOptions _options;
-        private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
+        private readonly ICorrelationInfoAccessor<CorrelationInfo> _correlationInfoAccessor;
         private readonly ILogger<HttpCorrelation> _logger;
 
         private static readonly Regex RequestIdRegex = 
@@ -40,7 +40,7 @@ namespace Arcus.WebApi.Logging.Correlation
         public HttpCorrelation(
             IOptions<HttpCorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor correlationInfoAccessor,
+            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
         {
             Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Logging.Correlation
         public HttpCorrelation(
             IOptions<CorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor correlationInfoAccessor,
+            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
             : this(Options.Create(CreateHttpCorrelationOptions(options?.Value)), httpContextAccessor, correlationInfoAccessor, logger)
         {
