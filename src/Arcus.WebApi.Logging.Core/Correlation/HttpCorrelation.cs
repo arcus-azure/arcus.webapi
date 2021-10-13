@@ -299,7 +299,11 @@ namespace Arcus.WebApi.Logging.Correlation
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
 
-                    if (string.IsNullOrWhiteSpace(correlationInfo.OperationId) == false)
+                    if (String.IsNullOrWhiteSpace(correlationInfo.OperationId))
+                    {
+                        _logger.LogWarning("No response header was added given no operation correlation ID was found");
+                    }
+                    else
                     {
                         AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
                     }
@@ -315,7 +319,11 @@ namespace Arcus.WebApi.Logging.Correlation
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
 
-                    if (string.IsNullOrWhiteSpace(correlationInfo.TransactionId) == false)
+                    if (String.IsNullOrWhiteSpace(correlationInfo.TransactionId))
+                    {
+                        _logger.LogWarning("No response header was added given no transactional correlation ID was found");
+                    }
+                    else
                     {
                         AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
                     }
