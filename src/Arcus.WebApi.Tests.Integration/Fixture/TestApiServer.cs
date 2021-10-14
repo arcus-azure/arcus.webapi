@@ -41,7 +41,13 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
 
             IHostBuilder builder = Host.CreateDefaultBuilder();
             options.ConfigureServices(services =>
-                services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Trace).AddProvider(new CustomLoggerProvider(logger))));
+            {
+                services.AddLogging(logging =>
+                {
+                    logging.SetMinimumLevel(LogLevel.Trace)
+                           .AddProvider(new CustomLoggerProvider(logger));
+                });
+            });
             options.ApplyOptions(builder);
 
             IHost host = builder.Build();
