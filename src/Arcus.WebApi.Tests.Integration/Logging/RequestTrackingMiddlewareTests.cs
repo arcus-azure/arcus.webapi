@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.Testing.Logging;
@@ -14,12 +15,15 @@ using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Bogus;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.Extensions.DependencyInjection;
 using Moq;
+using Newtonsoft.Json;
 using Serilog;
 using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
@@ -92,7 +96,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -123,8 +127,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
+                // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
@@ -133,6 +138,58 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     Assert.DoesNotContain(headerName, eventContext);
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task PostOrder_TracksRequestWithoutClientId_ReturnsSuccess()
+        {
+            // Arrange
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .Configure(app => app.UseRequestTracking<RemoveClientIdFromOrderRequestTrackingMiddleware>(opt =>
+                {
+                    opt.IncludeRequestBody = true;
+                    opt.IncludeResponseBody = true;
+                }))
+                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
+
+            var order = new Order
+            {
+                Id = Guid.NewGuid().ToString(),
+                ArticleNumber = _bogusGenerator.Commerce.Ean13(),
+                ClientId = _bogusGenerator.Person.Email,
+                Scheduled = _bogusGenerator.Date.RecentOffset()
+            };
+            string json = JsonSerializer.Serialize(order);
+            
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder
+                    .Post(OrderController.PostRoute)
+                    .WithJsonBody(json);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    
+                    (string requestBodyKey, string requestBody) = Assert.Single(eventContext, item => item.Key == RequestBodyKey);
+                    var actualTrackedRequestBody = JsonSerializer.Deserialize<Order>(requestBody.Replace("\\", ""));
+                    Assert.Equal(order.Id, actualTrackedRequestBody.Id);
+                    Assert.Equal(order.ArticleNumber, actualTrackedRequestBody.ArticleNumber);
+                    Assert.Null(actualTrackedRequestBody.ClientId);
+                    Assert.Equal(order.Scheduled, actualTrackedRequestBody.Scheduled);
+                    
+                    (string responseBodyKey, string responseBody) = Assert.Single(eventContext, item => item.Key == ResponseBodyKey);
+                    var actualTrackedResponseBody = JsonSerializer.Deserialize<Order>(responseBody.Replace("\\", ""));
+                    Assert.Null(actualTrackedResponseBody.Id);
+                    Assert.Equal(order.ArticleNumber, actualTrackedResponseBody.ArticleNumber);
+                    Assert.Null(actualTrackedResponseBody.ClientId);
+                    Assert.Equal(order.Scheduled, actualTrackedResponseBody.Scheduled);
                 }
             }
         }
@@ -158,7 +215,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -190,7 +247,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -221,7 +278,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -252,7 +309,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -287,7 +344,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -322,7 +379,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -357,7 +414,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -394,7 +451,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(body);
+                    .WithJsonText(body);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -431,7 +488,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -468,7 +525,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -505,7 +562,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -544,7 +601,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(ExcludeFilterIgnoredWhileExcludedOnClassController.Route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -577,7 +634,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(ExcludeFilterUsedWhileExcludedOnClassController.Route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -638,7 +695,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Get(EchoController.GetPostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -706,7 +763,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -746,7 +803,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(requestBody);
+                    .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -857,7 +914,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(((int) responseStatusCode).ToString());
+                    .WithJsonText(((int) responseStatusCode).ToString());
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -887,7 +944,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(((int) trackedStatusCode).ToString());
+                    .WithJsonText(((int) trackedStatusCode).ToString());
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -919,7 +976,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(responseStatusCode.ToString());
+                    .WithJsonText(responseStatusCode.ToString());
                 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -951,7 +1008,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(responseStatusCode.ToString());
+                    .WithJsonText(responseStatusCode.ToString());
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -980,7 +1037,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(StubbedStatusCodeController.PostRoute)
                     .WithHeader(headerName, headerValue)
-                    .WithJsonBody(((int) responseStatusCode).ToString());
+                    .WithJsonText(((int) responseStatusCode).ToString());
                 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {

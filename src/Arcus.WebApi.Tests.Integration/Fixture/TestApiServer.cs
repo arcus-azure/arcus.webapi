@@ -40,9 +40,9 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             Guard.NotNull(logger, nameof(logger), "Requires a logger instance to write diagnostic messages during the lifetime of the test API server");
 
             IHostBuilder builder = Host.CreateDefaultBuilder();
-            options.ApplyOptions(builder);
             options.ConfigureServices(services =>
-                services.AddLogging(logging => logging.AddProvider(new CustomLoggerProvider(logger))));
+                services.AddLogging(logging => logging.SetMinimumLevel(LogLevel.Trace).AddProvider(new CustomLoggerProvider(logger))));
+            options.ApplyOptions(builder);
 
             IHost host = builder.Build();
             var server = new TestApiServer(host, options, logger);
