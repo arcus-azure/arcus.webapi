@@ -9,6 +9,7 @@ using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
+using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.AspNetCore.Http;
@@ -354,6 +355,32 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
                     Assert.Equal(correlationInfo.OperationId, actualOperationId);
                     Assert.Equal(correlationInfo.TransactionId, actualTransactionId);
+                }
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestWithAlternateCorrelationAccessor_RemovesCorrelation_ResponseWithoutCorrelationInfo()
+        {
+            // Arrange
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services => services.AddHttpCorrelation()
+                                                       .AddScoped<ICorrelationInfoAccessor<CorrelationInfo>, NullCorrelationInfoAccessor>())
+                .PreConfigure(app => app.UseHttpCorrelation());
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder.Get(EchoController.GetPostRoute)
+                    .WithHeader(DefaultOperationId, $"operation-{Guid.NewGuid()}")
+                    .WithHeader(DefaultTransactionId, $"transaction-{Guid.NewGuid()}");
+                
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    Assert.DoesNotContain(response.Headers, header => header.Key == DefaultOperationId);
+                    Assert.DoesNotContain(response.Headers, header => header.Key == DefaultTransactionId);
                 }
             }
         }
