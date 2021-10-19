@@ -24,6 +24,7 @@
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Arcus.WebApi.Hosting\Arcus.WebApi.Hosting.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
