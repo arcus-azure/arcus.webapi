@@ -302,6 +302,7 @@ namespace Arcus.WebApi.Logging
         /// </summary>
         /// <param name="request">The current HTTP request.</param>
         /// <param name="requestBody">The body of the current HTTP request.</param>
+        /// <remarks>Override this method if you want to sanitize or remove sensitive information from the request body so that it won't be logged.</remarks>
         protected virtual string SanitizeRequestBody(HttpRequest request, string requestBody)
         {
             return requestBody;
@@ -325,6 +326,7 @@ namespace Arcus.WebApi.Logging
         /// </summary>
         /// <param name="response">The current HTTP response.</param>
         /// <param name="responseBody">The body of the current HTTP response.</param>
+        /// <remarks>Override this method if you want to sanitize or remove sensitive information from the response body so that it won't be logged.</remarks>
         protected virtual string SanitizeResponseBody(HttpResponse response, string responseBody)
         {
             return responseBody;
