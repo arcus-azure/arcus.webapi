@@ -247,7 +247,7 @@ public class OrderController : ControllerBase
 ### Customization
 
 Optionally, one can inherit from this middleware component and override several default functionality:
-- by default all the request header (except from some known authentication headers) are tracked
+- by default, all the request headers (except some known authentication headers) are tracked
 - by default, when tracking the request body, the entire body is tracked
 - by default, when tracking the response body, the entire body is tracked
 
