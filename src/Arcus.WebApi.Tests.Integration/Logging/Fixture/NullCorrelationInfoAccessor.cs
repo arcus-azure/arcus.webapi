@@ -15,7 +15,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
 
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
-            
         }
     }
 }
