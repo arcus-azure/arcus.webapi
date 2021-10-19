@@ -271,7 +271,7 @@ public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddlewar
         return requestHeaders;
     }
 
-    // Also available for overridden:
+    // Also available to be overridden:
     // `SanitizeRequestBody`
     // `SanitizeResponseBody`
 }
