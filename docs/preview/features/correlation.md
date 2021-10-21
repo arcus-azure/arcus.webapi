@@ -114,6 +114,38 @@ public class Startup
 }
 ```
 
+## Dependency injection
+
+To use the HTTP correlation in your application code, you can use a dedicated marker interface called `IHttpCorrelationInfoAccessor`.
+This will help you with accessing and setting the HTTP correlation.
+
+Note that the correlation is a scoped dependency, so will be the same instance across the HTTP request.
+
+```csharp
+using Microsoft.AspNetCore.Mvc;
+using Arcus.WebApi.Logging.Core.Correlation;
+
+[ApiController]
+[Route("api/v1/order")]
+public class OrderController : ControllerBase
+{
+    private readonly IHttpCorrelationInfoAccessor _accessor;
+
+    public OrderController(IHttpCorrelationInfoAccessor accessor)
+    {
+        _accessor = accessor;
+    }
+
+    [HttpPost]
+    public IActionResult Post([FromBody] Order order)
+    {
+        CorrelationInfo correlation = _accessor.GetCorrelationInfo();
+
+        _accessor.SetCorrelationInfo(correlation);
+    }
+}
+```
+
 ## Logging
 
 As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration:

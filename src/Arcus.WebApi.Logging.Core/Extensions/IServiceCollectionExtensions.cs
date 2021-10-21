@@ -31,17 +31,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddHttpContextAccessor();
             services.AddCorrelation(
-                serviceProvider =>
-                {
-                    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                    return new HttpCorrelationInfoAccessor(httpContextAccessor);
-                },
+                serviceProvider => (HttpCorrelationInfoAccessor) serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>(),
                 configureOptions);
+            services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
+            {
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                return new HttpCorrelationInfoAccessor(httpContextAccessor);
+            });
             services.AddScoped(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<CorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor<CorrelationInfo>>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
                 
                 return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
@@ -64,17 +65,18 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddHttpContextAccessor();
             services.AddCorrelation<HttpCorrelationInfoAccessor, CorrelationInfo, HttpCorrelationInfoOptions>(
-                serviceProvider =>
-                {
-                    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                    return new HttpCorrelationInfoAccessor(httpContextAccessor);
-                },
+                serviceProvider => (HttpCorrelationInfoAccessor) serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>(),
                 configureOptions);
+            services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
+            {
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                return new HttpCorrelationInfoAccessor(httpContextAccessor);
+            });
             services.AddScoped(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<HttpCorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor<CorrelationInfo>>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
                 
                 return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);

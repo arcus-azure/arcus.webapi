@@ -40,6 +40,27 @@ namespace Arcus.WebApi.Logging.Correlation
         public HttpCorrelation(
             IOptions<HttpCorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
+            IHttpCorrelationInfoAccessor correlationInfoAccessor,
+            ILogger<HttpCorrelation> logger)
+#pragma warning disable CS0618 // Until we can remove the other constructor.
+            : this(options, httpContextAccessor, (ICorrelationInfoAccessor<CorrelationInfo>) correlationInfoAccessor, logger)
+#pragma warning restore CS0618
+        {
+        }
+        
+        /// <summary>
+        /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
+        /// </summary>
+        /// <param name="options">The options controlling how the correlation should happen.</param>
+        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
+        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
+        /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
+        /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
+        [Obsolete("Use the constructor overload with the " + nameof(IHttpCorrelationInfoAccessor) + " instead")]
+        public HttpCorrelation(
+            IOptions<HttpCorrelationInfoOptions> options,
+            IHttpContextAccessor httpContextAccessor,
             ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
         {
