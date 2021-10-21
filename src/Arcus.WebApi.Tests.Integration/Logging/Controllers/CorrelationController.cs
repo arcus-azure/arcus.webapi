@@ -1,7 +1,7 @@
 ﻿using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using Serilog.Extensions.Hosting;
 
 namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
 {
@@ -11,12 +11,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         public const string GetRoute = "correlation",
                             SetCorrelationRoute = "correlation/set";
 
-        private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
+        private readonly IHttpCorrelationInfoAccessor _correlationInfoAccessor;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CorrelationController"/> class.
         /// </summary>
-        public CorrelationController(ICorrelationInfoAccessor correlationInfoAccessor)
+        public CorrelationController(IHttpCorrelationInfoAccessor correlationInfoAccessor)
         {
             _correlationInfoAccessor = correlationInfoAccessor;
         }

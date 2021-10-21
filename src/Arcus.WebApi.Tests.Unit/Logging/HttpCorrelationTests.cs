@@ -12,6 +12,8 @@ using Microsoft.Extensions.Primitives;
 using Moq;
 using Xunit;
 
+#pragma warning disable CS0618
+
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
     public class HttpCorrelationTests

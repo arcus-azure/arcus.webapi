@@ -1,5 +1,6 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 
@@ -9,7 +10,7 @@ namespace Arcus.WebApi.Logging.Correlation
     /// <summary>
     /// Represents the correlation information on the current HTTP request, accessible throughout the application.
     /// </summary>
-    public class HttpCorrelationInfoAccessor : ICorrelationInfoAccessor
+    public class HttpCorrelationInfoAccessor : IHttpCorrelationInfoAccessor, ICorrelationInfoAccessor
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
 
