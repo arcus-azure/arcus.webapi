@@ -274,7 +274,7 @@ namespace Arcus.WebApi.Logging
         }
 
         /// <summary>
-        /// Extracts information from the given HTTP <paramref name="requestHeaders"/> to include in the request tracking context.
+        /// Sanitize headers so that sensitive information is not logged via request tracking
         /// </summary>
         /// <param name="requestHeaders">The headers of the current HTTP request.</param>
         protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
