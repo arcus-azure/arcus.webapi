@@ -251,7 +251,7 @@ Optionally, one can inherit from this middleware component and override several 
 - by default, when tracking the request body, the entire body is tracked
 - by default, when tracking the response body, the entire body is tracked
 
-Following example shows how specific headers can be redacted without omitted them:
+Following example shows how specific headers can be redacted without omitting them:
 
 ```csharp
 using Arcus.WebApi.Logging;
