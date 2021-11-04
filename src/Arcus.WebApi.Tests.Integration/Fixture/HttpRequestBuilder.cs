@@ -96,7 +96,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// </summary>
         /// <remarks>This is a non-accumulative method, multiple calls will override the request body, not append to it.</remarks>
         /// <param name="json">The JSON request body.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="json"/> is blank.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="text"/> is blank.</exception>
         public HttpRequestBuilder WithJsonBody(string json)
         {
             Guard.NotNullOrWhitespace(json, nameof(json), "Requires non-blank JSON request body to add the content to the HTTP request builder instance");
@@ -105,6 +105,20 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             return this;
         } 
 
+        /// <summary>
+        /// Adds a plain text body to the HTTP request.
+        /// </summary>
+        /// <remarks>This is a non-accumulative method, multiple calls will override the request body, not append to it.</remarks>
+        /// <param name="text">The plain text request body.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="text"/> is blank.</exception>
+        public HttpRequestBuilder WithTextBody(string text)
+        {
+            Guard.NotNullOrWhitespace(text, nameof(text), "Requires a non-blank text input for the request body");
+            _createContent = () => new StringContent(text, Encoding.UTF8, "text/plain");
+
+            return this;
+        }
+        
         /// <summary>
         /// Builds the actual <see cref="HttpRequestMessage"/> with the previously provided configurations.
         /// </summary>

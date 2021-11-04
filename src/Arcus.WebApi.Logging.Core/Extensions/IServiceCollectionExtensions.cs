@@ -41,7 +41,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var options = serviceProvider.GetRequiredService<IOptions<CorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor<CorrelationInfo>>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
                 
                 return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
@@ -74,7 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 var options = serviceProvider.GetRequiredService<IOptions<HttpCorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
-                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<ICorrelationInfoAccessor<CorrelationInfo>>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
                 
                 return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);

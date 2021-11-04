@@ -22,7 +22,7 @@ namespace Arcus.WebApi.Logging.Correlation
     {
         private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly HttpCorrelationInfoOptions _options;
-        private readonly ICorrelationInfoAccessor _correlationInfoAccessor;
+        private readonly ICorrelationInfoAccessor<CorrelationInfo> _correlationInfoAccessor;
         private readonly ILogger<HttpCorrelation> _logger;
 
         private static readonly Regex RequestIdRegex = 
@@ -40,7 +40,7 @@ namespace Arcus.WebApi.Logging.Correlation
         public HttpCorrelation(
             IOptions<HttpCorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor correlationInfoAccessor,
+            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
         {
             Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Logging.Correlation
         public HttpCorrelation(
             IOptions<CorrelationInfoOptions> options,
             IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor correlationInfoAccessor,
+            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
             : this(Options.Create(CreateHttpCorrelationOptions(options?.Value)), httpContextAccessor, correlationInfoAccessor, logger)
         {
@@ -298,7 +298,16 @@ namespace Arcus.WebApi.Logging.Correlation
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
-                    AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
+
+                    if (String.IsNullOrWhiteSpace(correlationInfo?.OperationId))
+                    {
+                        _logger.LogWarning("No response header was added given no operation correlation ID was found");
+                    }
+                    else
+                    {
+                        AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
+                    }
+
                     return Task.CompletedTask;
                 });
             }
@@ -309,7 +318,16 @@ namespace Arcus.WebApi.Logging.Correlation
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
-                    AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
+
+                    if (String.IsNullOrWhiteSpace(correlationInfo?.TransactionId))
+                    {
+                        _logger.LogWarning("No response header was added given no transactional correlation ID was found");
+                    }
+                    else
+                    {
+                        AddResponseHeader(httpContext, _options.Transaction.HeaderName, correlationInfo.TransactionId);
+                    }
+
                     return Task.CompletedTask;
                 });
             }

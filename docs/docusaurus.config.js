@@ -12,7 +12,6 @@ module.exports = {
   organizationName: 'arcus-azure', // Usually your GitHub org/user name.
   projectName: 'Arcus - Web API', // Usually your repo name.
   themeConfig: {
-    sidebarCollapsible: false,
     image: 'img/arcus.jpg',
     navbar: {
       title: 'Web API',
@@ -73,6 +72,7 @@ module.exports = {
           sidebarPath: require.resolve('./sidebars.js'),
           routeBasePath: "/",
           path: 'preview',
+          sidebarCollapsible: false,
           // Please change this to your repo.
           editUrl:
             'https://github.com/arcus-azure/arcus.webapi/edit/master/docs',

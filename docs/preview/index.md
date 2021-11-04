@@ -30,6 +30,8 @@ For more granular packages we recommend reading the documentation.
         - [JWT authorization](features/security/auth/jwt)
 - **Correlation**
     - [Provide request and/or transaction correlation ids](features/correlation)
+- **Hosting**
+    - [JSON formatting](features/hosting/formatting)
 - **Telemetry**
     - [Enrich with telemetry information](features/telemetry)
 - **Logging**

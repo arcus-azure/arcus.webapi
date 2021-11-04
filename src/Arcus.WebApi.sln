@@ -23,7 +23,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Logging.AzureF
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Tests.Runtimes.AzureFunction", "Arcus.WebApi.Tests.Runtimes.AzureFunction\Arcus.WebApi.Tests.Runtimes.AzureFunction.csproj", "{4F89D835-E4C0-409F-A54B-3551E0D99D82}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcus.WebApi.Tests.Core", "Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj", "{1681A643-EE1A-4F8E-96C1-17ABEF475C77}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Arcus.WebApi.Tests.Core", "Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj", "{1681A643-EE1A-4F8E-96C1-17ABEF475C77}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Arcus.WebApi.Hosting", "Arcus.WebApi.Hosting\Arcus.WebApi.Hosting.csproj", "{EBF29771-0205-48BD-9F2A-7789080377B0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -71,6 +73,10 @@ Global
 		{1681A643-EE1A-4F8E-96C1-17ABEF475C77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1681A643-EE1A-4F8E-96C1-17ABEF475C77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1681A643-EE1A-4F8E-96C1-17ABEF475C77}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBF29771-0205-48BD-9F2A-7789080377B0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBF29771-0205-48BD-9F2A-7789080377B0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBF29771-0205-48BD-9F2A-7789080377B0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBF29771-0205-48BD-9F2A-7789080377B0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
