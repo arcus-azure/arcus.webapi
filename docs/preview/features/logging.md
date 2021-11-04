@@ -246,9 +246,12 @@ public class OrderController : ControllerBase
 
 ### Customization
 
-Optionally, one can inherit from this middleware component and override the default request header sanitization to run some custom functionality during the filtering.
+Optionally, one can inherit from this middleware component and override several default functionality:
+- by default, all the request headers (except some known authentication headers) are tracked
+- by default, when tracking the request body, the entire body is tracked
+- by default, when tracking the response body, the entire body is tracked
 
-Following example shows how the request security headers can be emptied by not omitted:
+Following example shows how specific headers can be redacted without omitting them:
 
 ```csharp
 using Arcus.WebApi.Logging;
@@ -267,6 +270,10 @@ public class EmptyButNotOmitRequestTrackingMiddleware : RequestTrackingMiddlewar
         requestHeaders["X-Api-Key"] = "<redacted>";
         return requestHeaders;
     }
+
+    // Also available to be overridden:
+    // `SanitizeRequestBody`
+    // `SanitizeResponseBody`
 }
 ```
 
