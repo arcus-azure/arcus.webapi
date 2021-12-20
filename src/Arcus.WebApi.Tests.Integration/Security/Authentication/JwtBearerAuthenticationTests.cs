@@ -129,7 +129,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             };
         }
 
-
         private static string CreateBearerTokenFromSecret(string secretValue)
         {
             if (secretValue is null)
