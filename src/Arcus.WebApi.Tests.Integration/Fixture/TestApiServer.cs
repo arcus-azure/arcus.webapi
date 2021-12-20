@@ -23,10 +23,18 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         private TestApiServer(IHost host, TestApiServerOptions options, ILogger logger)
         {
             Guard.NotNull(host, nameof(host), "Requires a 'IHost' instance to start/stop the test API server");
+
             _host = host;
             _options = options;
             _logger = logger;
+
+            ServiceProvider = host.Services;
         }
+
+        /// <summary>
+        /// Gets the service instance provider to provide instances of the registered services in the test API server.
+        /// </summary>
+        public IServiceProvider ServiceProvider { get; }
         
         /// <summary>
         /// Starts a new instance of the <see cref="TestApiServer"/> using the configurable <paramref name="options"/>.
