@@ -14,6 +14,7 @@ This authorization process consists of the following parts:
 - [Globally enforce JWT authorization](#globally-enforce-jwt-authorization)
 - [Custom claim validation](#custom-claim-validation)
 - [Bypassing authorization](#bypassing-authorization)
+- [Accessing secret store on JWT Bearer token authentication](#accessing-secret-store-on-JWT-Bearer-token-authentication)
 
 ## Globally enforce JWT authorization
 
@@ -152,5 +153,27 @@ public class SystemController : ControllerBase
     {
         return Ok();
     }
+}
+```
+
+## Accessing secret store on JWT Bearer token authentication
+
+This package also provides an extra extension to access the [Arcus secret store](https://security.arcus-azure.net/features/secret-store/) while configuring JWT Bearer token authentication.
+Access to the secret store will help to provide, for example, issuer symmetric keys.
+
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    services.AddAuthentication(...)
+            .AddJwtBearer((options, serviceProvider) =>
+            {
+                var secretProvider = serviceProvider.GetRequiredService<ISecretProvider>();
+                string key = secretProvider.GetRawSecretAsync("JwtSigningKey").GetAwaiter().GetResult();
+
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                };
+            })
 }
 ```
