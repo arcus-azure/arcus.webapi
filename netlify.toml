@@ -34,3 +34,7 @@ ID = "b0838013-ab4a-4e8d-a266-0eb61405ad77"
 # inherit these settings.
 # [context.deploy-preview]
   # publish = "dist/"
+
+[[redirects]]
+  from = "/:version/features/telemetry"
+  to = "/:version/features/correlation#logging"

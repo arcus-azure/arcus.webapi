@@ -13,7 +13,7 @@ This correlation is based the `RequestId` and `X-Transaction-ID` HTTP request/re
 
 When an application is configured to use the default configuration of the correlation, each HTTP response will get an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses.
 
-The `X-Transaction-ID` can be overriden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
+The `X-Transaction-ID` can be overridden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
 
 Additional [configuration](#configuration) is available to tweak this functionality.
 
@@ -148,7 +148,16 @@ public class OrderController : ControllerBase
 
 ## Logging
 
-As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration:
+As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration as an [enricher](https://github.com/serilog/serilog/wiki/Enrichment). 
+This adds the correlation information of the current request to the log event as a log property called `TransactionId` and `OperationId`.
+
+**Example**
+
+- `TransactionId`: `A5E90591-ADB0-4A56-818A-AC5C02FBFF5F`
+- `OperationId`: `79BB196A-B0CC-4F5C-B48A-AB87850346AF`
+
+**Usage**
+The enricher requires access to the application services so it can get the correlation information.
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
@@ -162,7 +171,7 @@ public class Startup
         app.UseHttpCorrelation();
         
         Log.Logger = new LoggerConfiguration()
-            .Enrich.WithHttpCorrelationInfo()
+            .Enrich.WithHttpCorrelationInfo(app.ApplicationServices)
             .WriteTo.Console()
             .CreateLogger();
     }
