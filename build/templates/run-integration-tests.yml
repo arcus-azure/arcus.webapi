@@ -9,6 +9,11 @@ steps:
       fi
     env:
       PROJECT_NAME: ${{ parameters.dockerProjectName }}
+  - task: UseDotNet@2
+    displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
+    inputs:
+      packageType: 'sdk'
+      version: '$(DotNet.Sdk.VersionBC)'
   - task: Docker@1
     displayName: 'Build Docker image from ${{ parameters.dockerProjectName }}'
     inputs:
