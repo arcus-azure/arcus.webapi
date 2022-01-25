@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using GuardNet;
-using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Extensions.Logging.Abstractions;
 
 namespace Arcus.WebApi.Logging
@@ -66,7 +65,7 @@ namespace Arcus.WebApi.Logging
 #if NET6_0
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) 
 #else
-            catch (BadHttpRequestException ex) 
+            catch (Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException ex) 
 #endif
             {
                 // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
