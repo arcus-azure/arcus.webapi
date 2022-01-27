@@ -41,6 +41,11 @@ stages:
         pool:
           vmImage: '$(Vm.Image)'
         steps:
+          - task: UseDotNet@2
+            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
+            inputs:
+              packageType: 'sdk'
+              version: '$(DotNet.Sdk.VersionBC)'
           - template: 'nuget/determine-pr-version.yml@templates'
             parameters:
               manualTriggerVersion: ${{ parameters['Package.Version.ManualTrigger'] }}

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using GuardNet;
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
 using Microsoft.OpenApi.Models;
 #endif
 using Swashbuckle.AspNetCore.Swagger;
@@ -19,11 +19,11 @@ namespace Arcus.WebApi.OpenApi.Extensions
         private const string DefaultSecuritySchemeName = "certificate";
 
         private readonly string _securitySchemeName;
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
         private readonly SecuritySchemeType _securitySchemeType;
 #endif
 
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationOperationFilter"/> class.
         /// </summary>
@@ -36,7 +36,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"certificate"</c>.</param>
 #endif
         public CertificateAuthenticationOperationFilter(
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
             string securitySchemeName = DefaultSecuritySchemeName,
             SecuritySchemeType securitySchemeType = SecuritySchemeType.ApiKey
 #else
@@ -50,7 +50,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 
             _securitySchemeName = securitySchemeName;
 
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
             Guard.For<ArgumentException>(
                 () => !Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType), 
                 "Requires a security scheme type for the Certificate authentication that is within the bounds of the enumeration");
@@ -64,7 +64,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// </summary>
         /// <param name="operation">The operation instance on which the OperationFilter must be applied.</param>
         /// <param name="context">Provides meta-information on the <paramref name="operation"/> instance.</param>
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
         public void Apply(OpenApiOperation operation, OperationFilterContext context)
 #else
         public void Apply(Operation operation, OperationFilterContext context)
@@ -87,7 +87,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
             {
                 if (operation.Responses.ContainsKey("401") == false)
                 {
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
                     operation.Responses.Add("401", new OpenApiResponse { Description = "Unauthorized" });
 #else
                     operation.Responses.Add("401", new Response { Description = "Unauthorized" });
@@ -96,14 +96,14 @@ namespace Arcus.WebApi.OpenApi.Extensions
 
                 if (operation.Responses.ContainsKey("403") == false)
                 {
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
                     operation.Responses.Add("403", new OpenApiResponse { Description = "Forbidden" });
 #else
                     operation.Responses.Add("403", new Response { Description = "Forbidden" });
 #endif
                 }
 
-#if NETCOREAPP3_1
+#if !NETSTANDARD2_1
                 var scheme = new OpenApiSecurityScheme
                 {
                     Scheme = _securitySchemeName,

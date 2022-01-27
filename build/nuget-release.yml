@@ -29,6 +29,11 @@ stages:
         pool:
           vmImage: '$(Vm.Image)'
         steps:
+          - task: UseDotNet@2
+            displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
+            inputs:
+              packageType: 'sdk'
+              version: '$(DotNet.Sdk.VersionBC)'
           - template: build/build-solution.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
