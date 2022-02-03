@@ -277,8 +277,8 @@ namespace Arcus.WebApi.Logging
         /// Sanitize headers so that sensitive information is not logged via request tracking
         /// </summary>
         /// <param name="requestHeaders">The headers of the current HTTP request.</param>
-        /// <remarks>Override this method if there are headers that contain sensitive information that should not be logged via request-tracking.</remarks.
-        /// <returns>A collection of headers and the header contents that must be logged via request-tracking
+        /// <remarks>Override this method if there are headers that contain sensitive information that should not be logged via request-tracking.</remarks>
+        /// <returns>A collection of headers and the header contents that must be logged via request-tracking.</returns>
         protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
         {
             return requestHeaders.Where(header => Options.OmittedHeaderNames?.Contains(header.Key) == false);
