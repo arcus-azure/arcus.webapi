@@ -127,7 +127,7 @@ public class Startup
 }
 ```
 
-## Using secret store within Azure Functions
+## Using correlation within Azure Functions
 
 ### Installation
 
