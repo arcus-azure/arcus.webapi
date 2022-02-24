@@ -26,12 +26,20 @@ namespace Serilog.Configuration
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="enrichmentConfiguration"/> or <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         public static LoggerConfiguration WithHttpCorrelationInfo(this LoggerEnrichmentConfiguration enrichmentConfiguration, IServiceProvider serviceProvider)
         {
-            Guard.NotNull(enrichmentConfiguration, nameof(enrichmentConfiguration));
-            Guard.NotNull(serviceProvider, nameof(serviceProvider));
+            Guard.NotNull(enrichmentConfiguration, nameof(enrichmentConfiguration), "Requires an Serilog logger enrichment configuration to register the HTTP correlation as enrichment");
+            Guard.NotNull(serviceProvider, nameof(serviceProvider), "Requires a service provider to retrieve the HTTP correlation from the registered services when enriching the Serilog with the HTTP correlation");
 
-            return enrichmentConfiguration.WithCorrelationInfo(
-                new HttpCorrelationInfoAccessor(
-                    serviceProvider.GetRequiredService<IHttpContextAccessor>()));
+            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
+            if (httpContextAccessor is null)
+            {
+                throw new InvalidOperationException(
+                    $"Cannot register the HTTP correlation as an Serilog enrichment because no {nameof(IHttpContextAccessor)} was available in the registered services," 
+                    + "please make sure to call 'services.AddHttpCorrelation()' when configuring the services. " 
+                    + "For more information on HTTP correlation, see the official documentation: https://webapi.arcus-azure.net/features/correlation");
+            }
+
+            var correlationInfoAccessor = new HttpCorrelationInfoAccessor(httpContextAccessor);
+            return enrichmentConfiguration.WithCorrelationInfo(correlationInfoAccessor);
         }
     }
 }
