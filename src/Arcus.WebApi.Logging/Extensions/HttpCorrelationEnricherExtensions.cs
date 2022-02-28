@@ -26,7 +26,7 @@ namespace Serilog.Configuration
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="enrichmentConfiguration"/> or <paramref name="serviceProvider"/> is <c>null</c>.</exception>
         public static LoggerConfiguration WithHttpCorrelationInfo(this LoggerEnrichmentConfiguration enrichmentConfiguration, IServiceProvider serviceProvider)
         {
-            Guard.NotNull(enrichmentConfiguration, nameof(enrichmentConfiguration), "Requires an Serilog logger enrichment configuration to register the HTTP correlation as enrichment");
+            Guard.NotNull(enrichmentConfiguration, nameof(enrichmentConfiguration), "Requires a Serilog logger enrichment configuration to register the HTTP correlation as enrichment");
             Guard.NotNull(serviceProvider, nameof(serviceProvider), "Requires a service provider to retrieve the HTTP correlation from the registered services when enriching the Serilog with the HTTP correlation");
 
             var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
