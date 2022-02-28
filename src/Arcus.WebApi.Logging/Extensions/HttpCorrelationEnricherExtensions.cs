@@ -33,7 +33,7 @@ namespace Serilog.Configuration
             if (httpContextAccessor is null)
             {
                 throw new InvalidOperationException(
-                    $"Cannot register the HTTP correlation as an Serilog enrichment because no {nameof(IHttpContextAccessor)} was available in the registered services," 
+                    $"Cannot register the HTTP correlation as a Serilog enrichment because no {nameof(IHttpContextAccessor)} was available in the registered services," 
                     + "please make sure to call 'services.AddHttpCorrelation()' when configuring the services. " 
                     + "For more information on HTTP correlation, see the official documentation: https://webapi.arcus-azure.net/features/correlation");
             }
