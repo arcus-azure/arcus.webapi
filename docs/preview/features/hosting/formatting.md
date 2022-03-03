@@ -15,7 +15,7 @@ PM > Install-Package Arcus.WebApi.Hosting
 ```
 
 ## Restricting JSON format
-We have provided an extension that will allow you to restrict your input and output formatting to only JSON formatting (Only the `SystemTextJsonInputFormatter` will remain). This means that all other incoming content will will result in `UnsupportedMediaType` failures and outcoming content will fail to serialize back to the sender. With this functionality, you'll be sure that you only have to deal with JSON.
+We have provided an extension that will allow you to restrict your input and output formatting to only JSON formatting (Only the `SystemTextJsonInputFormatter` will remain). This means that all other incoming content will will result in `UnsupportedMediaType` failures and outgoing content will fail to serialize back to the sender. With this functionality, you'll be sure that you only have to deal with JSON.
 
 Following example shows you where you can configure this:
 

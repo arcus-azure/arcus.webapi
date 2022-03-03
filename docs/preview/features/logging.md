@@ -7,9 +7,21 @@ layout: default
 
 The `Arcus.WebApi.Logging` package provides a way to log several kinds of information during the receival and handling of HTTP requests.
 
-- [Logging unhandled exceptions](#logging-unhandled-exceptions)
-- [Logging incoming requests](#logging-incoming-requests)
-- [Tracking application version](#tracking-application-version)
+- [Logging](#logging)
+  - [Installation](#installation)
+  - [Logging unhandled exceptions](#logging-unhandled-exceptions)
+    - [Usage](#usage)
+  - [Logging incoming requests](#logging-incoming-requests)
+    - [Example](#example)
+    - [Usage](#usage-1)
+    - [Configuration](#configuration)
+    - [Excluding certain routes](#excluding-certain-routes)
+      - [Excluding request/response bodies on specific routes](#excluding-requestresponse-bodies-on-specific-routes)
+      - [Including HTTP status codes/status code ranges on specific routes](#including-http-status-codesstatus-code-ranges-on-specific-routes)
+    - [Customization](#customization)
+      - [Reducing requests to specific HTTP status code(s)](#reducing-requests-to-specific-http-status-codes)
+  - [Tracking application version](#tracking-application-version)
+  - [Application Insights](#application-insights)
 
 To send the logging information to Application Insights, see [this explanation](#application-insights).
 
@@ -76,7 +88,7 @@ using Microsoft.AspNetCore.Hosting;
 
 public class Startup
 {
-    public void Configure(IApplicationBuilder app, IWebHostEvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
          // In versions less than .NET Core 3.0:
         // make sure that the endpoint routing is specified before the UseRequestTracking() method if you want to make use of the `SkipRequestTrackingAttribute`.
@@ -138,7 +150,7 @@ public class Startup
             // (default: `false`)
             options.IncludeResponseBody = true;
 
-            // Size of the response body buffer (in bytes) hwhich should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
+            // Size of the response body buffer (in bytes) which should be tracked. Response bodies greater than this buffer will only be partly present in the telemetry.
             // (default: no limit)
             options.ResponseBodyBufferSize = 10 * 1024 * 1024; // 10MB
 
@@ -171,6 +183,8 @@ This can come in handy if you have certain endpoints with rather large request b
 This can easily be done by using the `ExcludeRequestTrackingAttribute` on the endpoint or controller of your choosing.
 
 ```csharp
+using Arcus.WebApi.Logging;
+
 [ApiController]
 [ExcludeRequestTracking]
 public class OrderController : ControllerBase
@@ -190,6 +204,8 @@ When used as in the example above, then all routes of the controller will be exc
 The exclude attribute allows you to specify on a more specific level what part of the request should be excluded.
 
 ```csharp
+using Arcus.WebApi.Logging;
+
 [ApiController]
 public class OrderController : ControllerBase
 {
@@ -219,10 +235,13 @@ public class OrderController : ControllerBase
 
 #### Including HTTP status codes/status code ranges on specific routes
 
-With the `RequestTracking` attribute, you can include a fixed HTTP status code or a range of HTTP status codes on a specfic route.
+With the `RequestTracking` attribute, you can include a fixed HTTP status code or a range of HTTP status codes on a specific route.
 This allows for a more finer grained control of the request tracking than to specify these status codes in the request tracking options.
 
 ```csharp
+using System.Net;
+using Arcus.WebApi.Logging;
+
 [ApiController]
 public class OrderController : ControllerBase
 {
@@ -309,7 +328,7 @@ So the resulting log message becomes:
 
 #### Reducing requests to specific HTTP status code(s)
 
-By default, all the responded HTTP status codes will be tracked but this can be altered according to your chosing.
+By default, all the responded HTTP status codes will be tracked but this can be altered according to your choosing.
 
 Consider the following API controller. When we configure request tracking, both the `400 BadRequest` response as the `201 Created` response will be tracked.
 
@@ -348,7 +367,7 @@ public class Startup
 }
 ```
 
-This means that every endpoint will only track `201 Created` responses. Changing this in the options usually for when you want to straightline your entire application and only allow a certain set of status codes to be tracked.
+This means that every endpoint will only track `201 Created` responses. Changing this in the options usually for when you want to straighten your entire application and only allow a certain set of status codes to be tracked.
 More grainer control can be achieved via placing an attribute on either the controller's class definition or the endpoint method:
 
 ```csharp
@@ -363,7 +382,7 @@ public class OrderController : ControllerBase
     {
         if (order.Id is null)
         {
-            // No request tracking will apear in the logs.
+            // No request tracking will appear in the logs.
             return BadRequest("Order ID should be filled out");
         }
 

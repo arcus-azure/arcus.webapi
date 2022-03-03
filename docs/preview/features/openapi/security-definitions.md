@@ -5,12 +5,15 @@ layout: default
 
 # Adding OAuth security definition to API operations
 
-When an API is secured via OAuth, [Shared Access Key authentication](../../features/security/auth/shared-access-key), [Certificate authentication](../../features/security/auth/certificate), it is helpful if the Open API documentation makes this clear via a security scheme and the API operations that require authorization automatically inform the consumer that it is possible that a 401 Unauthorized or 403 Forbidden response is returned.
+When an API is secured via OAuth, [Shared Access Key authentication](../security/auth/shared-access-key.md), [Certificate authentication](../security/auth/certificate.md), it is helpful if the Open API documentation makes this clear via a security scheme and the API operations that require authorization automatically inform the consumer that it is possible that a 401 Unauthorized or 403 Forbidden response is returned.
 
 These `IOperationFilter`'s that are part of this package exposes this functionality:
-- [`CertificateAuthenticationOperationFilter`](#certificate)
-- [`OAuthAuthorizeOperationFilter`](#oauth)
-- [`SharedAccessKeyAuthenticationOperationFilter`](#sharedaccesskey)
+- [Adding OAuth security definition to API operations](#adding-oauth-security-definition-to-api-operations)
+  - [Installation](#installation)
+  - [Usage](#usage)
+    - [Certificate](#certificate)
+    - [OAuth](#oauth)
+    - [Shared Access Key](#shared-access-key)
 
 ## Installation
 
@@ -24,7 +27,7 @@ PM > Install-Package Arcus.WebApi.OpenApi.Extensions
 
 ### Certificate
 
-To indicate that an API is protected by [Certificate authentication](../../features/security/auth/certificate), you need to add `CertificateAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
+To indicate that an API is protected by [Certificate authentication](../security/auth/certificate.md), you need to add `CertificateAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
 
 ```csharp
 using Arcus.WebApi.OpenApi.Extensions;
@@ -88,7 +91,7 @@ public class Startup
 
 ### Shared Access Key
 
-To indicate that an API is protected by [Shared Access Key authentication](../../features/security/auth/shared-access-key), you need to add `SharedAccessKeyAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
+To indicate that an API is protected by [Shared Access Key authentication](../security/auth/shared-access-key.md), you need to add `SharedAccessKeyAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
 
 ```csharp
 using Arcus.WebApi.OpenApi.Extensions;

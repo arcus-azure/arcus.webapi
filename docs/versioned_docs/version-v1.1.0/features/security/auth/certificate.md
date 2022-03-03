@@ -14,9 +14,15 @@ This authentication process consists of following parts:
 3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider, configuration or custom implementation
 
 The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
-- [Globally enforce certificate authentication](#Globally-enforce-certificate-authentication)
-- [Enforce certificate authentication per controller or operation](#Enforce-certificate-authentication-per-controller-or-operation)
-- [Bypassing authentication](#bypassing-authentication)
+- [Authentication with certificate](#authentication-with-certificate)
+  - [Installation](#installation)
+  - [Globally enforce certificate authentication](#globally-enforce-certificate-authentication)
+    - [Introduction](#introduction)
+    - [Usage](#usage)
+  - [Enforce certificate authentication per controller or operation](#enforce-certificate-authentication-per-controller-or-operation)
+    - [Introduction](#introduction-1)
+    - [Usage](#usage-1)
+  - [Bypassing authentication](#bypassing-authentication)
 
 ## Installation
 
@@ -48,7 +54,6 @@ This mapping of what service which property uses, is defined in an `CertificateA
 Once this is done, the `CertificateAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
-<<<<<<< HEAD
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using Microsoft.Extensions.DependencyInjection;
@@ -57,7 +62,7 @@ public class Startup
 {
     public void ConfigureServices(IServiceCollections services)
     {
-        services.AddSingleton<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
+        services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
 
         var certificateAuthenticationConfig = 
             new CertificateAuthenticationConfigBuilder()
@@ -70,22 +75,6 @@ public class Startup
         services.AddMvc(
             options => options.Filters.Add(new CertificateAuthenticationFilter()));
     }
-=======
-public void ConfigureServices(IServiceCollections services)
-{
-    services.AddScoped<ICachedSecretProvider(serviceProvider => new MyCachedSecretProvider());
-
-    var certificateAuthenticationConfig = 
-        new CertificateAuthenticationConfigBuilder()
-            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-            .Build();
-    
-    services.AddScoped<CertificateAuthenticationValidator>(
-        serviceProvider => new CertificateAuthenticationValidator(certificateAuthenticationConfig));
-
-    services.AddMvc(
-        options => options.Filters.Add(new CertificateAuthenticationFilter()));
->>>>>>> master
 }
 ```
 
@@ -149,7 +138,7 @@ public class MyApiController : ControllerBase
 
 ## Bypassing authentication
 
-The package supports a way to bypass the certificate authentication for certain endponts.
+The package supports a way to bypass the certificate authentication for certain endpoints.
 This works with adding one of these attributes to the respectively endpoint:
 - `BypassCertificateAuthentication`
 - `AllowAnonymous`

@@ -9,6 +9,17 @@ The `Arcus.WebApi.Correlation` library provides a way to add correlation between
 
 This correlation is based the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.
 
+- [Correlation Between HTTP Requests](#correlation-between-http-requests)
+  - [How This Works](#how-this-works)
+  - [Installation](#installation)
+  - [Usage](#usage)
+  - [Configuration](#configuration)
+  - [Dependency injection](#dependency-injection)
+  - [Logging](#logging)
+  - [Using correlation within Azure Functions](#using-correlation-within-azure-functions)
+    - [Installation](#installation-1)
+    - [Usage](#usage-1)
+
 ## How This Works
 
 When an application is configured to use the default configuration of the correlation, each HTTP response will get an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses.
