@@ -32,8 +32,6 @@ For more granular packages we recommend reading the documentation.
     - [Provide request and/or transaction correlation ids](./features/correlation.md)
 - **Hosting**
     - [JSON formatting](./features/hosting/formatting.md)
-- **Telemetry**
-    - [Enrich with telemetry information](./features/telemetry.md)
 - **Logging**
     - [Logging unhandled exceptions](./features/logging#logging-unhandled-exceptions.md)
     - [Logging incoming requests](./features/logging#logging-incoming-requests.md)
