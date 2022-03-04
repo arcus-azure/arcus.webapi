@@ -25,12 +25,10 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Arcus.WebApi.Hosting\Arcus.WebApi.Hosting.csproj" />
+    <ProjectReference Include="..\Arcus.WebApi.Logging.AzureFunctions\Arcus.WebApi.Logging.AzureFunctions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Logging\Fixture\" />
   </ItemGroup>
 </Project>
