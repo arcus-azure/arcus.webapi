@@ -5,7 +5,7 @@ layout: default
 
 # Adding OAuth security definition to API operations
 
-When an API is secured via OAuth, [Shared Access Key authentication](../security/auth/shared-access-key.md), [Certificate authentication](../security/auth/certificate.md), it is helpful if the Open API documentation makes this clear via a security scheme and the API operations that require authorization automatically inform the consumer that it is possible that a 401 Unauthorized or 403 Forbidden response is returned.
+When an API is secured via OAuth, [Shared Access Key authentication](../security/auth/shared-access-key.md), [Certificate authentication](../security/auth/certificate.md), it is helpful if the Open API documentation makes this clear via a security scheme and the API operations that require authentication/authorization automatically inform the consumer that it is possible that a 403 Forbidden or 401 Unauthorized response is returned.
 
 These `IOperationFilter`'s that are part of this package exposes this functionality:
 - [Adding OAuth security definition to API operations](#adding-oauth-security-definition-to-api-operations)

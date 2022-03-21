@@ -353,8 +353,8 @@ public class Startup
 }
 ```
 
-This means that every endpoint will only track `201 Created` responses. Changing this in the options usually for when you want to straighten your entire application and only allow a certain set of status codes to be tracked.
-More grainer control can be achieved via placing an attribute on either the controller's class definition or the endpoint method:
+This means that every endpoint will only track `201 Created` responses. Changing this in the options is usually for when you want to streamline your entire application to only track a certain set of status codes.
+More fine grained control can be achieved via placing an attribute on either the controller's class definition or the endpoint method:
 
 ```csharp
 using Arcus.WebApi.Logging;

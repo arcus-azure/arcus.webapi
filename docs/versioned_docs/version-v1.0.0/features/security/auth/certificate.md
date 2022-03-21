@@ -13,7 +13,6 @@ This authentication process consists of following parts:
 2. Determine which properties of the received client certificate are used for authentication
 3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider, configuration or custom implementation
 
-The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
 - [Authentication with certificate](#authentication-with-certificate)
   - [Installation](#installation)
   - [Globally enforce certificate authentication](#globally-enforce-certificate-authentication)

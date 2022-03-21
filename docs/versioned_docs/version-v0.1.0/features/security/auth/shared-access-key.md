@@ -11,7 +11,6 @@ This authentication process consists of two parts:
 1. Looks for the configured HTTP request header that contains the shared access key
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
-The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
 - [Shared access key authentication](#shared-access-key-authentication)
 - [Installation](#installation)
 - [Globally enforce shared access key authentication](#globally-enforce-shared-access-key-authentication)
