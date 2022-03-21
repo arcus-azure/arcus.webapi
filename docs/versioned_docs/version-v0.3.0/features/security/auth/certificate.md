@@ -13,16 +13,21 @@ This authentication process consists of following parts:
 2. Determine which properties of the received client certificate are used for authentication
 3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider, configuration or custom implementation
 
-The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
-- [Globally enforce certificate authentication](#Globally-enforce-certificate-authentication)
-- [Enforce certificate authentication per controller or operation](#Enforce-certificate-authentication-per-controller-or-operation)
+- [Authentication with certificate](#authentication-with-certificate)
+  - [Installation](#installation)
+  - [Globally enforce certificate authentication](#globally-enforce-certificate-authentication)
+    - [Introduction](#introduction)
+    - [Usage](#usage)
+  - [Enforce certificate authentication per controller or operation](#enforce-certificate-authentication-per-controller-or-operation)
+    - [Introduction](#introduction-1)
+    - [Usage](#usage-1)
 
 ## Installation
 
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.4.0
+PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.3.0
 ```
 
 ## Globally enforce certificate authentication

@@ -11,10 +11,13 @@ This authorization process consists of the following parts:
 1. Find the OpenID server endpoint to request the correct access token
 2. Determine the request header name you want to use where the access token should be available
 
-- [Globally enforce JWT authorization](#globally-enforce-jwt-authorization)
-- [Custom claim validation](#custom-claim-validation)
-- [Bypassing authorization](#bypassing-authorization)
-- [Accessing secret store on JWT Bearer token authentication](#accessing-secret-store-on-JWT-Bearer-token-authentication)
+- [Authorization with JWT](#authorization-with-jwt)
+  - [Globally enforce JWT authorization](#globally-enforce-jwt-authorization)
+    - [Installation](#installation)
+    - [Usage](#usage)
+    - [Custom Claim validation](#custom-claim-validation)
+  - [Bypassing authentication](#bypassing-authentication)
+  - [Accessing secret store on JWT Bearer token authentication](#accessing-secret-store-on-jwt-bearer-token-authentication)
 
 ## Globally enforce JWT authorization
 
@@ -134,7 +137,7 @@ public class Startup
 
 ## Bypassing authentication
 
-The package supports a way to bypass the JWT authorization for certain endponts.
+The package supports a way to bypass the JWT authorization for certain endpoints.
 This works with adding one of these attributes to the respectively endpoint:
 - `BypassJwtAuthorization`
 - `AllowAnonymous`

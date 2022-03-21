@@ -7,9 +7,12 @@ layout: default
 
 The `Arcus.WebApi.Logging` package provides a way to log several kinds of information during the receival and handling of HTTP requests.
 
-- [Logging unhandled exceptions](#logging-unhandled-exceptions)
-- [Logging incoming requests](#logging-incoming-requests)
-- [Tracking application version](#tracking-application-version)
+- [Logging](#logging)
+  - [Installation](#installation)
+  - [Logging unhandled exceptions](#logging-unhandled-exceptions)
+  - [Logging incoming requests](#logging-incoming-requests)
+  - [Tracking application version](#tracking-application-version)
+  - [Application Insights](#application-insights)
 
 To send the logging information to Application Insights, see [this explanation](#application-insights).
 
@@ -76,7 +79,7 @@ using Microsoft.AspNetCore.Hosting;
 
 public class Startup
 {
-    public void Configure(IApplicationBuilder app, IWebHostEvironment env)
+    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
     {
         app.UseRequestTracking();
 

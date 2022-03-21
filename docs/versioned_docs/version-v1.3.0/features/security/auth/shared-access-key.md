@@ -11,18 +11,23 @@ This authentication process consists of two parts:
 1. Find the configured parameter that holds the shared access key, this can be a request header, a query parameter or both.
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
-The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
-- [Global Shared access key authentication](#globally-enforce-shared-access-key-authentication)
-- [Shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
-- [Behavior in validating shared access key parameter](#behavior-in-validating-shared-access-key-parameter)
-- [Bypassing authentication](#bypassing-authentication)
+- [Authentication with shared access keys](#authentication-with-shared-access-keys)
+  - [Installation](#installation)
+  - [Globally enforce shared access key authentication](#globally-enforce-shared-access-key-authentication)
+    - [Introduction](#introduction)
+    - [Usage](#usage)
+  - [Enforce shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
+    - [Introduction](#introduction-1)
+    - [Usage](#usage-1)
+  - [Behavior in validating shared access key parameter](#behavior-in-validating-shared-access-key-parameter)
+  - [Bypassing authentication](#bypassing-authentication)
 
 ## Installation
 
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.Security.Authentication
+PM > Install-Package Arcus.WebApi.Security
 ```
  
 ## Globally enforce shared access key authentication
@@ -141,7 +146,7 @@ public class Startup
 - **Support both header & query parameter** - Both the specified request header and query parameter  will be validated for the shared access key.
 ```csharp
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using Microsoft.Extensions.DepdendencyInjection;
+using Microsoft.Extensions.DependencyInjection;
 
 public class Startup
 {
@@ -158,7 +163,7 @@ If both header and query parameter are specified, they must both be valid or an 
 <br/>
 
 ## Bypassing authentication
-The package supports a way to bypass the shared access key authentication for certain endponts.
+The package supports a way to bypass the shared access key authentication for certain endpoints.
 This works with adding one of these attributes to the respectively endpoint:
 - `BypassSharedAccessKeyAuthentication`
 - `AllowAnonymous`

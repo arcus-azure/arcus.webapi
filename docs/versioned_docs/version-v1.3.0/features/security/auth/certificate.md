@@ -13,17 +13,22 @@ This authentication process consists of following parts:
 2. Determine which properties of the received client certificate are used for authentication
 3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider, configuration or custom implementation
 
-The package allows two ways to configure this type of authentication mechanism in an <span>ASP.NET</span> application:
-- [Globally enforce certificate authentication](#Globally-enforce-certificate-authentication)
-- [Enforce certificate authentication per controller or operation](#Enforce-certificate-authentication-per-controller-or-operation)
-- [Bypassing authentication](#bypassing-authentication)
+- [Authentication with certificate](#authentication-with-certificate)
+  - [Installation](#installation)
+  - [Globally enforce certificate authentication](#globally-enforce-certificate-authentication)
+    - [Introduction](#introduction)
+    - [Usage](#usage)
+  - [Enforce certificate authentication per controller or operation](#enforce-certificate-authentication-per-controller-or-operation)
+    - [Introduction](#introduction-1)
+    - [Usage](#usage-1)
+  - [Bypassing authentication](#bypassing-authentication)
 
 ## Installation
 
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.Security.Authentication
+PM > Install-Package Arcus.WebApi.Security
 ```
 
 ## Globally enforce certificate authentication
@@ -36,7 +41,7 @@ This filter will then add authentication to all endpoints via one or many certif
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- Arcus secret store: see [our offical documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
+- Arcus secret store: see [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 - `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
 - `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values.
 
@@ -82,7 +87,7 @@ This certificate authentication will then be applied to the endpoint(s) that are
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- Arcus secret store: see [our offical documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
+- Arcus secret store: see [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 - `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
 - `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values
 
@@ -132,7 +137,7 @@ public class MyApiController : ControllerBase
 
 ## Bypassing authentication
 
-The package supports a way to bypass the certificate authentication for certain endponts.
+The package supports a way to bypass the certificate authentication for certain endpoints.
 This works with adding one of these attributes to the respectively endpoint:
 - `BypassCertificateAuthentication`
 - `AllowAnonymous`

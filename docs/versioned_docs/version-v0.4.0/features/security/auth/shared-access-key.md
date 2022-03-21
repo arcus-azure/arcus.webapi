@@ -11,16 +11,21 @@ This authentication process consists of two parts:
 1. Looks for the configured HTTP request header that contains the shared access key
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
 
-The package allows two ways to configure this type of authentication mechanmism in an <span>ASP.NET</span> application:
-- [Global Shared access key authentication](#globally-enforce-shared-access-key-authentication)
-- [Shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
+- [Shared access key authentication](#shared-access-key-authentication)
+- [Installation](#installation)
+- [Globally enforce shared access key authentication](#globally-enforce-shared-access-key-authentication)
+  - [Introduction](#introduction)
+  - [Usage](#usage)
+- [Enforce shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
+  - [Introduction](#introduction-1)
+  - [Usage](#usage-1)
 
 ## Installation
 
 This feature requires to install our NuGet package
 
 ```shell
-PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.2.0
+PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.4.0
 ```
 
 ## Globally enforce shared access key authentication
@@ -28,7 +33,7 @@ PM > Install-Package Arcus.WebApi.Security.Authentication -Version 0.2.0
 ### Introduction
 
 The `SharedAccessKeyAuthenticationFilter` can be added to the request filters in an <span>ASP.NET</span> Core application.
-This filter will then add authetication to all routes via a shared access key configurable on the filter itself.
+This filter will then add authentication to all routes via a shared access key configurable on the filter itself.
 
 ### Usage
 
