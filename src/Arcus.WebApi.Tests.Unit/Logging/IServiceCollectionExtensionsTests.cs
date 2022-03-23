@@ -3,12 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
-using Arcus.WebApi.Logging.Core.Correlation;
+#if NET6_0
+using Arcus.WebApi.Logging.Core.Correlation; 
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
+#if NET6_0
     // ReSharper disable once InconsistentNaming
     public class IServiceCollectionExtensionsTests
     {
@@ -44,4 +47,5 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
         }
     }
+#endif
 }

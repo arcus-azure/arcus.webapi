@@ -1,13 +1,16 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+#if NET6_0
+using Microsoft.Azure.Functions.Extensions.DependencyInjection; 
+#endif
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
+#if NET6_0
     // ReSharper disable once InconsistentNaming
     public class IFunctionsHostBuilderTests
     {
@@ -20,7 +23,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             builder.Setup(build => build.Services).Returns(services);
 
             // Act
-            builder.Object.AddHttpCorrelation((Action<HttpCorrelationInfoOptions>) null);
+            builder.Object.AddHttpCorrelation((Action<HttpCorrelationInfoOptions>)null);
 
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
@@ -28,7 +31,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
         }
-        
+
         [Fact]
         public void AddHttpCorrelation_WithHttpOptions_RegistersDedicatedCorrelation()
         {
@@ -46,5 +49,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
         }
-    }
+    } 
+#endif
 }
