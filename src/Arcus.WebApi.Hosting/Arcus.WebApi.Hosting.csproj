@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp3.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;netcoreapp3.1</TargetFrameworks>
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
@@ -20,8 +20,12 @@
   <ItemGroup>
     <FrameworkReference Include="Microsoft.AspNetCore.App" />
   </ItemGroup>
-  
-  <ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramwork)' == 'net6.0'">
+    <PackageReference Include="Guard.Net" Version="2.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramwork)' != 'net6.0'">
     <PackageReference Include="Guard.Net" Version="1.2.0" />
   </ItemGroup>
 

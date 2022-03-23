@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>netstandard2.1;netcoreapp3.1;net6.0</TargetFrameworks>
+    <TargetFrameworks>net6.0;netstandard2.1;netcoreapp3.1</TargetFrameworks>
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
@@ -18,7 +18,12 @@
     <NoWarn>NU5125;NU5048</NoWarn>
   </PropertyGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
+    <PackageReference Include="Guard.Net" Version="2.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+  </ItemGroup>
+
+  <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
     <PackageReference Include="Guard.Net" Version="1.2.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="4.0.1" Condition="'$(TargetFramework)' == 'netstandard2.1'" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="5.4.1" Condition="'$(TargetFramework)' != 'netstandard2.1'" />
