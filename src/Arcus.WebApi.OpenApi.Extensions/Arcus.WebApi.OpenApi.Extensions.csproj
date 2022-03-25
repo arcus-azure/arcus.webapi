@@ -16,6 +16,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GenerateOpenApiDocuments>false</GenerateOpenApiDocuments>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5125;NU5048</NoWarn>
   </PropertyGroup>
 

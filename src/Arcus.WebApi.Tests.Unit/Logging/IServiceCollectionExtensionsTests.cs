@@ -22,7 +22,9 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             var services = new ServiceCollection();
 
             // Act
+#pragma warning disable CS0618 // Type or member is obsolete
             services.AddHttpCorrelation((Action<CorrelationInfoOptions>) null);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
