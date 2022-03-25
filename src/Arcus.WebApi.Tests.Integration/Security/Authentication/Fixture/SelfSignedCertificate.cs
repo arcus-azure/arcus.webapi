@@ -193,7 +193,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture
 
             store.SetKeyEntry(friendlyName, new AsymmetricKeyEntry(subjectKeyPair.Private), new[] { certificateEntry });
 
-            const string password = "password";
+            var password = Guid.NewGuid().ToString();
             var stream = new MemoryStream();
             store.Save(stream, password.ToCharArray(), random);
 
