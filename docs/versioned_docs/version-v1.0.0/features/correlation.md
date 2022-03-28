@@ -7,7 +7,7 @@ layout: default
 
 The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
 
-This correlation is based the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.
+This correlation is based on the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.
 
 - [Correlation Between HTTP Requests](#correlation-between-http-requests)
   - [How This Works](#how-this-works)
