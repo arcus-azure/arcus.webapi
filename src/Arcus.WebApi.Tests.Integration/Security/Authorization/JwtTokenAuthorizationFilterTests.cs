@@ -403,7 +403,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 
         private static string GenerateRandomPrivateKey()
         {
-            using (RSA rsa = new RSACryptoServiceProvider(dwKeySize: 512))
+            using (RSA rsa = new RSACryptoServiceProvider(dwKeySize: 2048))
             {
                 string privateKey = rsa.ToCustomXmlString(includePrivateParameters: true);
                 return privateKey;

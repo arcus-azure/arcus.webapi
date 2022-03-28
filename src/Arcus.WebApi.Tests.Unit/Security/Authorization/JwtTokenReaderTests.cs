@@ -16,6 +16,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
     public class JwtTokenReaderTests
     {
+        private const int KeySize = 2048;
         private const string MicrosoftDiscoveryEndpoint =
             "https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration";
 
@@ -189,7 +190,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             string authority = Util.GetRandomString(10);
             int daysValid = 7;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>
@@ -217,7 +218,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             IdentityModelEventSource.ShowPII = true;
             int daysValid = 7;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>
@@ -256,7 +257,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             IdentityModelEventSource.ShowPII = true;
             int daysValid = 7;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>
@@ -295,7 +296,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 
             IdentityModelEventSource.ShowPII = true;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>();
@@ -324,7 +325,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             IdentityModelEventSource.ShowPII = true;
             int daysValid = 7;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             TokenValidationParameters tokenValidationParameters = new TokenValidationParameters
@@ -446,7 +447,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
             int daysValid = 7;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>
@@ -478,7 +479,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authorization
             string authority = $"http://{Util.GetRandomString(10).ToLower()}.com";
             int daysValid = 7;
 
-            RSA rsa = new RSACryptoServiceProvider(512);
+            RSA rsa = new RSACryptoServiceProvider(KeySize);
             string privateKey = rsa.ToCustomXmlString(true);
 
             Dictionary<string, string> claimCheck = new Dictionary<string, string>
