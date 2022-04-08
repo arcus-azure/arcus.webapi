@@ -43,39 +43,37 @@ This filter will then add authentication to all endpoints via a shared access ke
 We created a `SharedAccessKeyAuthenticationFilter` MVC filter which will be applied to all actions:
 
 ```csharp
-using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using Microsoft.Extensions.DependencyInjection;
+using Arcus.Security.Core.Caching.Configuration;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddSecretStore(stores =>
 {
-    public void ConfigureServices(IServiceCollections services)
+    stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+});
+
+builder.Services.AddControllers(options =>
+{
+    // Adds shared access key authentication to the request pipeline where the request query string parameter will be verified 
+    // if the query parameter value contain the expected secret value, retrievable with the given secret name.
+    options.Filters.AddSharedAccessAuthenticationOnQuery(
+        queryParameterName: "api-key", 
+        secretName: "shared-access-key-name")));
+
+    // Adds shared access key authentication to the request pipeline where only the request header will be verified if it contains the expected secret value.
+    options.Filters.AddSharedAccessAuthenticationOnHeader(
+        headerName: "http-request-header-name",
+        secretName: "shared-access-key-name"));
+
+    // Additional consumer-configurable options to change the behavior of the authentication filter.
+    options.Filters.AddSharedAccessAuthenticationOnHeader(..., configureOptions: opt =>
     {
-        // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
-
-        services.AddMvc(options => 
-        {
-            // Adds shared access key authentication to the request pipeline where the request query string parameter will be verified 
-            // if the query parameter value contain the expected secret value, retrievable with the given secret name.
-            options.Filters.AddSharedAccessAuthenticationOnQuery(
-                queryParameterName: "api-key", 
-                secretName: "shared-access-key-name")));
-
-            // Adds shared access key authentication to the request pipeline where only the request header will be verified if it contains the expected secret value.
-            options.Filters.AddSharedAccessAuthenticationOnHeader(
-                headerName: "http-request-header-name",
-                secretName: "shared-access-key-name"));
-
-            // Additional consumer-configurable options to change the behavior of the authentication filter.
-            options.Filters.AddSharedAccessAuthenticationOnHeader(..., configureOptions: options =>
-            {
-                // Adds shared access key authentication with emitting security events during the authentication of the request.
-                // (default: `false`)
-                options.EmitSecurityEvents = true
-            }));
-        }
-    }
-}
+        // Adds shared access key authentication with emitting security events during the authentication of the request.
+        // (default: `false`)
+        opt.EmitSecurityEvents = true
+    }));
+});
 ```
 
 For this setup to work, an Arcus secret store is required as the provided secret name (in this case `"shared-access-key-name"`) will be looked up.
@@ -127,59 +125,64 @@ The package supports different scenarios for specifying the shared access key pa
 - **Use header only** - Only the specified request header will be validated for the shared access key, any supplied query parameter will not be taken into account.
 
 ```csharp
-using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using Microsoft.Extensions.DependencyInjection;
+using Arcus.Security.Core.Caching.Configuration;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+// See https://security.arcus-azure.net/features/secret-store/ for more information.
+builder.Services.AddSecretStore(stores => 
 {
-    public void ConfigureServices(IServiceCollections services)
-    {
-        // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
-        
-        services.AddMvc(options => options.Filters.AddSharedAccessKeyAuthenticationOnHeader(headerName: "http-request-header-name", secretName: "shared-access-key-name")));
-    }
-}
+    stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+});
+
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddSharedAccessKeyAuthenticationOnHeader(headerName: "http-request-header-name", secretName: "shared-access-key-name"));
+});
 ```
 
 - **Use query parameter only** - Only the specified query parameter  will be validated for the shared access key, any supplied request header will not be taken into account.
 
 ```csharp
-using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using Microsoft.Extensions.DependencyInjection;
+using Arcus.Security.Core.Caching.Configuration;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+// See https://security.arcus-azure.net/features/secret-store/ for more information.
+builder.Services.AddSecretStore(stores => 
 {
-    public void ConfigureServices(IServiceCollections services)
-    {
-        // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+    stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+});
 
-        services.AddMvc(options => options.Filters.AddSharedAccessKeyAuthenticationOnQuery(queryParameterName: "api-key", secretName: "shared-access-key-name")));
-    }
-}
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddSharedAccessKeyAuthenticationOnQuery(queryParameterName: "api-key", secretName: "shared-access-key-name"));
+});
 ```
 
 - **Support both header & query parameter** - Both the specified request header and query parameter  will be validated for the shared access key.
 
 ```csharp
-using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using Microsoft.Extensions.DependencyInjection;
+using Arcus.Security.Core.Caching.Configuration;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+// See https://security.arcus-azure.net/features/secret-store/ for more information.
+builder.Services.AddSecretStore(stores => 
 {
-    public void ConfigureServices(IServiceCollections services)
-    {
-        // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+    stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+});
 
-        services.AddMvc(options => options.Filters.Add(
-            new SharedAccessKeyAuthenticationFilter(
-                headerName: "http-request-header-name", 
-                queryParameterName: "api-key", 
-                secretName: "shared-access-key-name")));
-    }
-}
+builder.Services.AddControllers(options =>
+{
+    options.Filters.AddSharedAccessKeyAuthentication(
+        headerName: "http-request-header-name", 
+        queryParameterName: "api-key", 
+        secretName: "shared-access-key-name");
+});
 ```
 
 If both header and query parameter are specified, they must both be valid or an `Unauthorized` will be returned.

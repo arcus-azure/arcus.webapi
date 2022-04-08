@@ -38,46 +38,41 @@ Example:
 
 ```csharp
 using Arcus.WebApi.Security.Authorization.Jwt;
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.IdentityModel.Tokens;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddControllers(mvcOptions =>
 {
-    public void ConfigureServices(IServiceCollection services)
+    // Default configuration:
+    // By default, the JWT authorization filter will use the Microsoft 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration' OpenID endpoint to request the configuration.
+    mvcOptions.Filters.AddJwtTokenAuthorization();
+
+    mvcOptions.Filters.AddJwtTokenAuthorization(options =>
     {
-        services.AddMvc(mvcOptions =>
-        {
-            // Default configuration:
-            // By default, the JWT authorization filter will use the Microsoft 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration' OpenID endpoint to request the configuration.
-            mvcOptions.Filters.AddJwtTokenAuthorization();
+        // Default configuration with validation parameters:
+        // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters to manipulate how the JWT token should be validated.
+        var parameters = new TokenValidationParameters();
+        options.JwtTokenReader = new JwtTokenReader(parameters);
 
-            mvcOptions.Filters.AddJwtTokenAuthorization(options =>
-            {
-                // Default configuration with validation parameters:
-                // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters to manipulate how the JWT token should be validated.
-                var parameters = new TokenValidationParameters();
-                options.JwtTokenReader = new JwtTokenReader(parameters);
+        // Default configuration with application ID:
+        // One can use the Microsoft OpenID endpoint and provide just the application ID as input for the validation parameters. 
+        // By default will only the issuer singing keys and lifetime be validated.
+        string applicationId = "e98s9-sadf8981-asd8f79-ahtew8";
+        options.JwtTokenReader = new JwtTokenReader(applicationId);
 
-                // Default configuration with application ID:
-                // One can use the Microsoft OpenID endpoint and provide just the application ID as input for the validation parameters. 
-                // By default will only the issuer singing keys and lifetime be validated.
-                string applicationId = "e98s9-sadf8981-asd8f79-ahtew8";
-                options.JwtTokenReader = new JwtTokenReader(applicationId);
+        // Custom OpenID endpoint:
+        // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters how the JWT token should be validated.
+        var parameters = new TokenValidationParameters();
+        string endpoint = "https://localhost:5000/.well-known/openid-configuration";
+        options.JwtTokenReader = new JwtTokenReader(parameters, endpoint);
 
-                // Custom OpenID endpoint:
-                // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters how the JWT token should be validated.
-                var parameters = new TokenValidationParameters();
-                string endpoint = "https://localhost:5000/.well-known/openid-configuration";
-                options.JwtTokenReader = new JwtTokenReader(parameters, endpoint);
-
-                // Emitting security events:
-                // One can opt-in for security events during the authorization of the request (default: `false`).
-                options.EmitSecurityEvents = true;
-            });
-        });
-    }
-}
+        // Emitting security events:
+        // One can opt-in for security events during the authorization of the request (default: `false`).
+        options.EmitSecurityEvents = true;
+    });
+});
 ```
 
 ### Custom Claim validation
@@ -85,54 +80,41 @@ public class Startup
 It allows validating not only on the audience claim in the JWT token, but any type of custom claim that needs to be verified
 
 ```csharp
-using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.IdentityModel.Tokens;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddControllers(mvcOptions =>
 {
-    public void ConfigureServices(IServiceCollection services)
+    // Default configuration with issuer:
+    // One can use the Microsoft OpenID endpoint and provide just the issuer as input for the validation parameters.
+    var claimCheck = new Dictionary<string, string>
     {
-        // Default configuration with issuer:
-        // One can use the Microsoft OpenID endpoint and provide just the issuer as input for the validation parameters.         
-        services.AddMvc(mvcOptions => 
-        {
-            var claimCheck = new Dictionary<string, string>
-            {
-                {"aud", Issuer}
-            };
-            mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
-        });
+        {"aud", Issuer}
+    };
+    mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
 
-        // Custom OpenID endpoint:
-        // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters and custom claims to manipulate how the JWT token should be validated.
-        services.AddMvc(mvcOptions => 
-        {
-            var claimCheck = new Dictionary<string, string>
-            {
-                {"aud", Issuer},
-                {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
-            };
-            mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
-        });
+     // Custom OpenID endpoint:
+    // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters and custom claims to manipulate how the JWT token should be validated.
+    var claimCheck = new Dictionary<string, string>
+    {
+        {"aud", Issuer},
+        {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
+    };
+    mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
 
-        // Default configuration with validation parameters:
-        // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters and custom claims to manipulate how the JWT token should be validated.
-        services.AddMvc(mvcOptions => 
-        {
-            var parameters = new TokenValidationParameters();
+    // Default configuration with validation parameters:
+    // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters and custom claims to manipulate how the JWT token should be validated.
+    var parameters = new TokenValidationParameters();
+    var claimCheck = new Dictionary<string, string>
+    {
+        {"aud", Issuer},
+        {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
+    };
 
-            var claimCheck = new Dictionary<string, string>
-            {
-                {"aud", Issuer},
-                {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
-            };
-
-            mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
-        });
-
-    }
-}
+    mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
+}});
 ```
 
 ## Bypassing authentication
@@ -165,18 +147,20 @@ This package also provides an extra extension to access the [Arcus secret store]
 Access to the secret store will help to provide, for example, issuer symmetric keys.
 
 ```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddAuthentication(...)
-            .AddJwtBearer((options, serviceProvider) =>
-            {
-                var secretProvider = serviceProvider.GetRequiredService<ISecretProvider>();
-                string key = secretProvider.GetRawSecretAsync("JwtSigningKey").GetAwaiter().GetResult();
+using Arcus.Security.Core;
+using Microsoft.AspNetCore.Builder;
 
-                options.TokenValidationParameters = new TokenValidationParameters
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddAuthentication(...)
+                .AddJwtBearer((options, serviceProvider) =>
                 {
-                   IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
-                };
-            })
-}
+                    var secretProvider = serviceProvider.GetRequiredService<ISecretProvider>();
+                    string key = secretProvider.GetRawSecretAsync("JwtSigningKey").GetAwaiter().GetResult();
+
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                       IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key)),
+                    };
+                });
 ```
