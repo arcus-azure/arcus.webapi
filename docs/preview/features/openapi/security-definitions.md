@@ -27,97 +27,85 @@ PM > Install-Package Arcus.WebApi.OpenApi.Extensions
 
 ### Certificate
 
-To indicate that an API is protected by [Certificate authentication](../security/auth/certificate.md), you need to add `CertificateAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
+To indicate that an API is protected by [Certificate authentication](../security/auth/certificate.md), you need to add `CertificateAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckle's Swagger generation:
 
 ```csharp
 using Arcus.WebApi.OpenApi.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddSwaggerGen(setupAction =>
 {
-    public void ConfigureServices(IServiceCollection services)
+    setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "My API v1", Version = "v1" });
+
+    string securitySchemaName = "my-certificate";
+    setupAction.AddSecurityDefinition(securitySchemaName, new OpenApiSecurityScheme
     {
-        services.AddSwaggerGen(setupAction =>
-        {
-            setupAction.SwaggerDoc("v1", new OpenApiInfo { Title = "My API v1", Version = "v1" });
+        Type = SecuritySchemeType.ApiKey
+     });
 
-            string securitySchemaName = "my-certificate";
-            setupAction.AddSecurityDefinition(securitySchemaName, new OpenApiSecurityScheme
-            {
-                Type = SecuritySchemeType.ApiKey
-             });
-
-             setupAction.OperationFilter<CertificateAuthenticationOperationFilter>(securitySchemaName);
-        });
-    }
-}
+         setupAction.OperationFilter<CertificateAuthenticationOperationFilter>(securitySchemaName);
+});
 ```
 
 > Note: the `CertificateAuthenticationOperationFilter` has by default `"certificate"` as `securitySchemaName`.
 
 ### OAuth
 
-To indicate that an API is protected by OAuth, you need to add `OAuthAuthorizeOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
+To indicate that an API is protected by OAuth, you need to add `OAuthAuthorizeOperationFilter` as an `IOperationFilter` when configuring Swashbuckle's Swagger generation:
 
 ```csharp
 using Arcus.WebApi.OpenApi.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddSwaggerGen(setupAction =>
 {
-    public void ConfigureServices(IServiceCollection services)
+    setupAction.SwaggerDoc("v1", new Info { Title = "My API v1", Version = "v1" });
+
+    string securitySchemaName = "my-oauth2";
+    setupAction.AddSecurityDefinition(securitySchemaName, new OAuth2Scheme
     {
-        services.AddSwaggerGen(setupAction =>
-        {
-            setupAction.SwaggerDoc("v1", new Info { Title = "My API v1", Version = "v1" });
+        Flow = "implicit",
+        AuthorizationUrl = $"{authorityUrl}connect/authorize",
+        Scopes = scopes
+    });
 
-            string securitySchemaName = "my-oauth2";
-            setupAction.AddSecurityDefinition(securitySchemaName, new OAuth2Scheme
-            {
-                Flow = "implicit",
-                AuthorizationUrl = $"{authorityUrl}connect/authorize",
-                Scopes = scopes
-            });
-
-            setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(securitySchemaName, new object[] { new[] { "myApiScope1", "myApiScope2" } });
-        });
-    }
-}
+        setupAction.OperationFilter<OAuthAuthorizeOperationFilter>(securitySchemaName, new object[] { new[] { "myApiScope1", "myApiScope2" } });
+});
 ```
 
 > Note: the `OAuthAuthorizeOperationFilter` has by default `"oauth2"` as `securitySchemaName`.
 
 ### Shared Access Key
 
-To indicate that an API is protected by [Shared Access Key authentication](../security/auth/shared-access-key.md), you need to add `SharedAccessKeyAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckles Swagger generation:
+To indicate that an API is protected by [Shared Access Key authentication](../security/auth/shared-access-key.md), you need to add `SharedAccessKeyAuthenticationOperationFilter` as an `IOperationFilter` when configuring Swashbuckle's Swagger generation:
 
 ```csharp
 using Arcus.WebApi.OpenApi.Extensions;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.OpenApi.Models;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddSwaggerGen(setupAction =>
 {
-    public void ConfigureServices(IServiceCollection services)
+    setupAction.SwaggerDoc("v1", new new OpenApiInfo { Title = "My API v1", Version = "v1" });
+
+    string securitySchemaName = "my-sharedaccesskey";
+    setupAction.AddSecurityDefinition(securitySchemaName, new OpenApiSecurityScheme
     {
-        services.AddSwaggerGen(setupAction =>
-        {
-            setupAction.SwaggerDoc("v1", new new OpenApiInfo { Title = "My API v1", Version = "v1" });
+        Name = "X-API-Key",
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header
+     });
 
-            string securitySchemaName = "my-sharedaccesskey";
-            setupAction.AddSecurityDefinition(securitySchemaName, new OpenApiSecurityScheme
-            {
-                Name = "X-API-Key",
-                Type = SecuritySchemeType.ApiKey,
-                In = ParameterLocation.Header
-             });
-
-             setupAction.OperationFilter<SharedAccessKeyAuthenticationOperationFilter>(securitySchemaName);
-        });
-    }
-}
+    setupAction.OperationFilter<SharedAccessKeyAuthenticationOperationFilter>(securitySchemaName);
+});
 ```
 
 > Note: the `SharedAccessKeyAuthenticationOperationFilter` has by default `"sharedaccesskey"` as `securitySchemaName`.

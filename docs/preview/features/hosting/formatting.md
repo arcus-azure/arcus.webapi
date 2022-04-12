@@ -20,16 +20,14 @@ We have provided an extension that will allow you to restrict your input and out
 Following example shows you where you can configure this:
 
 ```csharp
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddControllers(mvcOptions => 
 {
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddMvc(mvcOptions => mvcOptions.OnlyAllowJsonFormatting());
-    }
-}
+    mvcOptions.OnlyAllowJsonFormatting();
+});
 ```
 
 ## Configure JSON format
@@ -39,17 +37,17 @@ Following example shows you where you can configure these options:
 
 ```csharp
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.DependencyInjection;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddControllers(mvcOptions => 
 {
-    public void ConfigureServices(IServiceCollection services)
+    mvcOptions.ConfigureJsonFormatting(jsonOptions =>
     {
-        services.AddMvc(mvcOptions => mvcOptions.ConfigureJsonFormatting(jsonOptions =>
-        {
-            jsonOptions.IgnoreNullValues = true;
-            jsonOptions.Converters.Add(new JsonStringEnumConverter());
-        }));
-    }
-}
+        jsonOptions.IgnoreNullValues = true;
+        jsonOptions.Converters.Add(new JsonStringEnumConverter());
+    })
+});
+```

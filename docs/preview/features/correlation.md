@@ -38,91 +38,76 @@ PM > Install-Package Arcus.WebApi.Logging
 
 ## Usage
 
-To make sure the correlation is added to the HTTP response, following additions have to be made in the `.ConfigureServices` and `Configure` methods:
+To make sure the correlation is added to the HTTP response, following additions have to be made:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.DependencyInjection;
 
-public class Startup
-{
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddHttpCorrelation();
-    }
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+builder.Services.AddHttpCorrelation();
 
-    public void Configure(IApplicationBuilder app, IHostingEnvironment env)
-    {
-        app.UseHttpCorrelation();
-
-        app.UseMvc();
-    }
-}
+WebApplication app = builder.Build();
+app.UseHttpCorrelation();
+app.UseRouting();
 ```
 
-Note: because the correlation is based on <span>ASP.NET</span> Core middleware, it's recommended to place it before the `.UseMvc` call.
+Note: because the correlation is based on <span>ASP.NET</span> Core middleware, it's recommended to place it before the `.UseRouting` call.
 
 ## Configuration
 
 Some extra options are available to alter the functionality of the correlation:
 
 ```csharp
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+builder.Services.AddHttpCorrelation(options =>
 {
-    public void ConfigureServices(IServiceCollection services)
-    {
-        services.AddHttpCorrelation(options =>
-        {
-            // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
-            // ---------------------------------------------------------------------------------
+    // Configuration on the transaction ID (`X-Transaction-ID`) request/response header.
+    // ---------------------------------------------------------------------------------
 
-            // Whether the transaction ID can be specified in the request, and will be used throughout the request handling.
-            // The request will return early when the `.AllowInRequest` is set to `false` and the request does contain the header (default: true).
-            options.Transaction.AllowInRequest = true;
+    // Whether the transaction ID can be specified in the request, and will be used throughout the request handling.
+    // The request will return early when the `.AllowInRequest` is set to `false` and the request does contain the header (default: true).
+    options.Transaction.AllowInRequest = true;
 
-            // Whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
-            // When the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header, no value will be available for the transaction ID; 
-            // otherwise a GUID will be generated (default: true).
-            options.Transaction.GenerateWhenNotSpecified = true;
+    // Whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
+    // When the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header, no value will be available for the transaction ID; 
+    // otherwise a GUID will be generated (default: true).
+    options.Transaction.GenerateWhenNotSpecified = true;
 
-            // Whether to include the transaction ID in the response (default: true).
-            options.Transaction.IncludeInResponse = true;
+    // Whether to include the transaction ID in the response (default: true).
+    options.Transaction.IncludeInResponse = true;
 
-            // The header to look for in the HTTP request, and will be set in the HTTP response (default: X-Transaction-ID).
-            options.Transaction.HeaderName = "X-Transaction-ID";
+    // The header to look for in the HTTP request, and will be set in the HTTP response (default: X-Transaction-ID).
+    options.Transaction.HeaderName = "X-Transaction-ID";
 
-            // The function that will generate the transaction ID, when the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header.
-            // (default: new `Guid`).
-            options.Transaction.GenerateId = () => $"Transaction-{Guid.NewGuid()}";
+    // The function that will generate the transaction ID, when the `.GenerateWhenNotSpecified` is set to `false` and the request doesn't contain the header.
+    // (default: new `Guid`).
+    options.Transaction.GenerateId = () => $"Transaction-{Guid.NewGuid()}";
 
-            // Configuration on the operation ID (`RequestId`) response header.
-            // ----------------------------------------------------------------
+    // Configuration on the operation ID (`RequestId`) response header.
+    // ----------------------------------------------------------------
 
-            // Whether to include the operation ID in the response (default: true).
-            options.Operation.IncludeInResponse = true;
+    // Whether to include the operation ID in the response (default: true).
+    options.Operation.IncludeInResponse = true;
 
-            // The header that will contain the operation ID in the HTTP response (default: RequestId).
-            options.Operation.HeaderName = "RequestId";
+    // The header that will contain the operation ID in the HTTP response (default: RequestId).
+    options.Operation.HeaderName = "RequestId";
 
-            // The function that will generate the operation ID header value.
-            // (default: new `Guid`).
-            options.Operation.GenerateId = () => $"Operation-{Guid.NewGuid()}";
+    // The function that will generate the operation ID header value.
+    // (default: new `Guid`).
+    options.Operation.GenerateId = () => $"Operation-{Guid.NewGuid()}";
 
-            // Configuration on operation parent ID request header (`Request-Id`).
-            // ------------------------------------------------------------------
+    // Configuration on operation parent ID request header (`Request-Id`).
+    // ------------------------------------------------------------------
 
-            // Whether to extract the operation parent ID from the incoming request following W3C Trace-Context standard (default: true).
-            // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
-            options.UpstreamService.ExtractFromRequest = false;
+    // Whether to extract the operation parent ID from the incoming request following W3C Trace-Context standard (default: true).
+    // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
+    options.UpstreamService.ExtractFromRequest = false;
 
-            // The header that will contain the operation parent ID in the HTTP request (default: Request-Id).
-            options.UpstreamService.OperationParentIdHeaderName = "x-request-id";
-        });
-    }
-}
+    // The header that will contain the operation parent ID in the HTTP request (default: Request-Id).
+    options.UpstreamService.OperationParentIdHeaderName = "x-request-id";
+});
 ```
 
 ## Dependency injection
@@ -172,21 +157,19 @@ The enricher requires access to the application services so it can get the corre
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
 using Serilog;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+builder.Host.UseSerilog((context, serviceProvider, config) =>
 {
-    public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-    {
-        app.UseHttpCorrelation();
-        
-        Log.Logger = new LoggerConfiguration()
-            .Enrich.WithHttpCorrelationInfo(app.ApplicationServices)
-            .WriteTo.Console()
-            .CreateLogger();
-    }
-}
+    return new LoggerConfiguration()
+        .Enrich.WithHttpCorrelationInfo(serviceProvider)
+        .WriteTo.Console()
+        .CreateLogger();
+});
+
+WebApplication app = builder.Build();
+app.UseHttpCorrelation();
 ```
 
 ## Using correlation within Azure Functions

@@ -42,11 +42,9 @@ This filter will then add authentication to all endpoints via one or many certif
 ### Usage
 
 The authentication requires a service dependency to be registered with the services container of the <span>ASP.NET</span> request pipeline, which can be one of the following:
-- Arcus secret store: see [our offical documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
+- Arcus secret store: see [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 - `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
 - `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values.
-
-This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class.
 
 Each certificate property that should be validated can use a different service dependency. 
 This mapping of what service which property uses, is defined in an `CertificateAuthenticationValidator` instance.
@@ -54,39 +52,38 @@ This mapping of what service which property uses, is defined in an `CertificateA
 Once this is done, the `CertificateAuthenticationFilter` can be added to the filters that will be applied to all actions:
 
 ```csharp
+using Arcus.Security.Core.Caching.Configuration;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+builder.Services.AddSecretStore(stores => 
 {
-    public void ConfigureServices(IServiceCollections services)
+    stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+});
+
+var certificateValidator =
+    new CertificateAuthenticationValidator(
+        new CertificateAuthenticationConfigBuilder()
+            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+            .Build());
+
+builder.Services.AddSingleton(certificateValidator);
+
+builder.Services.AddControllers(mvcOptions => 
+{
+    // Adds certificate authentication to the request pipeline.
+    mvcOptions.Filters.AddCertificateAuthentication();
+   
+    // Additional consumer-configurable options to change the behavior of the authentication filter.
+    mvcOptions.Filters.AddCertificateAuthentication(configureOptions: options =>
     {
-        // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
-
-        var certificateValidator =
-            new CertificateAuthenticationValidator(
-                new CertificateAuthenticationConfigBuilder()
-                    .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-                    .Build());
-
-        services.AddSingleton(certificateValidator);
-
-        services.AddMvc(mvcOptions => 
-        {
-            // Adds certificate authentication to the request pipeline.
-            mvcOptions.Filters.AddCertificateAuthentication());
-
-            // Additional consumer-configurable options to change the behavior of the authentication filter.
-            mvcOptions.Filters.AddCertificateAuthentication(configureOptions: options =>
-            {
-                // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
-                // (default: `false`)
-                options.EmitSecurityEvents = true;
-            }));
-        });
-    }
-}
+        // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
+        // (default: `false`)
+        options.EmitSecurityEvents = true;
+    }));
+});
 ```
 
 ## Enforce certificate authentication per controller or operation
@@ -103,30 +100,26 @@ The authentication requires a service dependency to be registered with the servi
 - `Configuration`: key/value pairs in the configuration of the <span>ASP.NET</span> application.
 - `IX509ValidationLocation`/`X509ValidationLocation`: custom or built-in implementation that retrieves the expected certificate values
 
-This registration of the service is typically done in the `ConfigureServices` method of the `Startup` class:
-
 ```csharp
+using Arcus.Security.Core.Caching.Configuration;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Builder;
 
-public class Startup
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+
+// See https://security.arcus-azure.net/features/secret-store/ for more information.
+builder.Services.AddSecretStore(stores => 
 {
-    public void ConfigureServices(IServiceCollections services)
-    {
-        // See https://security.arcus-azure.net/features/secret-store/ for more information.
-        services.AddSecretStore(stores =>  stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+    stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
+});
 
-        var certificateValidator = 
-            new CertificateAuthenticationValidator(
-                new CertificateAuthenticationConfigBuilder()
-                    .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-                    .Build());
+var certificateValidator = 
+    new CertificateAuthenticationValidator(
+        new CertificateAuthenticationConfigBuilder()
+            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
+            .Build());
 
-        services.AddSingleton(certificateValidator);
-    
-        services.AddMvc();
-    }
-}
+builder.Services.AddSingleton(certificateValidator);
 ```
 
 After that, the `CertificateAuthenticationAttribute` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:
