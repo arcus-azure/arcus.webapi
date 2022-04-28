@@ -112,8 +112,19 @@ stages:
             parameters:
               repositoryName: 'arcus-azure/arcus.webapi'
               releaseNotes: |
-                Install new version via [NuGet](https://www.nuget.org/packages/Arcus.WebApi.All/$(Build.BuildNumber))
+                Install the $(Project).Security packages that you need via NuGet, for instance [$(Project).Security](https://www.nuget.org/packages/$(Project).Security/$(Build.BuildNumber)):
                 ```shell
-                PM > Install-Package Arcus.WebApi.All --Version $(Build.BuildNumber)
+                PM > Install-Package $(Project).Security --Version $(Build.BuildNumber)
                 ```
+                For a complete list of all $(Project) packages see the [documentation](https://webapi.arcus-azure.net/).
+                ## What's new?
+                ### Features
+                * Provide the capability to do something (#123)
+                ### Fixes / Changes
+                None.
+                ### Breaking Changes
+                None.
+                ### Removal
+                None.
+
           - template: 'nuget/publish-official-package.yml@templates'
