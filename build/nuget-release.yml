@@ -126,5 +126,4 @@ stages:
                 None.
                 ### Removal
                 None.
-
           - template: 'nuget/publish-official-package.yml@templates'
