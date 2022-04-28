@@ -112,7 +112,7 @@ stages:
             parameters:
               repositoryName: 'arcus-azure/arcus.webapi'
               releaseNotes: |
-                Install the $(Project).Security packages that you need via NuGet, for instance [$(Project).Security](https://www.nuget.org/packages/$(Project).Security/$(Build.BuildNumber)):
+                Install the $(Project) packages that you need via NuGet, for instance [$(Project).Security](https://www.nuget.org/packages/$(Project).Security/$(Build.BuildNumber)):
                 ```shell
                 PM > Install-Package $(Project).Security --Version $(Build.BuildNumber)
                 ```
