@@ -74,7 +74,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                var request = HttpRequestBuilder.Get(DefaultController.GetRoute);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -112,7 +112,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                var request = HttpRequestBuilder.Get(DefaultController.GetRoute);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))

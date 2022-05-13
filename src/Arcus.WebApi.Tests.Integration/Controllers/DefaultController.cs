@@ -4,9 +4,9 @@ namespace Arcus.WebApi.Tests.Integration.Controllers
 {
     [ApiController]
     [Route(GetRoute)]
-    public class HealthController : ControllerBase
+    public class DefaultController : ControllerBase
     {
-        public const string GetRoute = "api/v1/health";
+        public const string GetRoute = "api/v1/default";
 
         [HttpGet]
         public IActionResult Get()

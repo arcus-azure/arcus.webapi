@@ -63,7 +63,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
                     var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
+                        .Get(DefaultController.GetRoute)
                         .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
@@ -91,7 +91,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                var request = HttpRequestBuilder.Get(DefaultController.GetRoute);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -127,7 +127,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
                     var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
+                        .Get(DefaultController.GetRoute)
                         .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
@@ -157,7 +157,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             {
                 var accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
+                    .Get(DefaultController.GetRoute)
                     .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                 // Act
@@ -195,7 +195,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     var accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
                     var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
+                        .Get(DefaultController.GetRoute)
                         .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
@@ -219,7 +219,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             {
                 string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
+                    .Get(DefaultController.GetRoute)
                     .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                 // Act
@@ -260,7 +260,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
                     var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
+                        .Get(DefaultController.GetRoute)
                         .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
@@ -299,7 +299,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 
                 await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
                 {
-                    var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                    var request = HttpRequestBuilder.Get(DefaultController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await testApiServer.SendAsync(request))
@@ -347,7 +347,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             {
                 string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
+                    .Get(DefaultController.GetRoute)
                     .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                 // Act
@@ -383,7 +383,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             {
                 string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
+                    .Get(DefaultController.GetRoute)
                     .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                 // Act

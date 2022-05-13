@@ -67,7 +67,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
+                    .Get(DefaultController.GetRoute)
                     .WithHeader(headerName, headerValue);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -650,7 +650,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
 
         [Theory]
-        [InlineData(HealthController.GetRoute)]
+        [InlineData(DefaultController.GetRoute)]
         [InlineData("/api/v1")]
         [InlineData("/api")]
         [InlineData("api")]
@@ -664,7 +664,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                var request = HttpRequestBuilder.Get(DefaultController.GetRoute);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -725,7 +725,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
+                    .Get(DefaultController.GetRoute)
                     .WithHeader(headerName, headerValue);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
