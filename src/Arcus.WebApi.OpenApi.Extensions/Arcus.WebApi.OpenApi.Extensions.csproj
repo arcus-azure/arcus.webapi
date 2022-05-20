@@ -5,13 +5,14 @@
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Open API</PackageTags>
     <Description>Provides extensions that can be used when documenting an API using Swashbuckle.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://webapi.arcus-azure.net/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Open API</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <GenerateOpenApiDocuments>false</GenerateOpenApiDocuments>

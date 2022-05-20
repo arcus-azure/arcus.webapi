@@ -5,13 +5,14 @@
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
-    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Azure Functions;Logging; Correlation</PackageTags>
     <Description>Provides capabilities for easily integrating logging when building Azure Functions.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
     <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://webapi.arcus-azure.net/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
     <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Azure Functions;Logging; Correlation</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <NoWarn>NU5125;NU5048</NoWarn>
