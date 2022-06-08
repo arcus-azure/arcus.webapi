@@ -155,8 +155,6 @@ namespace Arcus.WebApi.Logging
         {
             using (DurationMeasurement duration = DurationMeasurement.Start())
             {
-
-
                 bool includeRequestBody = ShouldIncludeRequestBody(attributeExcludeFilter);
                 bool includeResponseBody = ShouldIncludeResponseBody(attributeExcludeFilter);
 
