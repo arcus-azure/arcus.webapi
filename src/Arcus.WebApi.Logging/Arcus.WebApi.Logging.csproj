@@ -37,10 +37,10 @@
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <PackageReference Include="Guard.Net" Version="2.0.0" />
-    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="[2.4.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Telemetry.AspNetCore" Version="[2.4.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Correlation" Version="[2.4.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="[2.4.0,3.0.0)" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="2.5.0-preview-1" />
+    <PackageReference Include="Arcus.Observability.Telemetry.AspNetCore" Version="2.5.0-preview-1" />
+    <PackageReference Include="Arcus.Observability.Correlation" Version="2.5.0-preview-1" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="2.5.0-preview-1" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' != 'net6.0'">
