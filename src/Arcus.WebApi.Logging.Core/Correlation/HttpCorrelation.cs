@@ -76,51 +76,6 @@ namespace Arcus.WebApi.Logging.Correlation
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
-        /// </summary>
-        /// <param name="options">The options controlling how the correlation should happen.</param>
-        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
-        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
-        /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
-        /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
-        [Obsolete("Use the constructor overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
-        public HttpCorrelation(
-            IOptions<CorrelationInfoOptions> options,
-            IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
-            ILogger<HttpCorrelation> logger)
-            : this(Options.Create(CreateHttpCorrelationOptions(options?.Value)), httpContextAccessor, correlationInfoAccessor, logger)
-        {
-        }
-
-        private static HttpCorrelationInfoOptions CreateHttpCorrelationOptions(CorrelationInfoOptions options)
-        {
-            if (options is null)
-            {
-                return new HttpCorrelationInfoOptions();
-            }
-            
-            return new HttpCorrelationInfoOptions
-            {
-                Operation =
-                {
-                    GenerateId = options.Operation.GenerateId,
-                    HeaderName = options.Operation.HeaderName,
-                    IncludeInResponse = options.Operation.IncludeInResponse
-                },
-                Transaction =
-                {
-                    GenerateId = options.Transaction.GenerateId,
-                    HeaderName = options.Transaction.HeaderName,
-                    IncludeInResponse = options.Transaction.IncludeInResponse,
-                    AllowInRequest = options.Transaction.AllowInRequest,
-                    GenerateWhenNotSpecified = options.Transaction.GenerateWhenNotSpecified
-                }
-            };
-        }
-
-        /// <summary>
         /// Gets the current correlation information initialized in this context.
         /// </summary>
         public CorrelationInfo GetCorrelationInfo()
