@@ -40,7 +40,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
             services.AddScoped(serviceProvider =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<CorrelationInfoOptions>>();
+                var options = serviceProvider.GetRequiredService<IOptions<HttpCorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
