@@ -20,12 +20,23 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds operation and transaction correlation to the application.
         /// </summary>
         /// <param name="services">The services collection containing the dependency injection services.</param>
+        public static IServiceCollection AddHttpCorrelation(this IServiceCollection services)
+        {
+            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
+
+            return AddHttpCorrelation(services, configureOptions: (HttpCorrelationInfoOptions options) => { });
+        }
+
+        /// <summary>
+        /// Adds operation and transaction correlation to the application.
+        /// </summary>
+        /// <param name="services">The services collection containing the dependency injection services.</param>
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddHttpCorrelation) + " method overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
         public static IServiceCollection AddHttpCorrelation(
             this IServiceCollection services, 
-            Action<CorrelationInfoOptions> configureOptions = null)
+            Action<CorrelationInfoOptions> configureOptions)
         {
             Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
 
