@@ -61,6 +61,57 @@ app.UseEndpoints(endpoints => endpoints.MapControllers());
 If you have multiple middleware components configured, it is advised to put the `ExceptionHandlingMiddleware` as soon as possible.
 By doing so, unhandled exceptions that might occur in other middleware components will also be logged by the `ExceptionHandlingMiddleware` component.
 
+### Configuration
+
+When custom exception handling is required, you can inherit from the `ExceptionHandlingMiddleware` to create your own middleware component and register it with Arcus' extension.
+
+This example implements the exception handling middleware to influence the log message and returns a custom determination of the HTTP response status code.
+
+```csharp
+using Arcus.WebApi.Logging;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+
+public class MyExceptionHandlingMiddleware : ExceptionHandlingMiddleware
+{
+    public MyExceptionHandlingMiddleware(RequestDelegate next) : base(next)
+    {
+    }
+
+    protected override void LogException(ILoggerFactory loggerFactory, Exception exception)
+    {
+        ILogger logger = loggerFactory.CreateLogger<MyExceptionHandlingMiddleware>();
+        logger.LogCritical(exception, "Custom exception handling!");
+    }
+
+    protected override HttpStatusCode DetermineResponseStatusCode(Exception exception)
+    {
+        if (exception is ValidationException)
+        {
+            return HttpStatusCode.BadRequest;
+        }
+
+        if (exception is TimeoutException)
+        {
+            return HttpStatusCode.ServerTimeout;
+        }
+
+        return HttpStatusCode.InternalServerError;
+    }
+}
+```
+
+Next, make sure that you pass along the exception middleware to the exception handling extension.
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+WebApplication app = builder.Build();
+
+app.UseExceptionHandling<MyExceptionHandlingMiddleware>();
+```
+
 ## Logging incoming requests
 
 The `RequestTrackingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log all received HTTP requests.

@@ -62,31 +62,48 @@ namespace Arcus.WebApi.Logging
             {
                 await _next(context);
             }
+            catch (Exception exception)
+            {
+                LogException(loggerFactory, exception);
+
+                HttpStatusCode statusCode = DetermineResponseStatusCode(exception);
+                context.Response.StatusCode = (int) statusCode;
+            }
+        }
+
+        /// <summary>
+        /// Logs the caught <paramref name="exception"/> before the response it sent back.
+        /// </summary>
+        /// <param name="loggerFactory">The factory instance to create <see cref="ILogger"/> instances, specifically for the <paramref name="exception"/>.</param>
+        /// <param name="exception">The caught exception during the application pipeline.</param>
+        protected virtual void LogException(ILoggerFactory loggerFactory, Exception exception)
+        {
+            string categoryName = _getLoggingCategory() ?? String.Empty;
+            ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
+
+            logger.LogCritical(exception, exception.Message);
+        }
+
+        /// <summary>
+        /// Determine the HTTP status code based on the caught exception.
+        /// </summary>
+        /// <param name="exception">The caught exception during the application pipeline.</param>
+        /// <returns>An HTTP status code that represents the <paramref name="exception"/>.</returns>
+        protected virtual HttpStatusCode DetermineResponseStatusCode(Exception exception)
+        {
 #if NET6_0
-            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) 
+            if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badRequestException)
 #else
-            catch (Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException ex) 
+            if (exception is Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException badRequestException)
 #endif
             {
                 // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
                 // When the Kestrel maximum request body restriction is exceeded, for example, this kind of exception is thrown.
 
-                LogException(loggerFactory, ex);
-                context.Response.StatusCode = ex.StatusCode;
+                return (HttpStatusCode) badRequestException.StatusCode;
             }
-            catch (Exception ex)
-            {
-                LogException(loggerFactory, ex);
-                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
-            }
-        }
 
-        private void LogException(ILoggerFactory loggerFactory, Exception ex)
-        {
-            string categoryName = _getLoggingCategory() ?? String.Empty;
-            var logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
-
-            logger.LogCritical(ex, ex.Message);
+            return HttpStatusCode.InternalServerError;
         }
     }
 }
