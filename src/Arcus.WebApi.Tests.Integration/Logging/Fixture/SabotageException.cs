@@ -30,7 +30,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         /// <param name="innerException">The exception that was the cause of the current exception.</param>
         public SabotageException(string message, Exception innerException) : base(message, innerException)
         {
-            
         }
     }
 }
