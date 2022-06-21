@@ -64,7 +64,9 @@ namespace Arcus.WebApi.Logging
             }
             catch (Exception exception)
             {
-                LogException(loggerFactory, exception);
+                string categoryName = _getLoggingCategory() ?? String.Empty;
+                ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
+                LogException(logger, exception);
 
                 HttpStatusCode statusCode = DetermineResponseStatusCode(exception);
                 context.Response.StatusCode = (int) statusCode;
@@ -74,13 +76,10 @@ namespace Arcus.WebApi.Logging
         /// <summary>
         /// Logs the caught <paramref name="exception"/> before the response it sent back.
         /// </summary>
-        /// <param name="loggerFactory">The factory instance to create <see cref="ILogger"/> instances, specifically for the <paramref name="exception"/>.</param>
+        /// <param name="logger">The instance to track the caught <paramref name="exception"/>.</param>
         /// <param name="exception">The caught exception during the application pipeline.</param>
-        protected virtual void LogException(ILoggerFactory loggerFactory, Exception exception)
+        protected virtual void LogException(ILogger logger, Exception exception)
         {
-            string categoryName = _getLoggingCategory() ?? String.Empty;
-            ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
-
             logger.LogCritical(exception, exception.Message);
         }
 

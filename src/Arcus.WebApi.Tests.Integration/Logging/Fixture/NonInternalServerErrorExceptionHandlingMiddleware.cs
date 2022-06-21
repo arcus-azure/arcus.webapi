@@ -22,9 +22,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         {
         }
 
-        protected override void LogException(ILoggerFactory loggerFactory, Exception exception)
+        protected override void LogException(ILogger logger, Exception exception)
         {
-            ILogger logger = loggerFactory.CreateLogger<NonInternalServerErrorExceptionHandlingMiddleware>();
             logger.LogCritical(exception, "Testing!");
         }
 
