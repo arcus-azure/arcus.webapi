@@ -68,8 +68,7 @@ namespace Arcus.WebApi.Logging
                 ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
                 LogException(logger, exception);
 
-                HttpStatusCode statusCode = DetermineResponseStatusCode(exception);
-                context.Response.StatusCode = (int) statusCode;
+                WriteFailureToResponse(exception, context);
             }
         }
 
@@ -87,8 +86,9 @@ namespace Arcus.WebApi.Logging
         /// Determine the HTTP status code based on the caught exception.
         /// </summary>
         /// <param name="exception">The caught exception during the application pipeline.</param>
+        /// <param name="context">The context instance for the current HTTP request.</param>
         /// <returns>An HTTP status code that represents the <paramref name="exception"/>.</returns>
-        protected virtual HttpStatusCode DetermineResponseStatusCode(Exception exception)
+        protected virtual void WriteFailureToResponse(Exception exception, HttpContext context)
         {
 #if NET6_0
             if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badRequestException)
@@ -99,10 +99,10 @@ namespace Arcus.WebApi.Logging
                 // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
                 // When the Kestrel maximum request body restriction is exceeded, for example, this kind of exception is thrown.
 
-                return (HttpStatusCode) badRequestException.StatusCode;
+                context.Response.StatusCode = badRequestException.StatusCode;
             }
 
-            return HttpStatusCode.InternalServerError;
+            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
         }
     }
 }
