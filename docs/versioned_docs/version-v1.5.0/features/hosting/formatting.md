@@ -59,7 +59,7 @@ builder.Services.AddControllers(options =>
     options.OnlyAllowJsonFormatting();
     options.ConfigureJsonFormatting(jsonOptions =>
     {
-        jsonOptions.IgnoreNullValues = true;
+        jsonOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
     });
 });
