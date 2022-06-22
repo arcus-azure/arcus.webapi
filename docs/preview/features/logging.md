@@ -65,7 +65,7 @@ By doing so, unhandled exceptions that might occur in other middleware component
 
 When custom exception handling is required, you can inherit from the `ExceptionHandlingMiddleware` to create your own middleware component and register it with Arcus' extension.
 
-This example implements the exception handling middleware to influence the log message and returns a custom determination of the HTTP response status code.
+This example implements the exception handling middleware to influence the log message and adds a custom determination of the HTTP response status code.
 
 ```csharp
 using Arcus.WebApi.Logging;
@@ -78,25 +78,25 @@ public class MyExceptionHandlingMiddleware : ExceptionHandlingMiddleware
     {
     }
 
-    protected override void LogException(ILoggerFactory loggerFactory, Exception exception)
+    protected override void LogException(ILogger logger, Exception exception)
     {
-        ILogger logger = loggerFactory.CreateLogger<MyExceptionHandlingMiddleware>();
         logger.LogCritical(exception, "Custom exception handling!");
     }
 
-    protected override HttpStatusCode DetermineResponseStatusCode(Exception exception)
+    protected override void WriteFailureToResponse(Exception exception, HttpStatusCode defaultFailureStatusCode, HttpContext context)
     {
         if (exception is ValidationException)
         {
-            return HttpStatusCode.BadRequest;
+            context.Response.StatusCode = (int) HttpStatusCode.BadRequest;
         }
-
-        if (exception is TimeoutException)
+        else if (exception is TimeoutException)
         {
-            return HttpStatusCode.ServerTimeout;
+            context.Response.StatusCode = (int) HttpStatusCode.ServerTimeout;
         }
-
-        return HttpStatusCode.InternalServerError;
+        else 
+        {
+            context.Response.StatusCode = (int) defaultFailureStatusCode;
+        }
     }
 }
 ```
