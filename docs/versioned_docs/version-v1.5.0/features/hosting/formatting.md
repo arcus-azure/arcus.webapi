@@ -20,7 +20,10 @@ We have provided an extension that will allow you to restrict your input and out
 Following example shows you where you can configure this in your `Program.cs`:
 
 ```csharp
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
 builder.Services.AddControllers(options =>
 {
