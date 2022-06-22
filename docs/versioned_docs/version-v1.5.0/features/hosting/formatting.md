@@ -55,7 +55,10 @@ Following example shows you where you can configure these options in your `Progr
 
 ```csharp
 using System.Text.Json.Serialization;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Mvc;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
 builder.Services.AddControllers(options =>
 {
