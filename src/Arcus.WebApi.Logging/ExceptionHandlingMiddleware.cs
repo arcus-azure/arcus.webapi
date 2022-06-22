@@ -74,14 +74,14 @@ namespace Arcus.WebApi.Logging
                 ILogger logger = CreateLogger(loggerFactory);
                 LogException(logger, exception);
 
-                WriteFailureToResponse(exception, context, (HttpStatusCode) exception.StatusCode);
+                WriteFailureToResponse(exception, (HttpStatusCode) exception.StatusCode, context);
             }
             catch (Exception exception)
             {
                 ILogger logger = CreateLogger(loggerFactory);
                 LogException(logger, exception);
 
-                WriteFailureToResponse(exception, context, HttpStatusCode.InternalServerError);
+                WriteFailureToResponse(exception, HttpStatusCode.InternalServerError, context);
             }
         }
 
@@ -107,10 +107,10 @@ namespace Arcus.WebApi.Logging
         /// Determine the HTTP status code based on the caught exception.
         /// </summary>
         /// <param name="exception">The caught exception during the application pipeline.</param>
-        /// <param name="context">The context instance for the current HTTP request.</param>
         /// <param name="defaultFailureStatusCode">The default HTTP status code for the failure that was determined by the caught <paramref name="exception"/>.</param>
+        /// <param name="context">The context instance for the current HTTP request.</param>
         /// <returns>An HTTP status code that represents the <paramref name="exception"/>.</returns>
-        protected virtual void WriteFailureToResponse(Exception exception, HttpContext context, HttpStatusCode defaultFailureStatusCode)
+        protected virtual void WriteFailureToResponse(Exception exception, HttpStatusCode defaultFailureStatusCode, HttpContext context)
         {
             context.Response.StatusCode = (int) defaultFailureStatusCode;
         }
