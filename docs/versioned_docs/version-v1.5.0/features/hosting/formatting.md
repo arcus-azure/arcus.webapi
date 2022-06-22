@@ -63,7 +63,6 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
 builder.Services.AddControllers(options =>
 {
-    options.OnlyAllowJsonFormatting();
     options.ConfigureJsonFormatting(jsonOptions =>
     {
         jsonOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
