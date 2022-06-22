@@ -27,7 +27,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             logger.LogCritical(exception, "Testing!");
         }
 
-        protected override void WriteFailureToResponse(Exception exception, HttpContext context)
+        protected override void WriteFailureToResponse(Exception exception, HttpContext context, HttpStatusCode defaultFailureStatusCode)
         {
             context.Response.StatusCode = (int) BogusGenerator.PickRandomWithout(HttpStatusCode.InternalServerError);
         }

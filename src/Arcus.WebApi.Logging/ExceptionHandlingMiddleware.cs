@@ -62,14 +62,35 @@ namespace Arcus.WebApi.Logging
             {
                 await _next(context);
             }
-            catch (Exception exception)
+#if NET6_0
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException exception)
+#else
+            catch (Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException exception)
+#endif
             {
-                string categoryName = _getLoggingCategory() ?? String.Empty;
-                ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
+                // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
+                // When the Kestrel maximum request body restriction is exceeded, for example, this kind of exception is thrown.
+
+                ILogger logger = CreateLogger(loggerFactory);
                 LogException(logger, exception);
 
-                WriteFailureToResponse(exception, context);
+                WriteFailureToResponse(exception, context, (HttpStatusCode) exception.StatusCode);
             }
+            catch (Exception exception)
+            {
+                ILogger logger = CreateLogger(loggerFactory);
+                LogException(logger, exception);
+
+                WriteFailureToResponse(exception, context, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private ILogger CreateLogger(ILoggerFactory loggerFactory)
+        {
+            string categoryName = _getLoggingCategory() ?? String.Empty;
+            ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
+
+            return logger;
         }
 
         /// <summary>
@@ -87,22 +108,11 @@ namespace Arcus.WebApi.Logging
         /// </summary>
         /// <param name="exception">The caught exception during the application pipeline.</param>
         /// <param name="context">The context instance for the current HTTP request.</param>
+        /// <param name="defaultFailureStatusCode">The default HTTP status code for the failure that was determined by the caught <paramref name="exception"/>.</param>
         /// <returns>An HTTP status code that represents the <paramref name="exception"/>.</returns>
-        protected virtual void WriteFailureToResponse(Exception exception, HttpContext context)
+        protected virtual void WriteFailureToResponse(Exception exception, HttpContext context, HttpStatusCode defaultFailureStatusCode)
         {
-#if NET6_0
-            if (exception is Microsoft.AspNetCore.Http.BadHttpRequestException badRequestException)
-#else
-            if (exception is Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException badRequestException)
-#endif
-            {
-                // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
-                // When the Kestrel maximum request body restriction is exceeded, for example, this kind of exception is thrown.
-
-                context.Response.StatusCode = badRequestException.StatusCode;
-            }
-
-            context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+            context.Response.StatusCode = (int) defaultFailureStatusCode;
         }
     }
 }
