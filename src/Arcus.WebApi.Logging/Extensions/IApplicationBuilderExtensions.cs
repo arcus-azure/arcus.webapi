@@ -16,11 +16,26 @@ namespace Microsoft.AspNetCore.Builder
         /// Adds the <see cref="ExceptionHandlingMiddleware"/> type to the application's request pipeline.
         /// </summary>
         /// <param name="app">The builder to configure the application's request pipeline.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="app"/> is <c>null</c>.</exception>
         public static IApplicationBuilder UseExceptionHandling(this IApplicationBuilder app)
         {
-            Guard.NotNull(app, nameof(app));
+            Guard.NotNull(app, nameof(app), "Requires an application builder instance to add the exception middleware component");
 
             return app.UseMiddleware<ExceptionHandlingMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds custom exception handling to the application request's pipeline using the <typeparamref name="TMiddleware"/> custom type implementation of <see cref="ExceptionHandlingMiddleware"/>.
+        /// </summary>
+        /// <typeparam name="TMiddleware">The custom type implementation of <see cref="ExceptionHandlingMiddleware"/>.</typeparam>
+        /// <param name="app">The builder to configure the application request's pipeline.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="app"/> is <c>null</c>.</exception>
+        public static IApplicationBuilder UseExceptionHandling<TMiddleware>(this IApplicationBuilder app)
+            where TMiddleware : ExceptionHandlingMiddleware
+        {
+            Guard.NotNull(app, nameof(app), "Requires an application builder instance to add the exception middleware component");
+
+            return app.UseMiddleware<TMiddleware>();
         }
 
         /// <summary>
