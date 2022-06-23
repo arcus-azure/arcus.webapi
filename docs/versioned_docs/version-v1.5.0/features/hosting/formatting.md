@@ -17,23 +17,8 @@ PM > Install-Package Arcus.WebApi.Hosting
 ## Restricting JSON format
 We have provided an extension that will allow you to restrict your input and output formatting to only JSON formatting (Only the `SystemTextJsonInputFormatter` will remain). This means that all other incoming content will result in `UnsupportedMediaType` failures and outgoing content will fail to serialize back to the sender. With this functionality, you'll be sure that you only have to deal with JSON.
 
-Following example shows you where you can configure this in your `Program.cs`:
+Following example shows you where you can configure this:
 
-```csharp
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-builder.Services.AddControllers(options =>
-{
-    options.OnlyAllowJsonFormatting();
-});
-```
-
-<details>
-  <summary>Example for .NET Core 5 and earlier</summary>
-    
 ```csharp
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
@@ -47,33 +32,11 @@ public class Startup
 }
 ```
 
-</details>
-    
 ## Configure JSON format
 We have provided an extension that will allow you to configure the input and output JSON formatting in one go. This means that any options you configure in this extension will automatically apply to the incoming model as well as the outgoing model. This makes the JSON formatting more streamlined and easier to maintain.
 
-Following example shows you where you can configure these options in your `Program.cs`:
+Following example shows you where you can configure these options:
 
-```csharp
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-builder.Services.AddControllers(options =>
-{
-    options.ConfigureJsonFormatting(jsonOptions =>
-    {
-        jsonOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
-        jsonOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-});
-```
-    
-<details>
-  <summary>Example for .NET Core 5 and earlier</summary>
-    
 ```csharp
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Mvc;
@@ -90,6 +53,3 @@ public class Startup
         }));
     }
 }
-```
-    
-</details>
