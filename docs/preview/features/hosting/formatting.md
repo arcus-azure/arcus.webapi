@@ -25,9 +25,9 @@ using Microsoft.AspNetCore.Mvc;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
-builder.Services.AddControllers(options =>
+builder.Services.AddControllers(mvcOptions =>
 {
-    options.OnlyAllowJsonFormatting();
+    mvcOptions.OnlyAllowJsonFormatting();
 });
 ```
 
@@ -61,11 +61,10 @@ using Microsoft.AspNetCore.Mvc;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
-builder.Services.AddControllers(options =>
+builder.Services.AddControllers(mvcOptions =>
 {
-    options.ConfigureJsonFormatting(jsonOptions =>
+    mvcOptions.ConfigureJsonFormatting(jsonOptions =>
     {
-        jsonOptions.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
     });
 });
@@ -85,11 +84,10 @@ public class Startup
     {
         services.AddMvc(mvcOptions => mvcOptions.ConfigureJsonFormatting(jsonOptions =>
         {
-            jsonOptions.IgnoreNullValues = true;
             jsonOptions.Converters.Add(new JsonStringEnumConverter());
         }));
     }
 }
 ```
-    
+
 </details>
