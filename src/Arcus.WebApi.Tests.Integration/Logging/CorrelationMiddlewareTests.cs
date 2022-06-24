@@ -331,8 +331,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithCorrelateOptionsOperationParentExtractFromRequest_UsesUpstreamOperationId(bool extractFromRequest)
         {
             // Arrange
-            var operationId = Guid.NewGuid().ToString();
-            var operationParentId = $"|{Guid.NewGuid()}.{operationId}";
+            var operationParentId = Guid.NewGuid().ToString();
+            var requestId = $"|{Guid.NewGuid()}.{operationParentId}";
             var options = new TestApiServerOptions()
                           .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.OperationParent.ExtractFromRequest = extractFromRequest))
                           .PreConfigure(app => app.UseHttpCorrelation());
@@ -341,15 +341,16 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             {
                 var request = HttpRequestBuilder
                               .Get(CorrelationController.GetRoute)
-                              .WithHeader("Request-Id", operationParentId);
+                              .WithHeader("Request-Id", requestId);
 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string actualOperationId = GetResponseHeader(response, DefaultOperationId);
-                    Assert.Equal(extractFromRequest, operationId == actualOperationId);
+                    string json = await response.Content.ReadAsStringAsync();
+                    string actualParentId = JObject.Parse(json).GetValue("OperationParentId").Value<string>();
+                    Assert.Equal(extractFromRequest, operationParentId == actualParentId);
                 }
             }
         }
