@@ -1,4 +1,5 @@
-﻿using Arcus.Observability.Correlation;
+﻿using System;
+using Arcus.Observability.Correlation;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -10,6 +11,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets the correlation options specific for the upstream service.
         /// </summary>
+        [Obsolete("Use the " + nameof(OperationParent) + " options instead")]
         public CorrelationInfoUpstreamServiceOptions UpstreamService { get; } = new CorrelationInfoUpstreamServiceOptions();
     }
 }

@@ -7,6 +7,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// <summary>
     /// Correlation options specific to the upstream services, used in the <see cref="CorrelationInfoOptions"/>.
     /// </summary>
+    [Obsolete("Use the " + nameof(HttpCorrelationInfoOptions.OperationParent) + " options instead")]
     public class CorrelationInfoUpstreamServiceOptions
     {
         private string _operationParentIdHeaderName = "Request-Id";

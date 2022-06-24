@@ -22,7 +22,7 @@ This correlation is based on the `RequestId` and `X-Transaction-ID` HTTP request
 
 ## How This Works
 
-When an application is configured to use the default configuration of the correlation, each HTTP response will get an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses.
+When an application is configured to use the default configuration of the correlation, each HTTP response will get an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses. This ID will act as the parent ID for all telemetry that comes after and uses the [HTTP Correlation](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Diagnostics.DiagnosticSource/src/HttpCorrelationProtocol.md) to extract the most recent ID.
 
 The `X-Transaction-ID` can be overridden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
 
@@ -103,10 +103,13 @@ builder.Services.AddHttpCorrelation(options =>
 
     // Whether to extract the operation parent ID from the incoming request following W3C Trace-Context standard (default: true).
     // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
-    options.UpstreamService.ExtractFromRequest = false;
+    options.OperationParent.ExtractFromRequest = false;
 
     // The header that will contain the operation parent ID in the HTTP request (default: Request-Id).
-    options.UpstreamService.OperationParentIdHeaderName = "x-request-id";
+    options.OperationParent.OperationParentIdHeaderName = "x-request-id";
+
+    // The function that will generate the operation parent ID when it shouldn't be extracted from the request.
+    options.OperationParent.GenerateId = () => $"Parent-{Guid.newGuid()}";
 });
 ```
 

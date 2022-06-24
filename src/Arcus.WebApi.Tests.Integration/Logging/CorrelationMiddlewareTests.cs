@@ -6,16 +6,15 @@ using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Logging.Core.Correlation;
-using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Extensions;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -272,8 +271,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithCorrelateOptionsUpstreamServiceExtractFromRequest_UsesUpstreamOperationId(bool extractFromRequest)
         {
             // Arrange
-            var operationId = Guid.NewGuid().ToString();
-            var operationParentId = $"|{operationId}.{Guid.NewGuid()}";
+            var operationParentId = Guid.NewGuid().ToString();
+            var requestId = $"|{Guid.NewGuid()}.{operationParentId}";
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.UpstreamService.ExtractFromRequest = extractFromRequest))
                 .PreConfigure(app => app.UseHttpCorrelation());
@@ -282,7 +281,67 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             {
                 var request = HttpRequestBuilder
                     .Get(CorrelationController.GetRoute)
-                    .WithHeader("Request-Id", operationParentId);
+                    .WithHeader("Request-Id", requestId);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    string json = await response.Content.ReadAsStringAsync();
+                    string actualParentId = JObject.Parse(json).GetValue("OperationParentId").Value<string>();
+                    Assert.Equal(extractFromRequest, operationParentId == actualParentId);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(false, "|abc.def", null)]
+        [InlineData(true, "|abc.def", "def")]
+        [InlineData(false, "abc", null)]
+        [InlineData(true, "abc", "abc")]
+        public async Task SendRequest_WithCorrelateOptionsUpstreamServiceExtractFromRequest_UsesRequestId(bool extractFromRequest, string requestId, string expectedParentId)
+        {
+            // Arrange
+            var options = new TestApiServerOptions()
+                          .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.UpstreamService.ExtractFromRequest = extractFromRequest))
+                          .PreConfigure(app => app.UseHttpCorrelation());
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder
+                              .Get(CorrelationController.GetRoute)
+                              .WithHeader("Request-Id", requestId);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    string json = await response.Content.ReadAsStringAsync();
+                    string actualParentId = JObject.Parse(json).GetValue("OperationParentId").Value<string>();
+                    Assert.Equal(extractFromRequest, expectedParentId == actualParentId);
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task SendRequest_WithCorrelateOptionsOperationParentExtractFromRequest_UsesUpstreamOperationId(bool extractFromRequest)
+        {
+            // Arrange
+            var operationId = Guid.NewGuid().ToString();
+            var operationParentId = $"|{Guid.NewGuid()}.{operationId}";
+            var options = new TestApiServerOptions()
+                          .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.OperationParent.ExtractFromRequest = extractFromRequest))
+                          .PreConfigure(app => app.UseHttpCorrelation());
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder
+                              .Get(CorrelationController.GetRoute)
+                              .WithHeader("Request-Id", operationParentId);
 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -296,13 +355,79 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
 
         [Theory]
+        [InlineData(false, "|abc.def", null)]
+        [InlineData(true, "|abc.def", "def")]
+        [InlineData(false, "abc", null)]
+        [InlineData(true, "abc", "abc")]
+        public async Task SendRequest_WithCorrelateOptionsOperationParentExtractFromRequest_UsesRequestId(bool extractFromRequest, string requestId, string expectedParentId)
+        {
+            // Arrange
+            var options = new TestApiServerOptions()
+                          .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.OperationParent.ExtractFromRequest = extractFromRequest))
+                          .PreConfigure(app => app.UseHttpCorrelation());
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder
+                              .Get(CorrelationController.GetRoute)
+                              .WithHeader("Request-Id", requestId);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    string json = await response.Content.ReadAsStringAsync();
+                    string actualParentId = JObject.Parse(json).GetValue("OperationParentId").Value<string>();
+                    Assert.Equal(extractFromRequest, expectedParentId == actualParentId);
+                }
+            }
+        }
+
+        
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task SendRequest_WithCorrelateOptionsOperationParentCustomOperationParentIHeaderName_UsesUpstreamOperationId(bool extractFromRequest)
+        {
+            // Arrange
+            var operationParentId = Guid.NewGuid().ToString();
+            var requestId = $"|{Guid.NewGuid()}.{operationParentId}";
+            var operationParentIdHeaderName = "My-Request-Id";
+            var options = new TestApiServerOptions()
+                          .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                          {
+                              opt.OperationParent.ExtractFromRequest = extractFromRequest;
+                              opt.OperationParent.OperationParentIdHeaderName = operationParentIdHeaderName;
+                          }))
+                          .PreConfigure(app => app.UseHttpCorrelation());
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder
+                              .Get(CorrelationController.GetRoute)
+                              .WithHeader(operationParentIdHeaderName, requestId);
+
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    string json = await response.Content.ReadAsStringAsync();
+                    string actualParentId = JObject.Parse(json).GetValue("OperationParentId").Value<string>();
+                    Assert.Equal(extractFromRequest, operationParentId == actualParentId);
+                }
+            }
+        }
+
+        [Theory]
         [InlineData(false)]
         [InlineData(true)]
         public async Task SendRequest_WithCorrelateOptionsUpstreamServiceCustomOperationParentIHeaderName_UsesUpstreamOperationId(bool extractFromRequest)
         {
             // Arrange
-            var operationId = Guid.NewGuid().ToString();
-            var operationParentId = $"|{operationId}.{Guid.NewGuid()}";
+            var operationParentId = Guid.NewGuid().ToString();
+            var requestId = $"|{Guid.NewGuid()}.{operationParentId}";
             var operationParentIdHeaderName = "My-Request-Id";
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
@@ -316,15 +441,16 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             {
                 var request = HttpRequestBuilder
                     .Get(CorrelationController.GetRoute)
-                    .WithHeader(operationParentIdHeaderName, operationParentId);
+                    .WithHeader(operationParentIdHeaderName, requestId);
 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string actualOperationId = GetResponseHeader(response, DefaultOperationId);
-                    Assert.Equal(extractFromRequest, operationId == actualOperationId);
+                    string json = await response.Content.ReadAsStringAsync();
+                    string actualParentId = JObject.Parse(json).GetValue("OperationParentId").Value<string>();
+                    Assert.Equal(extractFromRequest, operationParentId == actualParentId);
                 }
             }
         }
