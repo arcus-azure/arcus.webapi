@@ -25,6 +25,7 @@ This correlation is based on the `RequestId` and `X-Transaction-ID` HTTP request
 When an application is configured to use the default configuration of the correlation, each HTTP **response** will have an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses. This ID will act as the parent ID for all telemetry that comes after and uses the [HTTP Correlation](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Diagnostics.DiagnosticSource/src/HttpCorrelationProtocol.md) to extract the most recent ID.
 
 The `X-Transaction-ID` can be overridden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
+This header is used to group all logs that belong to the same functional operation together.  In other words, using this ID, you should be able to find all logs that were generated for this logical operation.
 
 Additional [configuration](#configuration) is available to tweak this functionality.
 
