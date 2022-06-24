@@ -385,7 +385,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
         }
 
-        
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
