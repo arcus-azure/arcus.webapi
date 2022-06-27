@@ -7,8 +7,6 @@ layout: default
 
 The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
 
-This correlation is based on the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.
-
 - [Correlation Between HTTP Requests](#correlation-between-http-requests)
   - [How This Works](#how-this-works)
   - [Installation](#installation)
@@ -22,9 +20,25 @@ This correlation is based on the `RequestId` and `X-Transaction-ID` HTTP request
 
 ## How This Works
 
-When an application is configured to use the default configuration of the correlation, each HTTP response will get an extra header called `RequestId` containing an unique identifier to distinguish between requests/responses. This ID will act as the parent ID for all telemetry that comes after and uses the [HTTP Correlation](https://github.com/dotnet/runtime/blob/main/src/libraries/System.Diagnostics.DiagnosticSource/src/HttpCorrelationProtocol.md) to extract the most recent ID.
+This diagram shows an example of a user interacting with service A that calls another service B.
 
-The `X-Transaction-ID` can be overridden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
+![HTTP correlation diagram](/img/http-correlation.png)
+
+Three kind of correlation ID's are used to create the relationship:
+* **Transaction ID**: this ID is the one constant in the diagram. This ID is used to describe the entire transaction, from begin to end. All telemetry will be tracked under this ID.
+* **Operation ID**: this ID describes a single operation within the transaction. This ID is used within a service to link all telemetry correctly together but doesn't leave the service.
+* **Operation Parent ID**: this ID is create the parent/child link across services. When service A calls service B, then service A is the so called 'parent' of service B.
+
+The following list shows each step in the diagram:
+1. The initial call in this example doesn't contain any correlation headers. This can be seen as a first interaction call to a service. 
+2. Upon receiving at service A, the application will generate new correlation information. This correlation info will be used when telemetry is tracked on the service.
+3. When a call is made to service B, the **transaction ID** is sent but also the **operation parent ID** in the form of a hierarchical structure.
+4. The `jkl` part of this ID, describes the new parent ID for service B (when service B calls service C, then it will use `jkl` as parent ID)
+5. Service B responds to service A with the same information as the call to service B.
+6. The user receives both the **transaction ID** and **operation parent ID** in their final response.
+
+💡 This correlation is based on the `RequestId` and `X-Transaction-ID` HTTP request/response headers, however, you can fully configure different headers in case you need to.
+💡 The `X-Transaction-ID`  can be overridden by the request, meaning: if the HTTP request already contains a `X-Transaction-ID` header, the same header+value will be used in the HTTP response.
 
 Additional [configuration](#configuration) is available to tweak this functionality.
 
