@@ -31,8 +31,7 @@ builder.Services.AddControllers(mvcOptions =>
 });
 ```
 
-<details>
-  <summary>Example for .NET Core 5 and earlier</summary>
+Example for .NET Core 5 and earlier
     
 ```csharp
 using Microsoft.AspNetCore.Mvc;
@@ -46,9 +45,6 @@ public class Startup
     }
 }
 ```
-
-</details>
-    
 
 ## Configure JSON format
 We have provided an extension that will allow you to configure the input and output JSON formatting in one go. This means that any options you configure in this extension will automatically apply to the incoming model as well as the outgoing model. This makes the JSON formatting more streamlined and easier to maintain.
@@ -70,9 +66,8 @@ builder.Services.AddControllers(mvcOptions =>
     });
 });
 ```
-    
-<details>
-  <summary>Example for .NET Core 5 and earlier</summary>
+
+Example for .NET Core 5 and earlier
     
 ```csharp
 using System.Text.Json.Serialization;
@@ -90,6 +85,4 @@ public class Startup
     }
 }
 ```
-
-</details>
 
