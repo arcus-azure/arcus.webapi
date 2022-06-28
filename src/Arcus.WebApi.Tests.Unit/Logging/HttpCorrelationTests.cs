@@ -66,7 +66,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new DefaultCorrelationInfoAccessor();
             
-            var options = Options.Create(new HttpCorrelationInfoOptions
+            var options = Options.Create(new CorrelationInfoOptions
             {
                 OperationParent =
                 {
