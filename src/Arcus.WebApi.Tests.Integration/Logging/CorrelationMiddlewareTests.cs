@@ -352,7 +352,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     string transactionId = GetResponseHeader(response, DefaultTransactionId);
                     string responseRequestId = GetResponseHeader(response, DefaultOperationParentId);
 
-
                     CorrelationInfo correlation = await ReadCorrelationInfoFromResponseBodyAsync(response);
                     Assert.NotEmpty(correlation.OperationId);
                     Assert.Equal(transactionId, correlation.TransactionId);

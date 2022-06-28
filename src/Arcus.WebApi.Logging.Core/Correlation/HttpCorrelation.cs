@@ -339,7 +339,6 @@ namespace Arcus.WebApi.Logging.Correlation
                     }
                     else
                     {
-
                         AddResponseHeader(httpContext, _options.UpstreamService.HeaderName, requestId);
                     }
 
