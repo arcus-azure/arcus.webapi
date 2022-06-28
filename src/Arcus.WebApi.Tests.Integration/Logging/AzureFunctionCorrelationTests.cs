@@ -15,7 +15,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
     [Collection("Azure Functions")]
     public class AzureFunctionCorrelationTests
     {
-        private const string DefaultOperationId = "RequestId",
+        private const string DefaultOperationParentId = "Request-Id",
                              DefaultTransactionId = "X-Transaction-ID";
 
         private readonly TestConfig _config;
@@ -49,15 +49,14 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string correlationId = GetResponseHeader(response, DefaultTransactionId);
-                string requestId = GetResponseHeader(response, DefaultOperationId);
 
                 string json = await response.Content.ReadAsStringAsync();
-                var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "" });
-                Assert.False(String.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
-                Assert.False(String.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
+                var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "", OperationParentId = "" });
+                Assert.False(string.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
+                Assert.False(string.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
+                Assert.Null(content.OperationParentId);
 
                 Assert.Equal(correlationId, content.TransactionId);
-                Assert.Equal(requestId, content.OperationId);
             }
         }
 
@@ -86,9 +85,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithRequestIdHeader_ResponseWithDifferentRequestIdHeader()
         {
             // Arrange
-            string expected = $"operation-{Guid.NewGuid()}";
+            string expected = $"parent{Guid.NewGuid()}".Replace("-", "");
             var request = new HttpRequestMessage(HttpMethod.Get, DefaultRoute);
-            request.Headers.Add(DefaultOperationId, expected);
+            request.Headers.Add(DefaultOperationParentId, expected);
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", DefaultRoute);
@@ -98,7 +97,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, DefaultRoute);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                string actual = GetResponseHeader(response, DefaultOperationId);
+                string actual = GetResponseHeader(response, DefaultOperationParentId);
                 Assert.NotEqual(expected, actual);
             }
         }

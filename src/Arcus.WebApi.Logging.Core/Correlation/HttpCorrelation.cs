@@ -118,11 +118,11 @@ namespace Arcus.WebApi.Logging.Correlation
                     AllowInRequest = options.Transaction.AllowInRequest,
                     GenerateWhenNotSpecified = options.Transaction.GenerateWhenNotSpecified
                 },
-                OperationParent =
+                UpstreamService =
                 {
                     GenerateId = options.OperationParent.GenerateId,
                     ExtractFromRequest = options.OperationParent.ExtractFromRequest,
-                    OperationParentIdHeaderName = options.OperationParent.OperationParentIdHeaderName
+                    HeaderName = options.OperationParent.OperationParentIdHeaderName
                 } 
             };
         }
@@ -180,13 +180,11 @@ namespace Arcus.WebApi.Logging.Correlation
             string operationId = DetermineOperationId(httpContext);
             string transactionId = DetermineTransactionId(alreadyPresentTransactionId);
             string operationParentId = null;
+            string requestId = null;
 
-#pragma warning disable CS0618
-            if (_options.OperationParent.ExtractFromRequest && _options.UpstreamService.ExtractFromRequest)
+            if (_options.UpstreamService.ExtractFromRequest)
             {
-                if (TryGetRequestId(httpContext, _options.OperationParent.OperationParentIdHeaderName, out string requestId)
-                    || TryGetRequestId(httpContext, _options.UpstreamService.OperationParentIdHeaderName, out requestId))
-#pragma warning restore CS0618
+                if (TryGetRequestId(httpContext, _options.UpstreamService.HeaderName, out requestId))
                 {
                     operationParentId = ExtractLatestOperationParentIdFromHeader(requestId);
                     if (operationParentId is null)
@@ -198,11 +196,12 @@ namespace Arcus.WebApi.Logging.Correlation
             }
             else
             {
-                operationParentId = _options.OperationParent.GenerateId();
+                operationParentId = _options.UpstreamService.GenerateId();
+                requestId = operationParentId;
             }
 
             httpContext.Features.Set(new CorrelationInfo(operationId, transactionId, operationParentId));
-            AddCorrelationResponseHeaders(httpContext);
+            AddCorrelationResponseHeaders(httpContext, requestId);
 
             errorMessage = null;
             return true;
@@ -222,12 +221,12 @@ namespace Arcus.WebApi.Logging.Correlation
 
         private string DetermineOperationId(HttpContext httpContext)
         {
-            if (String.IsNullOrWhiteSpace(httpContext.TraceIdentifier))
+            if (string.IsNullOrWhiteSpace(httpContext.TraceIdentifier))
             {
                 _logger.LogTrace("No unique trace identifier ID was found in the request, generating one...");
                 string operationId = _options.Operation.GenerateId();
                 
-                if (String.IsNullOrWhiteSpace(operationId))
+                if (string.IsNullOrWhiteSpace(operationId))
                 {
                     throw new InvalidOperationException(
                         $"Correlation cannot use '{nameof(_options.Operation.GenerateId)}' to generate an operation ID because the resulting ID value is blank");
@@ -243,14 +242,14 @@ namespace Arcus.WebApi.Logging.Correlation
 
         private string DetermineTransactionId(string alreadyPresentTransactionId)
         {
-            if (String.IsNullOrWhiteSpace(alreadyPresentTransactionId))
+            if (string.IsNullOrWhiteSpace(alreadyPresentTransactionId))
             {
                 if (_options.Transaction.GenerateWhenNotSpecified)
                 {
                     _logger.LogTrace("No transactional ID was found in the request, generating one...");
                     string newlyGeneratedTransactionId = _options.Transaction.GenerateId();
 
-                    if (String.IsNullOrWhiteSpace(newlyGeneratedTransactionId))
+                    if (string.IsNullOrWhiteSpace(newlyGeneratedTransactionId))
                     {
                         throw new InvalidOperationException(
                             $"Correlation cannot use function '{nameof(_options.Transaction.GenerateId)}' to generate an transaction ID because the resulting ID value is blank");
@@ -260,9 +259,7 @@ namespace Arcus.WebApi.Logging.Correlation
                     return newlyGeneratedTransactionId;
                 }
 
-                _logger.LogTrace("No transactional correlation ID found in request header '{HeaderName}' but since the correlation options specifies that no transactional ID should be generated, there will be no ID present", 
-                    _options.Transaction.HeaderName);
-                
+                _logger.LogTrace("No transactional correlation ID found in request header '{HeaderName}' but since the correlation options specifies that no transactional ID should be generated, there will be no ID present", _options.Transaction.HeaderName);
                 return null;
             }
 
@@ -273,7 +270,7 @@ namespace Arcus.WebApi.Logging.Correlation
         private bool TryGetRequestId(HttpContext context, string headerName, out string requestId)
         {
             if (context.Request.Headers.TryGetValue(headerName, out StringValues id) 
-                && !String.IsNullOrWhiteSpace(id)
+                && !string.IsNullOrWhiteSpace(id)
                 && id.Count > 0
                 && MatchesRequestIdFormat(id, headerName))
             {
@@ -312,7 +309,6 @@ namespace Arcus.WebApi.Logging.Correlation
             //     returns: def
             
             _logger.LogTrace("Extracting operation parent ID from request ID '{RequestId}' from the upstream service according to W3C Trace-Context standard", requestId);
-
             if (requestId.Contains("."))
             {
                 string[] ids = requestId.Split('.');
@@ -330,22 +326,21 @@ namespace Arcus.WebApi.Logging.Correlation
             }
         }
 
-        private void AddCorrelationResponseHeaders(HttpContext httpContext)
+        private void AddCorrelationResponseHeaders(HttpContext httpContext, string requestId)
         {
-            if (_options.Operation.IncludeInResponse)
+            if (_options.UpstreamService.IncludeInResponse)
             {
-                _logger.LogTrace("Prepare for the operation correlation ID to be included in the response...");
+                _logger.LogTrace("Prepare for the operation parent ID to be included in the response...");
                 httpContext.Response.OnStarting(() =>
                 {
-                    CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
-
-                    if (String.IsNullOrWhiteSpace(correlationInfo?.OperationId))
+                    if (string.IsNullOrWhiteSpace(requestId))
                     {
-                        _logger.LogWarning("No response header was added given no operation correlation ID was found");
+                        _logger.LogWarning("No response header was added given no operation parent ID was found");
                     }
                     else
                     {
-                        AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
+
+                        AddResponseHeader(httpContext, _options.UpstreamService.HeaderName, requestId);
                     }
 
                     return Task.CompletedTask;
@@ -358,8 +353,7 @@ namespace Arcus.WebApi.Logging.Correlation
                 httpContext.Response.OnStarting(() =>
                 {
                     CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
-
-                    if (String.IsNullOrWhiteSpace(correlationInfo?.TransactionId))
+                    if (string.IsNullOrWhiteSpace(correlationInfo?.TransactionId))
                     {
                         _logger.LogWarning("No response header was added given no transactional correlation ID was found");
                     }
