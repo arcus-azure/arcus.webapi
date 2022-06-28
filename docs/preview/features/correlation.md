@@ -117,13 +117,13 @@ builder.Services.AddHttpCorrelation(options =>
 
     // Whether to extract the operation parent ID from the incoming request following W3C Trace-Context standard (default: true).
     // More information on operation ID and operation parent ID, see [this documentation](https://docs.microsoft.com/en-us/azure/azure-monitor/app/correlation).
-    options.OperationParent.ExtractFromRequest = false;
+    options.UpstreamService.ExtractFromRequest = false;
 
     // The header that will contain the operation parent ID in the HTTP request (default: Request-Id).
-    options.OperationParent.OperationParentIdHeaderName = "x-request-id";
+    options.UpstreamService.HeaderName = "x-request-id";
 
     // The function that will generate the operation parent ID when it shouldn't be extracted from the request.
-    options.OperationParent.GenerateId = () => $"Parent-{Guid.newGuid()}";
+    options.UpstreamService.GenerateId = () => $"Parent-{Guid.newGuid()}";
 });
 ```
 
