@@ -98,7 +98,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, DefaultOperationParentId);
-                Assert.NotEqual(expected, actual);
+                Assert.Equal(expected, actual);
             }
         }
 

@@ -107,8 +107,10 @@ namespace Arcus.WebApi.Logging.Correlation
                 Operation =
                 {
                     GenerateId = options.Operation.GenerateId,
+#pragma warning disable CS0618
                     HeaderName = options.Operation.HeaderName,
                     IncludeInResponse = options.Operation.IncludeInResponse
+#pragma warning restore CS0618
                 },
                 Transaction =
                 {
@@ -328,6 +330,13 @@ namespace Arcus.WebApi.Logging.Correlation
 
         private void AddCorrelationResponseHeaders(HttpContext httpContext, string requestId)
         {
+#pragma warning disable CS0618
+            if (_options.Operation.IncludeInResponse)
+#pragma warning restore CS0618
+            {
+                _logger.LogWarning("Operation correlation ID's cannot be added to response, but the 'Operation.IncludeInResponse' setting was still set");
+            }
+
             if (_options.UpstreamService.IncludeInResponse)
             {
                 _logger.LogTrace("Prepare for the operation parent ID to be included in the response...");
