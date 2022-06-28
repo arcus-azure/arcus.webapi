@@ -578,7 +578,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             
             Assert.NotNull(values);
             string value = Assert.Single(values);
-            Assert.False(String.IsNullOrWhiteSpace(value), $"Response header '{headerName}' cannot be blank");
+            Assert.False(string.IsNullOrWhiteSpace(value), $"Response header '{headerName}' cannot be blank");
 
             return value;
         }
