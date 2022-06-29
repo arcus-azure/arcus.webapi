@@ -31,9 +31,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
 
         [HttpPost]
         [Route(SetCorrelationRoute)]
-        public IActionResult Post([FromHeader(Name = "RequestId")] string operationId, [FromHeader(Name = "X-Transaction-ID")] string transactionId)
+        public IActionResult Post(
+            [FromHeader(Name = "X-Operation-ID")] string operationId, 
+            [FromHeader(Name = "X-Transaction-ID")] string transactionId,
+            [FromHeader(Name = "Request-Id")] string operationParentId)
         {
-            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
+            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId, operationParentId));
 
             string json = JsonConvert.SerializeObject(_correlationInfoAccessor.GetCorrelationInfo());
             return Ok(json);

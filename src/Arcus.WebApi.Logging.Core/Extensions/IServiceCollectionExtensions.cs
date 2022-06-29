@@ -75,14 +75,19 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
 
             services.AddHttpContextAccessor();
-            services.AddCorrelation<HttpCorrelationInfoAccessor, CorrelationInfo, HttpCorrelationInfoOptions>(
-                serviceProvider => (HttpCorrelationInfoAccessor) serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>(),
-                configureOptions);
             services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
             {
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 return new HttpCorrelationInfoAccessor(httpContextAccessor);
             });
+            services.AddScoped<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+
+            if (configureOptions != null)
+            {
+                services.Configure(configureOptions);
+            }
+
             services.AddScoped(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<HttpCorrelationInfoOptions>>();
