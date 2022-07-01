@@ -11,7 +11,11 @@ The `Arcus.WebApi.Correlation` library provides a way to add correlation between
   - [How This Works](#how-this-works)
   - [Installation](#installation)
   - [Usage](#usage)
+    - [Sending side](#sending-side)
+    - [Receiving side](#receiving-side)
   - [Configuration](#configuration)
+    - [Configuring HTTP correlation services](#configuring-http-correlation-services)
+    - [Configuring HTTP correlation client tracking](#configuring-http-correlation-client-tracking)
   - [Dependency injection](#dependency-injection)
   - [Logging](#logging)
   - [Using correlation within Azure Functions](#using-correlation-within-azure-functions)
@@ -52,6 +56,45 @@ PM > Install-Package Arcus.WebApi.Logging
 
 ## Usage
 
+To fully benefit from the Arcus' HTTP correlation functionality, both sending and receiving HTTP endpoints should be configured.
+
+### Sending side
+
+To make sure the correlation is added to the HTTP request, following additions have to be made:
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+
+WebApplication builder = WebApplication.CreateBuilder();
+builder.Services.AddHttpCorrelation();
+builder.Services.AddHttpClient("from-service-a-to-service-b")
+                .WithHttpCorrelationTracking();
+
+WebApplication app = builder.Build();
+```
+
+Then, the [created `HttpClient`](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests) will be enhanced with HTTP correlation tracking. This means that the request will be altered to include the HTTP correlation information and the endpoint will be tracked as a [HTTP dependency telemetry](https://observability.arcus-azure.net/Features/writing-different-telemetry-types#measuring-http-dependencies).
+
+Alternatively, an existing `HttpClient` can be used to send a correlated HTTP request:
+
+```csharp
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Arcus.WebApi.Logging.Core.Correlation;
+
+var client = new HttpClient();
+
+IHttpCorrelationInfoAccessor accessor = ... // From dependency injection.
+ILogger logger = ... // From dependency injection.
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost/service-b");
+await client.SendAsync(request, accessor, logger);
+```
+
+💡 The HTTP correlation tracking can also be configured, see [this section](#configuring-http-correlation-client-tracking) for more information.
+
+### Receiving side
+
 To make sure the correlation is added to the HTTP response, following additions have to be made:
 
 ```csharp
@@ -69,6 +112,11 @@ Note: because the correlation is based on <span>ASP.NET</span> Core middleware, 
 
 ## Configuration
 
+The HTTP correlation can be configured with different options to work for your needs.
+
+### Configuring HTTP correlation services
+
+The HTTP correlation is available throughout the application via the registered `IHttpCorrelationInfoAccessor`. This HTTP correlation accessor is both used in sending/receiving functionality.
 Some extra options are available to alter the functionality of the correlation:
 
 ```csharp
@@ -127,6 +175,56 @@ builder.Services.AddHttpCorrelation(options =>
 });
 ```
 
+### Configuring HTTP correlation client tracking
+
+When sending tracked HTTP requests, some options can be configured to customize the tracking to your needs.
+
+```csharp
+using Microsoft.AspNetCore.Builder;
+
+WebApplicationBuilder builder = WebApplication.CreateBuilder();
+builder.Services.AddHttpClient("from-service-a-to-service-b")
+                .WithHttpCorrelationTracking(options =>
+                {
+                    // The header that will be used to set the HTTP correlation transaction ID. (Default: X-Transaction-ID)
+                    options.TransactionIdHeaderName = "X-MyTransaction-Id";
+
+                    // The header that will be used to set the upstream service correlation ID. (Default: Request-Id)
+                    options.UpstreamServiceHeaderName = "X-MyRequest-Id";
+
+                    // The function to generate the dependency ID for the called service. 
+                    // (service A tracks dependency with this ID, service B tracks request with this ID).
+                    options.GenerateDependencyId = () => $"my-request-id-{Guid.NewGuid()}";
+                });
+```
+
+The same options can be configured when sending correlated HTTP requests with an existing `HttpClient`:
+
+```csharp
+using System.Net.Http;
+using Microsoft.Extensions.DependencyInjection;
+using Arcus.WebApi.Logging.Core.Correlation;
+
+var client = new HttpClient();
+
+IHttpCorrelationInfoAccessor accessor = ... // From dependency injection.
+ILogger logger = ... // From dependency injection.
+
+var request = new HttpRequestMessage(HttpMethod.Get, "https://localhost/service-b");
+await client.SendAsync(request, accessor, logger, options =>
+{
+    // The header that will be used to set the HTTP correlation transaction ID. (Default: X-Transaction-ID)
+    options.TransactionIdHeaderName = "X-MyTransaction-Id";
+
+    // The header that will be used to set the upstream service correlation ID. (Default: Request-Id)
+    options.UpstreamServiceHeaderName = "X-MyRequest-Id";
+
+    // The function to generate the dependency ID for the called service. 
+    // (service A tracks dependency with this ID, service B tracks request with this ID).
+    options.GenerateDependencyId = () => $"my-request-id-{Guid.NewGuid()}";
+});
+```
+
 ## Dependency injection
 
 To use the HTTP correlation in your application code, you can use a dedicated marker interface called `IHttpCorrelationInfoAccessor`.
@@ -162,12 +260,13 @@ public class OrderController : ControllerBase
 ## Logging
 
 As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration as an [enricher](https://github.com/serilog/serilog/wiki/Enrichment). 
-This adds the correlation information of the current request to the log event as a log property called `TransactionId` and `OperationId`.
+This adds the correlation information of the current request to the log event as a log property called `TransactionId`, `OperationId`, and `OperationParentId`.
 
 **Example**
 
 - `TransactionId`: `A5E90591-ADB0-4A56-818A-AC5C02FBFF5F`
 - `OperationId`: `79BB196A-B0CC-4F5C-B48A-AB87850346AF`
+- `OperationParentId`: `0BC101AC-5E41-43B5-B020-3EF467629E3D`
 
 **Usage**
 The enricher requires access to the application services so it can get the correlation information.
@@ -221,7 +320,7 @@ namespace MyHttpAzureFunction
 }
 ```
 
-When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `ICorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `IHttpCorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
 
 ```csharp
 using Arcus.WebApi.Logging.Correlation;
@@ -253,6 +352,4 @@ public class MyHttpFunction
     }
 ```
 
-> Note that the `HttpCorrelation` already has the registered `ICorrelationInfoAccessor` embedded but nothing stops you from injecting the `ICorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
-
-[&larr; back](/)
+> Note that the `HttpCorrelation` already has the registered `IHttpCorrelationInfoAccessor` embedded but nothing stops you from injecting the `IHtpCorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
