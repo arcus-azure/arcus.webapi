@@ -20,7 +20,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
                             TransactionIdHeaderNameParameter = "TransactionId_HeaderName",
                             DependencyIdGenerationParameter = "DependencyId_Generation";
 
-
         private readonly HttpClient _client;
         private readonly HttpAssert _assertion;
         private readonly ILogger<ServiceAController> _logger;
