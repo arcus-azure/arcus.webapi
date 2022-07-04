@@ -69,7 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="parameterName"/> or <paramref name="secretName"/> is blank.</exception>
-        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnQuery) + "instead via services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnHeader) + "(...))")]
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnQuery) + "instead via services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnQuery) + "(...))")]
         public static FilterCollection AddSharedAccessAuthenticationOnQuery(
             this FilterCollection filters,
             string parameterName,
