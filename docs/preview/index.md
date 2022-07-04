@@ -8,7 +8,7 @@ sidebar_position: 1
 
 # Introduction
 
-The Arcus Web API library provides an easy way to register and configure complex functionality to your application. We provides ways to add shared access key authentication, HTTP correlation, request tracking, strict JSON formatting, and other boilerplate code that can be added with zero effort. It builds on top of [Arcus Observability](https://observability.arcus-azure.net/) to provide its HTTP correlation and request tracking. All functionality described here is also available in our [project templates](https://templates.arcus-azure.net/).
+The Arcus Web API library provides an easy way to register and configure complex functionality to your application. We provide ways to add shared access key authentication, HTTP correlation, request tracking, strict JSON formatting, and other boilerplate code that can be added with zero effort. It builds on top of [Arcus Observability](https://observability.arcus-azure.net/) to provide its HTTP correlation and request tracking. All functionality described here is also available in our [project templates](https://templates.arcus-azure.net/).
 
 # Installation
 
