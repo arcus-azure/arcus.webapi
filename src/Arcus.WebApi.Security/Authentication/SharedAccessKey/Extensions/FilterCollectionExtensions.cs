@@ -2,6 +2,7 @@
 using Arcus.Security.Core;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using GuardNet;
+using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Mvc.Filters
@@ -19,6 +20,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> or <paramref name="secretName"/> is blank.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnHeader) + " instead via services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnHeader) + "(...))")]
         public static FilterCollection AddSharedAccessKeyAuthenticationOnHeader(
             this FilterCollection filters,
             string headerName,
@@ -41,6 +43,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> or <paramref name="secretName"/> is blank.</exception>
+         [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnHeader) + "instead via services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnHeader) + "(...))")]
         public static FilterCollection AddSharedAccessKeyAuthenticationOnHeader(
             this FilterCollection filters, 
             string headerName,
@@ -66,6 +69,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="parameterName"/> or <paramref name="secretName"/> is blank.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnQuery) + "instead via services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnHeader) + "(...))")]
         public static FilterCollection AddSharedAccessAuthenticationOnQuery(
             this FilterCollection filters,
             string parameterName,
@@ -89,6 +93,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="parameterName"/> or <paramref name="secretName"/> is blank.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnQuery) + "instead via services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddSharedAccessKeyAuthenticationFilterOnQuery) + "(...))")]
         public static FilterCollection AddSharedAccessAuthenticationOnQuery(
             this FilterCollection filters, 
             string parameterName,

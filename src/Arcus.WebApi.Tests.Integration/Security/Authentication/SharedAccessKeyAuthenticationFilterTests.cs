@@ -5,7 +5,6 @@ using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
-using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
@@ -18,6 +17,9 @@ using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
+
+// Ignore obsolete warnings.
+#pragma warning disable CS0618
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 {
@@ -41,7 +43,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         [InlineData(BypassOnMethodController.SharedAccessKeyRoute)]
         [InlineData(BypassSharedAccessKeyController.BypassOverAuthenticationRoute)]
         [InlineData(AllowAnonymousSharedAccessKeyController.Route)]
-        public async Task SharedAccessKeyAuthorizedRoute_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
+        public async Task SharedAccessKeyAuthorizedRouteOnFilters_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
         {
             // Arrange
             var options = new TestApiServerOptions()
@@ -60,8 +62,31 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             }
         }
 
+        [Theory]
+        [InlineData(BypassOnMethodController.SharedAccessKeyRoute)]
+        [InlineData(BypassSharedAccessKeyController.BypassOverAuthenticationRoute)]
+        [InlineData(AllowAnonymousSharedAccessKeyController.Route)]
+        public async Task SharedAccessKeyAuthorizedRoute_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
+        {
+            // Arrange
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services => services.AddControllers(opt => opt.AddSharedAccessKeyAuthenticationFilterOnHeader(HeaderName, SecretName)));
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder.Get(route);
+             
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
+            }
+        }
+
         [Fact]
-        public async Task SharedAccessKeyAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
+        public async Task SharedAccessKeyAuthorizedRouteOnFilters_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
         {
             // Arrange
             var spySink = new InMemorySink();
@@ -91,6 +116,75 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             }
         }
 
+         [Fact]
+        public async Task SharedAccessKeyAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
+        {
+            // Arrange
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services => 
+                    services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
+                            .AddControllers(opt => opt.AddSharedAccessKeyAuthenticationFilterOnHeader(HeaderName, SecretName)))
+                .ConfigureHost(host => host.UseSerilog((context, config) => 
+                    config.WriteTo.Sink(spySink)));
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.DoesNotContain(logEvents, logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    });
+                }
+            }
+        }
+
+        [Theory]
+        [InlineData(false)]
+        [InlineData(true)]
+        public async Task SharedAccessKeyAuthorizedRouteOnFilters_EmitsSecurityEventsWhenRequested_RunsAuthentication(bool emitsSecurityEvents)
+        {
+            // Arrange
+            var spySink = new InMemorySink();
+            var options = new TestApiServerOptions()
+                .ConfigureServices(services =>
+                {
+                    services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
+                            .AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName, authOptions =>
+                            {
+                                authOptions.EmitSecurityEvents = emitsSecurityEvents;
+                            }));
+                })
+                .ConfigureHost(host => host.UseSerilog((context, config) => 
+                    config.WriteTo.Sink(spySink)));
+
+            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
+            {
+                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
+                
+                // Act
+                using (HttpResponseMessage response = await server.SendAsync(request))
+                {
+                    // Assert
+                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
+                    Assert.True(emitsSecurityEvents == logEvents.Any(logEvent =>
+                    {
+                        string message = logEvent.RenderMessage();
+                        return message.Contains("EventType") && message.Contains("Security");
+                    }));
+                }
+            }
+        }
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -102,7 +196,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 .ConfigureServices(services =>
                 {
                     services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
-                            .AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName, authOptions =>
+                            .AddControllers(opt => opt.AddSharedAccessKeyAuthenticationFilterOnHeader(HeaderName, SecretName, authOptions =>
                             {
                                 authOptions.EmitSecurityEvents = emitsSecurityEvents;
                             }));
