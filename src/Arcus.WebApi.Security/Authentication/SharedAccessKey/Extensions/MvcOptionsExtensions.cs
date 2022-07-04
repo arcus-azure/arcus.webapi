@@ -19,7 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its header.
         /// </summary>
-        /// <param name="options">The current MVC optiops of the application.</param>
+        /// <param name="options">The current MVC options of the application.</param>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
@@ -35,7 +35,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its header.
         /// </summary>
-        /// <param name="options">The current MVC optiops of the application.</param>
+        /// <param name="options">The current MVC options of the application.</param>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <param name="configureOptions">
@@ -62,7 +62,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its query.
         /// </summary>
-        /// <param name="options">The current MVC filters of the application.</param>
+        /// <param name="options">The current MVC options of the application.</param>
         /// <param name="parameterName">The name of the request query parameter name which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
@@ -82,7 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its query.
         /// </summary>
-        /// <param name="options">The current MVC filters of the application.</param>
+        /// <param name="options">The current MVC options of the application.</param>
         /// <param name="parameterName">The name of the request query parameter name which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
         /// <param name="configureOptions">
