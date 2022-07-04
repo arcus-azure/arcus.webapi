@@ -509,6 +509,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     var certificateValidator =
                         new CertificateAuthenticationValidator(
                             new CertificateAuthenticationConfigBuilder()
+                                .WithSubject(X509ValidationLocation.Configuration, "ignored-subject")
                                 .Build());
 
                     services.AddSingleton(certificateValidator)
@@ -540,6 +541,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     var certificateValidator =
                         new CertificateAuthenticationValidator(
                             new CertificateAuthenticationConfigBuilder()
+                                .WithSubject(X509ValidationLocation.Configuration, "ignored-subject")
                                 .Build());
 
                     services.AddSingleton(certificateValidator)
