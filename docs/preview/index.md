@@ -6,7 +6,9 @@ sidebar_label: Welcome
 sidebar_position: 1
 ---
 
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/)
+# Introduction
+
+The Arcus Web API library provides an easy way to register and configure complex functionality to your application. We provide ways to add shared access key authentication, HTTP correlation, request tracking, strict JSON formatting, and other boilerplate code that can be added with zero effort. It builds on top of [Arcus Observability](https://observability.arcus-azure.net/) to provide its HTTP correlation and request tracking. All functionality described here is also available in our [project templates](https://templates.arcus-azure.net/).
 
 # Installation
 
@@ -19,25 +21,6 @@ PM > Install-Package Arcus.WebApi.All
 ```
 
 For more granular packages we recommend reading the documentation.
-
-# Features
-
-- **Security**
-    - Authentication
-        - [Shared access key authentication](./features/security/auth/shared-access-key.md)
-        - [Certificate authentication](./features/security/auth/certificate.md)
-    - Authorization
-        - [JWT authorization](./features/security/auth/jwt.md)
-- **Correlation**
-    - [Provide request and/or transaction correlation ids](./features/correlation.md)
-- **Hosting**
-    - [JSON formatting](./features/hosting/formatting.md)
-- **Logging**
-    - [Logging unhandled exceptions](./features/logging#logging-unhandled-exceptions.md)
-    - [Logging incoming requests](./features/logging#logging-incoming-requests.md)
-    - [Tracking application version](./features/logging#tracking-application-version.md)
-- **OpenAPI**
-    - [Exposing security information in Swashbuckle documentation](./features/openapi/security-definitions.md)
 
 # License
 This is licensed under The MIT License (MIT). Which means that you can use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the web application. But you always need to state that Codit is the original author of this web application.
