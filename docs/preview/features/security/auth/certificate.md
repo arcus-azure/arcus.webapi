@@ -74,10 +74,10 @@ builder.Services.AddSingleton(certificateValidator);
 builder.Services.AddControllers(mvcOptions => 
 {
     // Adds certificate authentication to the request pipeline.
-    mvcOptions.Filters.AddCertificateAuthentication();
+    mvcOptions.AddCertificateAuthenticationFilter();
    
     // Additional consumer-configurable options to change the behavior of the authentication filter.
-    mvcOptions.Filters.AddCertificateAuthentication(configureOptions: options =>
+    mvcOptions.AddCertificateAuthenticationFilter(configureOptions: options =>
     {
         // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
         // (default: `false`)
@@ -174,6 +174,3 @@ public class SystemController : ControllerBase
     }
 }
 ```
-
-
-[&larr; back](/)
