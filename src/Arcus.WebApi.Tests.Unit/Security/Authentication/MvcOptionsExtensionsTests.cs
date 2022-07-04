@@ -1,5 +1,6 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authentication
@@ -75,7 +76,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessAuthenticationFilterOnQuery(parameterName, "MySecret", options => options.EmitSecurityEvents = true));
+                options.AddSharedAccessKeyAuthenticationFilterOnQuery(parameterName, "MySecret", options => options.EmitSecurityEvents = true));
         }
         
         [Theory]
@@ -87,7 +88,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessAuthenticationFilterOnQuery("x-api-key", secretName));
+                options.AddSharedAccessKeyAuthenticationFilterOnQuery("x-api-key", secretName));
         }
         
         [Theory]
@@ -99,7 +100,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessAuthenticationFilterOnQuery("x-api-key", secretName, options => options.EmitSecurityEvents = true));
+                options.AddSharedAccessKeyAuthenticationFilterOnQuery("x-api-key", secretName, options => options.EmitSecurityEvents = true));
         }
     }
 }
