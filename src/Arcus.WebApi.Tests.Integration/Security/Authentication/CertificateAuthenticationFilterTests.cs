@@ -850,7 +850,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             }
         }
 
-        
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
