@@ -1,20 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Filters;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extensions on the <see cref="MvcOptions"/> related to authentication.
     /// </summary>
-    public static class MvcOptionsExtensions
+    public static partial class MvcOptionsExtensions
     {
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its header.
