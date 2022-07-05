@@ -17,14 +17,15 @@ PM > Install-Package Arcus.WebApi.Hosting
 ## Restricting JSON format
 We have provided an extension that will allow you to restrict your input and output formatting to only JSON formatting (Only the `SystemTextJsonInputFormatter` will remain). This means that all other incoming content will result in `UnsupportedMediaType` failures and outgoing content will fail to serialize back to the sender. With this functionality, you'll be sure that you only have to deal with JSON.
 
-Following example shows you where you can configure this:
+Following example shows you how you can configure this:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Mvc;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
-builder.Services.AddControllers(mvcOptions => 
+builder.Services.AddControllers(mvcOptions =>
 {
     mvcOptions.OnlyAllowJsonFormatting();
 });
@@ -33,7 +34,7 @@ builder.Services.AddControllers(mvcOptions =>
 ## Configure JSON format
 We have provided an extension that will allow you to configure the input and output JSON formatting in one go. This means that any options you configure in this extension will automatically apply to the incoming model as well as the outgoing model. This makes the JSON formatting more streamlined and easier to maintain.
 
-Following example shows you where you can configure these options:
+Following example shows you how you can configure these options:
 
 ```csharp
 using System.Text.Json.Serialization;
@@ -42,12 +43,12 @@ using Microsoft.AspNetCore.Mvc;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder();
 
-builder.Services.AddControllers(mvcOptions => 
+builder.Services.AddControllers(mvcOptions =>
 {
     mvcOptions.ConfigureJsonFormatting(jsonOptions =>
     {
-        jsonOptions.IgnoreNullValues = true;
         jsonOptions.Converters.Add(new JsonStringEnumConverter());
-    })
+    });
 });
 ```
+
