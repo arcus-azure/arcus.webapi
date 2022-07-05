@@ -3,6 +3,7 @@ using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
@@ -16,6 +17,12 @@ namespace System.Net.Http
         /// <summary>
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
+        /// <remarks>
+        ///     This way of sending correlated HTTP requests is not needed if you used
+        ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
+        ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
+        ///     otherwise use the regular <see cref="HttpClient.SendAsync(HttpRequestMessage)"/> to send the HTTP request and the request will be correlated automatically.
+        /// </remarks>
         /// <param name="client">The client to send the <paramref name="request"/>.</param>
         /// <param name="request">The HTTP request message to send.</param>
         /// <param name="correlationAccessor">The HTTP correlation accessor to retrieve the current correlation available to track with the <paramref name="request"/>.</param>
@@ -40,6 +47,12 @@ namespace System.Net.Http
         /// <summary>
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
+        /// <remarks>
+        ///     This way of sending correlated HTTP requests is not needed if you used
+        ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
+        ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
+        ///     otherwise use the regular <see cref="HttpClient.SendAsync(HttpRequestMessage)"/> to send the HTTP request and the request will be correlated automatically.
+        /// </remarks>
         /// <param name="client">The client to send the <paramref name="request"/>.</param>
         /// <param name="request">The HTTP request message to send.</param>
         /// <param name="correlationAccessor">The HTTP correlation accessor to retrieve the current correlation available to track with the <paramref name="request"/>.</param>
@@ -67,6 +80,12 @@ namespace System.Net.Http
         /// <summary>
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
+        /// <remarks>
+        ///     This way of sending correlated HTTP requests is not needed if you used
+        ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
+        ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
+        ///     otherwise use the regular <see cref="HttpClient.SendAsync(HttpRequestMessage)"/> to send the HTTP request and the request will be correlated automatically.
+        /// </remarks>
         /// <param name="client">The client to send the <paramref name="request"/>.</param>
         /// <param name="request">The HTTP request message to send.</param>
         /// <param name="correlationInfo">The current HTTP correlation available to track with the <paramref name="request"/>.</param>
@@ -91,6 +110,12 @@ namespace System.Net.Http
         /// <summary>
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
+        /// <remarks>
+        ///     This way of sending correlated HTTP requests is not needed if you used
+        ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
+        ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
+        ///     otherwise use the regular <see cref="HttpClient.SendAsync(HttpRequestMessage)"/> to send the HTTP request and the request will be correlated automatically.
+        /// </remarks>
         /// <param name="client">The client to send the <paramref name="request"/>.</param>
         /// <param name="request">The HTTP request message to send.</param>
         /// <param name="correlationInfo">The current HTTP correlation available to track with the <paramref name="request"/>.</param>
