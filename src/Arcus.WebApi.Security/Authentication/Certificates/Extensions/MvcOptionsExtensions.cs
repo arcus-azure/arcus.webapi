@@ -3,12 +3,13 @@ using Arcus.WebApi.Security.Authentication.Certificates;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 
+// ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
 {
     /// <summary>
     /// Extensions on the <see cref="MvcOptions"/> related to authentication.
     /// </summary>
-    public static class MvcOptionsExtensions
+    public static partial class MvcOptionsExtensions
     {
          /// <summary>
         /// Adds an certificate authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request.
