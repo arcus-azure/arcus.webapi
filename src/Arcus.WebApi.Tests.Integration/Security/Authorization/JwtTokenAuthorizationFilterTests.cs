@@ -604,7 +604,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             }
         }
 
-        
         [Theory]
         [InlineData(BypassOnMethodController.JwtRoute)]
         [InlineData(BypassJwtTokenAuthorizationController.BypassOverAuthorizationRoute)]
