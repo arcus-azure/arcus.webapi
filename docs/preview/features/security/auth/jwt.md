@@ -47,9 +47,9 @@ builder.Services.AddControllers(mvcOptions =>
 {
     // Default configuration:
     // By default, the JWT authorization filter will use the Microsoft 'https://login.microsoftonline.com/common/v2.0/.well-known/openid-configuration' OpenID endpoint to request the configuration.
-    mvcOptions.Filters.AddJwtTokenAuthorization();
+    mvcOptions.AddJwtTokenAuthorizationFilter();
 
-    mvcOptions.Filters.AddJwtTokenAuthorization(options =>
+    mvcOptions.AddJwtTokenAuthorizationFilter(options =>
     {
         // Default configuration with validation parameters:
         // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters to manipulate how the JWT token should be validated.
@@ -93,7 +93,7 @@ builder.Services.AddControllers(mvcOptions =>
     {
         {"aud", Issuer}
     };
-    mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
+    mvcOptions.AddJwtTokenAuthorizationFilter(claimCheck);
 
      // Custom OpenID endpoint:
     // You can use your own custom OpenID endpoint by providing another the endpoint in the options; additionally with custom validation parameters and custom claims to manipulate how the JWT token should be validated.
@@ -102,7 +102,7 @@ builder.Services.AddControllers(mvcOptions =>
         {"aud", Issuer},
         {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
     };
-    mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
+    mvcOptions.AddJwtTokenAuthorizationFilter(claimCheck);
 
     // Default configuration with validation parameters:
     // One can still use the default Microsoft OpenID endpoint and provide additional validation parameters and custom claims to manipulate how the JWT token should be validated.
@@ -113,7 +113,7 @@ builder.Services.AddControllers(mvcOptions =>
         {"oid", "fa323e12-e4b8-4e22-bb2a-b18cb4b76301"}
     };
 
-    mvcOptions.Filters.AddJwtTokenAuthorization(claimCheck);
+    mvcOptions.AddJwtTokenAuthorizationFilter(claimCheck);
 }});
 ```
 

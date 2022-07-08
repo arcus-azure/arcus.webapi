@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authorization;
 using GuardNet;
+using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Mvc.Filters
@@ -17,6 +18,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// </summary>
         /// <param name="filters">All filters that are being applied to the request pipeline</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + " instead via the services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + "())")]
         public static FilterCollection AddJwtTokenAuthorization(this FilterCollection filters)
         {
             Guard.NotNull(filters, nameof(filters), "Requires a filter collection to add the JWT token authorization filter");
@@ -30,6 +32,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="filters">All filters that are being applied to the request pipeline</param>
         /// <param name="configureOptions">Configuration options for using JWT token authorization</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="filters"/> is <c>null</c>.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + " instead via the services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + "(...))")]
         public static FilterCollection AddJwtTokenAuthorization(
             this FilterCollection filters, 
             Action<JwtTokenAuthorizationOptions> configureOptions)
@@ -49,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="claimCheck">Custom claims key-value pair to validate against</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="claimCheck"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + " instead via the services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + "(...))")]
         public static FilterCollection AddJwtTokenAuthorization(
             this FilterCollection filters,
             IDictionary<string, string> claimCheck)
@@ -72,6 +76,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
         /// <param name="claimCheck">Custom claims key-value pair to validate against</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="claimCheck"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
+        [Obsolete("Use the " + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + " instead via the services.AddControllers(options => options." + nameof(MvcOptionsExtensions.AddJwtTokenAuthorizationFilter) + "(...))")]
         public static FilterCollection AddJwtTokenAuthorization(
             this FilterCollection filters,
             Action<JwtTokenAuthorizationOptions> configureOptions, IDictionary<string, string> claimCheck)

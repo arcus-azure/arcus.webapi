@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Xunit;
 
+// Ignore obsolete warnings.
+#pragma warning disable CS0618
+
 namespace Arcus.WebApi.Tests.Unit.Security.Authorization
 {
     public class FilterCollectionExtensionsTests
