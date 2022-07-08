@@ -41,7 +41,7 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
                     opt.InputFormatters.Add(new PlainTextInputFormatter());
                 }));
 
-            string sentence = BogusGenerator.Lorem.Sentence();
+            string sentence = string.Join(" ", BogusGenerator.Lorem.Words());
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
@@ -71,7 +71,7 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
                     opt.OnlyAllowJsonFormatting();
                 }));
 
-            string sentence = BogusGenerator.Lorem.Sentence();
+            string sentence = string.Join(" ", BogusGenerator.Lorem.Words());
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
