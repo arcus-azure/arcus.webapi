@@ -137,6 +137,13 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         public CertificateAuthenticationConfig Build()
         {
+            if (_locationAndKeyByRequirement.Count <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Cannot build up the certificate authentication validation because there's nothing configured to be validated on the client certificate, "
+                    + $"please configure the certificate validation requirements with methods like {nameof(WithThumbprint)}, {nameof(WithIssuer)}");
+            }
+
             return new CertificateAuthenticationConfig(_locationAndKeyByRequirement);
         }
     }
