@@ -81,9 +81,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             if (correlation is null)
             {
                 throw new InvalidOperationException(
-                    "Cannot enrich the HTTP request with HTTP correlation because no HTTP correlation was registered in the application, " +
-                    "make sure that you register the HTTP correlation services with 'services.WithHttpCorrelationTracking()' " +
-                    "and that you use the HTTP correlation middleware 'app.UseHttpCorrelation()' in API scenario's");
+                    "Cannot enrich the HTTP request with HTTP correlation because no HTTP correlation was registered in the application, " 
+                    + "make sure that you register the HTTP correlation services with 'services.AddHttpCorrelation()' " 
+                    + "and that you use the HTTP correlation middleware 'app.UseHttpCorrelation()' in API scenario's");
             }
 
             return correlation;

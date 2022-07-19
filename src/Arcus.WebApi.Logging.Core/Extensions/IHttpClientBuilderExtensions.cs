@@ -42,7 +42,9 @@ namespace Microsoft.Extensions.DependencyInjection
                 if (correlationAccessor is null)
                 {
                     throw new InvalidOperationException(
-                        );
+                        "Cannot enrich the HTTP request with HTTP correlation because no HTTP correlation was registered in the application, " 
+                        + "make sure that you register the HTTP correlation services with 'services.AddHttpCorrelation()' " 
+                        + "and that you use the HTTP correlation middleware 'app.UseHttpCorrelation()' in API scenario's");
                 }
 
                 var options = new HttpCorrelationClientOptions();
