@@ -12,12 +12,10 @@ The Arcus Web API library provides an easy way to register and configure complex
 
 # Installation
 
-The Arcus.WebApi library can be installed via NuGet.
-
-To install all Arcus.WebApi packages:
+The Arcus.WebApi library can be installed via NuGet, for instance:
 
 ```shell
-PM > Install-Package Arcus.WebApi.All
+PM > Install-Package Arcus.WebApi.Security
 ```
 
 For more granular packages we recommend reading the documentation.
