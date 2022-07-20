@@ -17,10 +17,22 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds operation and transaction correlation to the application.
         /// </summary>
         /// <param name="builder">The functions host builder containing the dependency injection services.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder)
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
+
+            return AddHttpCorrelation(builder, (HttpCorrelationInfoOptions options) => { });
+        }
+
+        /// <summary>
+        /// Adds operation and transaction correlation to the application.
+        /// </summary>
+        /// <param name="builder">The functions host builder containing the dependency injection services.</param>
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddHttpCorrelation) + " method overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
-        public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder, Action<CorrelationInfoOptions> configureOptions = null)
+        public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder, Action<CorrelationInfoOptions> configureOptions)
         {
             Guard.NotNull(builder, nameof(builder), "Requires a functions host builder instance to add the HTTP correlation services");
 
