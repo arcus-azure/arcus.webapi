@@ -17,13 +17,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// Adds operation and transaction correlation to the application.
         /// </summary>
         /// <param name="builder">The functions host builder containing the dependency injection services.</param>
-        /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder)
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
 
-            return AddHttpCorrelation((HttpCorrelationInfoOptions options) => { });
+            return AddHttpCorrelation(builder, (HttpCorrelationInfoOptions options) => { });
         }
 
         /// <summary>
