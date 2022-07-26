@@ -13,7 +13,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     {
         private Func<string> _generateDependencyId = () => Guid.NewGuid().ToString();
         private string _upstreamServiceHeaderName = "Request-Id";
-        private string _transactionIdHeaderName = "X-Transaction-Id";
+        private string _transactionIdHeaderName = "X-Transaction-ID";
 
         /// <summary>
         /// Gets or sets the function to generate the dependency ID used when tracking HTTP dependencies.

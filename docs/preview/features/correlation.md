@@ -7,21 +7,6 @@ layout: default
 
 The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
 
-- [Correlation Between HTTP Requests](#correlation-between-http-requests)
-  - [How This Works](#how-this-works)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [Sending side](#sending-side)
-    - [Receiving side](#receiving-side)
-  - [Configuration](#configuration)
-    - [Configuring HTTP correlation services](#configuring-http-correlation-services)
-    - [Configuring HTTP correlation client tracking](#configuring-http-correlation-client-tracking)
-  - [Dependency injection](#dependency-injection)
-  - [Logging](#logging)
-  - [Using correlation within Azure Functions](#using-correlation-within-azure-functions)
-    - [Installation](#installation-1)
-    - [Usage](#usage-1)
-
 ## How This Works
 
 This diagram shows an example of a user interacting with service A that calls another service B.
