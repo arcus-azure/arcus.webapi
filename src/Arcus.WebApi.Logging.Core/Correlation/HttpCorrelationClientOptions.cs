@@ -12,8 +12,8 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     public class HttpCorrelationClientOptions
     {
         private Func<string> _generateDependencyId = () => Guid.NewGuid().ToString();
-        private string _upstreamServiceHeaderName = "Request-Id";
-        private string _transactionIdHeaderName = "X-Transaction-Id";
+        private string _upstreamServiceHeaderName = HttpCorrelationProperties.UpstreamServiceHeaderName;
+        private string _transactionIdHeaderName = HttpCorrelationProperties.TransactionIdHeaderName;
 
         /// <summary>
         /// Gets or sets the function to generate the dependency ID used when tracking HTTP dependencies.

@@ -101,16 +101,13 @@ namespace Arcus.WebApi.Logging.Correlation
             {
                 return new HttpCorrelationInfoOptions();
             }
-            
-            return new HttpCorrelationInfoOptions
+
+            var httpOptions = new HttpCorrelationInfoOptions
             {
                 Operation =
                 {
                     GenerateId = options.Operation.GenerateId,
-#pragma warning disable CS0618
-                    HeaderName = options.Operation.HeaderName,
                     IncludeInResponse = options.Operation.IncludeInResponse
-#pragma warning restore CS0618
                 },
                 Transaction =
                 {
@@ -127,6 +124,14 @@ namespace Arcus.WebApi.Logging.Correlation
                     HeaderName = options.OperationParent.OperationParentIdHeaderName
                 } 
             };
+
+            var oldDefaultOperationIdHeader = "RequestId";
+            if (options.Operation.HeaderName != oldDefaultOperationIdHeader)
+            {
+                httpOptions.Operation.HeaderName = options.Operation.HeaderName;
+            }
+
+            return httpOptions;
         }
 
         /// <summary>
@@ -330,11 +335,23 @@ namespace Arcus.WebApi.Logging.Correlation
 
         private void AddCorrelationResponseHeaders(HttpContext httpContext, string requestId)
         {
-#pragma warning disable CS0618
             if (_options.Operation.IncludeInResponse)
-#pragma warning restore CS0618
             {
-                _logger.LogWarning("Operation correlation ID's cannot be added to response, but the 'Operation.IncludeInResponse' setting was still set");
+                _logger.LogTrace("Prepare for the operation ID to be included in the response...");
+                httpContext.Response.OnStarting(() =>
+                {
+                    CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
+                    if (string.IsNullOrWhiteSpace(correlationInfo?.OperationId))
+                    {
+                        _logger.LogWarning("No response header was added given no operation ID was found");
+                    }
+                    else
+                    {
+                        AddResponseHeader(httpContext, _options.Operation.HeaderName, correlationInfo.OperationId);
+                    }
+
+                    return Task.CompletedTask;
+                });
             }
 
             if (_options.UpstreamService.IncludeInResponse)

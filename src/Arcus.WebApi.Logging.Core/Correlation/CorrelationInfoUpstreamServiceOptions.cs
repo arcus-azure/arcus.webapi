@@ -9,7 +9,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class CorrelationInfoUpstreamServiceOptions
     {
-        private string _headerName = "Request-Id";
+        private string _headerName = HttpCorrelationProperties.UpstreamServiceHeaderName;
         private Func<string> _generateId = () => Guid.NewGuid().ToString();
 
         /// <summary>
