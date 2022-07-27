@@ -7,21 +7,6 @@ layout: default
 
 The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
 
-- [Correlation Between HTTP Requests](#correlation-between-http-requests)
-  - [How This Works](#how-this-works)
-  - [Installation](#installation)
-  - [Usage](#usage)
-    - [Sending side](#sending-side)
-    - [Receiving side](#receiving-side)
-  - [Configuration](#configuration)
-    - [Configuring HTTP correlation services](#configuring-http-correlation-services)
-    - [Configuring HTTP correlation client tracking](#configuring-http-correlation-client-tracking)
-  - [Dependency injection](#dependency-injection)
-  - [Logging](#logging)
-  - [Using correlation within Azure Functions](#using-correlation-within-azure-functions)
-    - [Installation](#installation-1)
-    - [Usage](#usage-1)
-
 ## How This Works
 
 This diagram shows an example of a user interacting with service A that calls another service B.
@@ -30,7 +15,7 @@ This diagram shows an example of a user interacting with service A that calls an
 
 Three kind of correlation ID's are used to create the relationship:
 * **Transaction ID**: this ID is the one constant in the diagram. This ID is used to describe the entire transaction, from begin to end. All telemetry will be tracked under this ID.
-* **Operation ID**: this ID describes a single operation within the transaction. This ID is used within a service to link all telemetry correctly together but doesn't leave the service.
+* **Operation ID**: this ID describes a single operation within the transaction. This ID is used within a service to link all telemetry correctly together.
 * **Operation Parent ID**: this ID is create the parent/child link across services. When service A calls service B, then service A is the so called 'parent' of service B.
 
 The following list shows each step in the diagram:
