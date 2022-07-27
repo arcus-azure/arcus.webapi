@@ -8,7 +8,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class HttpCorrelationInfoTransactionOptions
     {
-        private string _headerName = "X-Transaction-ID";
+        private string _headerName = HttpCorrelationProperties.TransactionIdHeaderName;
         private Func<string> _generateId = () => Guid.NewGuid().ToString();
 
         /// <summary>
