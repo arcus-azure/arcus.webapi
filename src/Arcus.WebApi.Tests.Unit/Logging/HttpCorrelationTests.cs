@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Reflection.PortableExecutable;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
