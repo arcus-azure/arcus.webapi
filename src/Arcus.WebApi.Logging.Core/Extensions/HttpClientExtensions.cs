@@ -155,7 +155,7 @@ namespace System.Net.Http
                 }
                 finally
                 {
-                    logger.LogHttpDependency(request, statusCode, measurement, dependencyId);
+                    logger.LogHttpDependency(request, statusCode, measurement, dependencyId, options.TelemetryContext);
                 } 
             }
         }

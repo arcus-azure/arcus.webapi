@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using GuardNet;
 using Microsoft.Extensions.Logging;
@@ -55,6 +56,22 @@ namespace Arcus.WebApi.Logging.Core.Correlation
                 Guard.NotNullOrWhitespace(value, nameof(value), "Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies");
                 _transactionIdHeaderName = value;
             }
+        }
+
+        /// <summary>
+        /// Gets the telemetry context used during HTTP dependency tracking.
+        /// </summary>
+        internal Dictionary<string, object> TelemetryContext { get; private set; } = new Dictionary<string, object>();
+
+        /// <summary>
+        /// Adds a telemetry context while tracking the HTTP dependency.
+        /// </summary>
+        /// <param name="telemetryContext">The dictionary with contextual information about the dependency telemetry.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="telemetryContext"/> is <c>null</c>.</exception>
+        public void AddTelemetryContext(Dictionary<string, object> telemetryContext)
+        {
+            Guard.NotNull(telemetryContext, nameof(telemetryContext), "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
+            TelemetryContext = telemetryContext;
         }
     }
 }
