@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Xunit;
 
@@ -31,7 +30,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             options.TransactionIdHeaderName = headerName;
 
             // Assert
-            Assert.True(string.IsNullOrWhiteSpace(headerName));
+            Assert.False(string.IsNullOrWhiteSpace(headerName));
         }
 
         [Theory]
@@ -69,7 +68,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             options.UpstreamServiceHeaderName = headerName;
 
             // Assert
-            Assert.True(string.IsNullOrWhiteSpace(headerName));
+            Assert.False(string.IsNullOrWhiteSpace(headerName));
         }
 
         [Theory]
