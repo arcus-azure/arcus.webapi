@@ -182,7 +182,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         public void Create_WithoutHttpContextAccessor_Fails()
         {
             // Arrange
-            var options = new HttpCorrelationClientOptionsTests();
+            var options = new HttpCorrelationClientOptions();
             var logger = NullLogger<HttpCorrelationMessageHandler>.Instance;
 
             // Act / Assert
@@ -207,7 +207,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             // Arrange
             var accessor = Mock.Of<IHttpCorrelationInfoAccessor>();
-            var options = new HttpCorrelationClientOptionsTests();
+            var options = new HttpCorrelationClientOptions();
 
             // Act / Assert
             Assert.ThrowsAny<ArgumentException>(() =>
