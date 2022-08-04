@@ -192,7 +192,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
                     string actualDependencyId = GetDependencyIdFromTrackedDependency(trackedDependency);
                     Assert.Equal(expectedDependencyId, actualDependencyId);
-
                 }
             }
         }
