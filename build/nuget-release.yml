@@ -74,13 +74,13 @@ stages:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
               projectName: '$(Project).Tests.Unit'
 
-  - stage: IntegrationTests
-    displayName: Integration Tests
+  - stage: DockerIntegrationTests
+    displayName: Docker integration Tests
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - job: IntegrationTests
-        displayName: 'Run integration tests'
+      - job: DockerTests
+        displayName: 'Run Docker integration tests'
         pool:
           vmImage: '$(Vm.Image)'
         steps:
@@ -89,13 +89,35 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - template: templates/run-integration-tests.yml
+          - template: templates/run-docker-integration-tests.yml
+
+  - stage: SelfContainedIntegrationTests
+    displayName: SelfIntegration Tests
+    dependsOn: Build
+    condition: succeeded()
+    jobs:
+      - job: SelfIntegrationTests
+        displayName: 'Run self-contained integration tests'
+        pool:
+          vmImage: '$(Vm.Image)'
+        steps:
+          - task: DownloadPipelineArtifact@2
+            displayName: 'Download build artifacts'
+            inputs:
+              artifact: 'Build'
+              path: '$(Build.SourcesDirectory)'
+          - template: test/run-integration-tests.yml@templates
             parameters:
-              dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
+              dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+              projectName: '$(Project).Tests.Integration'
+              category: 'Integration'
 
   - stage: Release
     displayName: 'Release to NuGet.org'
-    dependsOn: [UnitTests, IntegrationTests]
+    dependsOn:
+      - UnitTests
+      - DockerIntegrationTests
+      - SelfContainedIntegrationTests
     condition: succeeded()
     jobs:
       - job: PushToNuGet

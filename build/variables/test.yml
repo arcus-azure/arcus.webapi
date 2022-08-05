@@ -1,2 +1,4 @@
 variables:
   Arcus.HttpPort: "5000"
+  Arcus.AzureFunctions.InProcess.HttpPort: "5001"
+  Arcus.AzureFunctions.Isolated.HttpPort: "5002"

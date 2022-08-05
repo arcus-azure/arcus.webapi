@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netstandard2.1</TargetFrameworks>
+    <TargetFrameworks>net6.0;netcoreapp3.1;netstandard2.1</TargetFrameworks>
     <Authors>Arcus</Authors>
     <Company>Arcus</Company>
     <RepositoryType>Git</RepositoryType>
@@ -15,6 +15,7 @@
     <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Azure Functions;Logging; Correlation</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>NU5125;NU5048</NoWarn>
   </PropertyGroup>
 
@@ -28,6 +29,7 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="1.6.0" />
   </ItemGroup>
 
 </Project>

@@ -34,12 +34,27 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         }
 
         /// <summary>
-        /// Gets the HTTP port configured in this integration test configuration.
+        /// Gets the HTTP port configured in Azure Functions in-process integration test configuration.
         /// </summary>
-        public int GetHttpPort()
+        public int GetDockerAzureFunctionsInProcessHttpPort()
         {
-            const string key = "Arcus:Infra:HttpPort";
+            const string key = "Arcus:Docker:AzureFunctions:InProcess:HttpPort";
 
+            return GetRequiredHttpPort(key);
+        }
+
+        /// <summary>
+        /// Gets the HTTP port configured in Azure Functions isolated integration test configuration.
+        /// </summary>
+        public int GetDockerAzureFunctionsIsolatedHttpPort()
+        {
+            const string key = "Arcus:Docker:AzureFunctions:Isolated:HttpPort";
+
+            return GetRequiredHttpPort(key);
+        }
+
+        private int GetRequiredHttpPort(string key)
+        {
             var httpPort = _config.GetValue<string>(key);
             if (Int32.TryParse(httpPort, out int result) && result > 0)
             {

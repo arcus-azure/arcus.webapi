@@ -82,11 +82,7 @@ namespace Microsoft.Extensions.DependencyInjection
             });
             services.AddScoped<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
-
-            if (configureOptions != null)
-            {
-                services.Configure(configureOptions);
-            }
+            services.Configure<HttpCorrelationInfoOptions>(options => configureOptions?.Invoke(options));
 
             services.AddScoped(serviceProvider =>
             {

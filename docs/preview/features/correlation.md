@@ -5,7 +5,7 @@ layout: default
 
 # Correlation Between HTTP Requests
 
-The `Arcus.WebApi.Correlation` library provides a way to add correlation between HTTP requests. 
+The `Arcus.WebApi.Logging` library provides a way to add correlation between HTTP requests. 
 
 ## How This Works
 
@@ -93,7 +93,9 @@ app.UseHttpCorrelation();
 app.UseRouting();
 ```
 
-Note: because the correlation is based on <span>ASP.NET</span> Core middleware, it's recommended to place it before the `.UseRouting` call.
+> Note: because the correlation is based on <span>ASP.NET</span> Core middleware, it's recommended to place it before the `.UseRouting` call.
+
+> To use HTTP correlation in Azure Functions, see [this dedicated page](correlation-azure-functions.md), as the configuration on the receiving is slightly different.
 
 ## Configuration
 
@@ -272,69 +274,3 @@ builder.Host.UseSerilog((context, serviceProvider, config) =>
 WebApplication app = builder.Build();
 app.UseHttpCorrelation();
 ```
-
-## Using correlation within Azure Functions
-
-### Installation
-
-For this feature, the following package needs to be installed:
-
-```shell
-PM > Install-Package Arcus.WebApi.Logging.AzureFunctions
-```
-
-### Usage
-
-To make sure the correlation is added to the HTTP response, following additions have to be made in the `.Configure` methods of the function's startup:
-
-```csharp
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
-using Microsoft.Extensions.DependencyInjection;
-
-[assembly: FunctionsStartup(typeof(Startup))]
-
-namespace MyHttpAzureFunction
-{
-    public class Startup : FunctionsStartup
-    {
-        public override void Configure(IFunctionsHostBuilder builder)
-        {
-            builder.AddHttpCorrelation();
-        }
-    }
-}
-```
-
-When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `IHttpCorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
-
-```csharp
-using Arcus.WebApi.Logging.Correlation;
-
-public class MyHttpFunction
-{
-    private readonly HttpCorrelation _httpCorrelation;
-
-    public MyHttpFunction(HttpCorrelation httpCorrelation)
-    {
-        _httpCorrelation = httpCorrelation;
-    }
-
-    [FunctionName("HTTP-Correlation-Example")]
-    public async Task<IActionResult> Run(
-        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
-        ILogger log)
-    {
-        if (_httpCorrelation.TryHttpCorrelate(out string errorMessage))
-        {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            // Easily access correlation information in your application
-            CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
-            return new OkObjectResult("This HTTP triggered function executed successfully.");
-        }
-
-        return new BadRequestObjectResult(errorMessage);
-    }
-```
-
-> Note that the `HttpCorrelation` already has the registered `IHttpCorrelationInfoAccessor` embedded but nothing stops you from injecting the `IHtpCorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
