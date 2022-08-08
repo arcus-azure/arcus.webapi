@@ -62,7 +62,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             {
                 throw new InvalidOperationException(
                     "Cannot determine HTTP request in HTTP correlation middleware, this probably means that their is no HTTP trigger function triggering this invocation."
-                    + "Please only use the HTTP correlation in HTTP scenario's");
+                    + "Please only use the HTTP correlation in HTTP scenarios");
             }
 
             return request;
