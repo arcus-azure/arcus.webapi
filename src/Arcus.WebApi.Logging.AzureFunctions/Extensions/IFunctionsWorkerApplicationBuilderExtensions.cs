@@ -6,6 +6,7 @@ using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.Hosting
@@ -61,8 +62,16 @@ namespace Microsoft.Extensions.Hosting
             builder.Services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             builder.Services.AddScoped<IHttpCorrelationInfoAccessor, AzureFunctionsHttpCorrelationInfoAccessor>();
 
-            builder.Services.Configure<HttpCorrelationInfoOptions>(options => configureOptions?.Invoke(options));
-            builder.Services.AddScoped<AzureFunctionsHttpCorrelation>();
+            builder.Services.AddScoped(provider =>
+            {
+                var options = new HttpCorrelationInfoOptions();
+                configureOptions?.Invoke(options);
+
+                var correlationAccessor = provider.GetRequiredService<IHttpCorrelationInfoAccessor>();
+                var logger = provider.GetService<ILogger<AzureFunctionsHttpCorrelation>>();
+
+                return new AzureFunctionsHttpCorrelation(options, correlationAccessor, logger);
+            });
 
             builder.UseMiddleware<AzureFunctionsCorrelationMiddleware>();
             return builder;
