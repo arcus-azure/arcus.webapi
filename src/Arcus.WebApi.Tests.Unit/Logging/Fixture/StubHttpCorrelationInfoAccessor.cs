@@ -15,7 +15,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
         /// </summary>
         public StubHttpCorrelationInfoAccessor()
         {
-            
         }
 
         /// <summary>

@@ -32,7 +32,6 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         {
         }
 
-
         /// <summary>
         /// Gets the HTTP request headers from the incoming <paramref name="request"/>.
         /// </summary>

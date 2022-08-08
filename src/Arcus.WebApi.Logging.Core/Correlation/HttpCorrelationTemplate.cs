@@ -274,14 +274,12 @@ namespace Arcus.WebApi.Logging.Core.Correlation
                 {
                     SetHttpResponseHeader(response, _options.UpstreamService.HeaderName, requestId);
                 }
-
             }
 
             if (_options.Transaction.IncludeInResponse)
             {
                 _logger.LogTrace("Prepare for the transactional correlation ID to be included in the response...");
 
-                   
                 if (string.IsNullOrWhiteSpace(correlationInfo?.TransactionId))
                 {
                     _logger.LogWarning(
