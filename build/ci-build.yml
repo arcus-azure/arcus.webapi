@@ -85,11 +85,11 @@ stages:
               projectName: '$(Project).Tests.Unit'
 
   - stage: DockerIntegrationTests
-    displayName: Docker integration Tests
+    displayName: Integration Tests
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - job: DockerTests
+      - job: DockerIntegrationTests
         displayName: 'Run Docker integration tests'
         pool:
           vmImage: '$(Vm.Image)'
@@ -102,11 +102,11 @@ stages:
           - template: templates/run-docker-integration-tests.yml
 
   - stage: SelfContainedIntegrationTests
-    displayName: SelfIntegration Tests
+    displayName: Integration Tests
     dependsOn: Build
     condition: succeeded()
     jobs:
-      - job: SelfIntegrationTests
+      - job: SelfContainedIntegrationTests
         displayName: 'Run self-contained integration tests'
         pool:
           vmImage: '$(Vm.Image)'
