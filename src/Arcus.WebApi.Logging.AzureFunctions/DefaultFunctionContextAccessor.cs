@@ -13,7 +13,10 @@ namespace Arcus.WebApi.Logging.AzureFunctions
     {
         private static readonly AsyncLocal<FunctionContextHolder> FunctionContextCurrent = new AsyncLocal<FunctionContextHolder>();
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets or sets the current <see cref="Microsoft.Azure.Functions.Worker.FunctionContext"/>.
+        /// Returns <see langword="null" /> if there is no active <see cref="Microsoft.Azure.Functions.Worker.FunctionContext" />.
+        /// </summary>
         public FunctionContext FunctionContext
         {
             get => FunctionContextCurrent.Value?.Context;

@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
 {
@@ -13,7 +12,6 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
                     builder.UseFunctionContext()
                            .UseHttpCorrelation();
                 })
-                .ConfigureLogging(logging => logging.SetMinimumLevel(LogLevel.Trace))
                 .Build();
     
             host.Run();

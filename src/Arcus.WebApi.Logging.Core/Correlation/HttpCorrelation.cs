@@ -77,6 +77,7 @@ namespace Arcus.WebApi.Logging.Correlation
 
             public HttpCorrelationInfoAccessorProxy(ICorrelationInfoAccessor<CorrelationInfo> accessor)
             {
+                Guard.NotNull(accessor, nameof(accessor), "Requires a correlation info instance to set and retrieve the correlation information");
                 _accessor = accessor;
             }
 
