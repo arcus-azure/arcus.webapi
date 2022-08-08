@@ -5,11 +5,13 @@ steps:
       packageType: 'sdk'
       version: '$(DotNet.Sdk.VersionBC)'
   - template: start-docker-project.yml
-    dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
-    port: '$(Arcus.AzureFunctions.InProcess.HttpPort)'
+    parameters:
+      dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
+      port: '$(Arcus.AzureFunctions.InProcess.HttpPort)'
   - template: start-docker-project.yml
-    dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction.Isolated'
-    port: '$(Arcus.AzureFunctions.Isolated.HttpPort)'
+    parameters:
+      dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction.Isolated'
+      port: '$(Arcus.AzureFunctions.Isolated.HttpPort)'
   - template: test/run-integration-tests.yml@templates
     parameters:
       dotnetSdkVersion: '$(DotNet.Sdk.Version)'
