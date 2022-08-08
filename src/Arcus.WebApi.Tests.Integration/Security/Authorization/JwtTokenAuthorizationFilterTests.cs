@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
@@ -27,7 +28,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class JwtTokenAuthorizationFilterTests
     {
         private readonly ILogger _logger;

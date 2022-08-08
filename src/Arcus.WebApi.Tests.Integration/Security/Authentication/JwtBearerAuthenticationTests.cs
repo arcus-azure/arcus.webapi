@@ -22,7 +22,8 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class JwtBearerAuthenticationTests
     {
         private const string IssuerName = "issuer.contoso.com", 

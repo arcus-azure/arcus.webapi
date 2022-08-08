@@ -25,7 +25,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class TelemetryCorrelationTests
     {
         private const string TransactionIdPropertyName = "TransactionId",

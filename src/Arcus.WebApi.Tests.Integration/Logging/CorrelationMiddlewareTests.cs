@@ -19,7 +19,8 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class CorrelationMiddlewareTests
     {
         private const string DefaultOperationId = HttpCorrelationProperties.OperationIdHeaderName, 

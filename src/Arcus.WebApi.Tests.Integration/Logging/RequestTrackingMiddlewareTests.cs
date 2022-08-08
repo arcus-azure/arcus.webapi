@@ -27,8 +27,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
-    [Collection("Integration")]
-    [Trait("Category", "Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class RequestTrackingMiddlewareTests
     {
         private const string RequestBodyKey = "RequestBody",

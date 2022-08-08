@@ -13,7 +13,8 @@ using static Arcus.WebApi.Logging.Core.Correlation.HttpCorrelationProperties;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
-    [Collection("Docker")]
+    [Collection(Constants.TestCollections.Docker)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Docker)]
     public class AzureFunctionCorrelationTests
     {
         private readonly XunitTestLogger _logger;
