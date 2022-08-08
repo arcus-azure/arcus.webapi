@@ -117,14 +117,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
         private bool TryGetTransactionId(IHeaderDictionary requestHeaders, out string alreadyPresentTransactionId)
         {
-            if (requestHeaders.TryGetValue(_options.Transaction.HeaderName, out StringValues headerValue))
-            {
-                alreadyPresentTransactionId = headerValue.ToString();
-                return true;
-            }
-
-            alreadyPresentTransactionId = null;
-            return false;
+            return TryGetHeaderValue(requestHeaders, _options.Transaction.HeaderName, out alreadyPresentTransactionId);
         }
 
         private string DetermineOperationId(string traceIdentifier)
@@ -177,9 +170,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
         private bool TryGetRequestId(IHeaderDictionary requestHeaders, string headerName, out string requestId)
         {
-            if (requestHeaders.TryGetValue(headerName, out StringValues id) 
-                && !string.IsNullOrWhiteSpace(id)
-                && id.Count > 0
+            if (TryGetHeaderValue(requestHeaders, headerName, out string id)
                 && MatchesRequestIdFormat(id, headerName))
             {
                 _logger.LogTrace("Found operation parent ID '{OperationParentId}' from upstream service in request's header '{HeaderName}'", id, headerName);
@@ -189,6 +180,19 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
             _logger.LogTrace("No operation parent ID found from upstream service in the request's header '{HeaderName}' that matches the expected format: |Guid.", headerName);
             requestId = null;
+            return false;
+        }
+
+        private static bool TryGetHeaderValue(IHeaderDictionary headers, string headerName, out string headerValue)
+        {
+            (string key, string value) = headers.FirstOrDefault(h => string.Equals(h.Key, headerName, StringComparison.OrdinalIgnoreCase));
+            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
+            {
+                headerValue = value;
+                return true;
+            }
+
+            headerValue = null;
             return false;
         }
 
