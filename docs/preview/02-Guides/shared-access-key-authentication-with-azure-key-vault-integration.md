@@ -20,8 +20,8 @@ public class Program
     public static void Main(string[] args)
     {
         WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
-        builder.AddRouting();
-        builder.AddControllers();
+        builder.Services.AddRouting();
+        builder.Services.AddControllers();
 
         WebApplication app = builder.Build();
         app.UseRouting();
@@ -68,7 +68,7 @@ public class Program
         builder.AddRouting();
         builder.AddControllers();
 
-        builder.Host.ConfigureSecretStore((configuration, stores) =>
+        builder.Host.ConfigureSecretStore((config, stores) =>
         {
             stores.AddAzureKeyVaultWithManagedIdentity("https://your-key.vault.azure.net", CacheConfiguration.Default);
         });
@@ -100,13 +100,14 @@ public class Program
                 "MyAccessKey_SecretName_AvailableInSecretStore");
         });
 
-        builder.Host.ConfigureSecretStore((configuration, stores) =>
+        builder.Host.ConfigureSecretStore((config, stores) =>
         {
             stores.AddAzureKeyVaultWithManagedIdentity("https://your-key.vault.azure.net", CacheConfiguration.Default);
         });
 
         WebApplication app = builder.Build();
         app.UseRouting();
+        app.UseEndpoints(endpoints => endpoints.MapControllers());
         app.Run();
     }
 }
