@@ -145,7 +145,7 @@ curl -Method POST `
 ```
 
 ## Conclusion
-In this user guide, you've seen how the Arcus shared access key API authentication filter can be added to an existing application, using the Arcus secret store that places the access in Azure Key Vault.
+In this user guide, you've seen how the Arcus shared access key API authentication filter can be added to an existing application, using the Arcus secret store that places the access key in Azure Key Vault.
 
 Besides shared access key authentication, we support several other mechanisms and useful API functionality. See our [feature documentation](https://webapi.arcus-azure.net/) for more information.
 
