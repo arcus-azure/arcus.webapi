@@ -1,5 +1,5 @@
 # Shared access key authentication with Azure Key Vault integration
-The Arcus shared access key authentication is an API security filter to easily and secure share the same access key across a set of API endpoints. This kind of authentication is very common and therefore a popular feature in the Arcus WebApi library.
+The Arcus shared access key authentication is an API security filter to easily and safely share the same access key across a set of API endpoints. This kind of authentication is very common and therefore a popular feature in the Arcus WebApi library.
 
 The API security filter makes use of the [Arcus secret store](https://security.arcus-azure.net/features/secret-store) to retrieve the access keys. This makes sure that the secrets are safely accessed in the application.
 
