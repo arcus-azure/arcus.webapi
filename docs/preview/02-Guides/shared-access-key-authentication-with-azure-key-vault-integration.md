@@ -46,7 +46,7 @@ public class OrderController : ControllerBase
 ```
 
 ## 1. Installation
-To make use of the shared access key authentication, storing its secrets in Azure Key Vault, following Arcus packages have to be installed.
+To make use of the shared access key authentication, storing its secrets in Azure Key Vault, the following Arcus packages have to be installed.
 ```shell
 PM > Install-Package -Name Arcus.WebApi.Security
 PM > Install-Package -Name Arcus.Security.Providers.AzureKeyVault
