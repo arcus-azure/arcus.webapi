@@ -71,7 +71,10 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         public void AddTelemetryContext(Dictionary<string, object> telemetryContext)
         {
             Guard.NotNull(telemetryContext, nameof(telemetryContext), "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
-            TelemetryContext = telemetryContext;
+            foreach (KeyValuePair<string, object> item in telemetryContext)
+            {
+                TelemetryContext.Add(item.Key, item.Value);
+            }
         }
     }
 }

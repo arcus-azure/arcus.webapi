@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Xunit;
 
