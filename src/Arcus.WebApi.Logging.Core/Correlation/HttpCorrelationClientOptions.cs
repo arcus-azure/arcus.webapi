@@ -61,7 +61,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets the telemetry context used during HTTP dependency tracking.
         /// </summary>
-        internal Dictionary<string, object> TelemetryContext { get; private set; } = new Dictionary<string, object>();
+        internal Dictionary<string, object> TelemetryContext { get; } = new Dictionary<string, object>();
 
         /// <summary>
         /// Adds a telemetry context while tracking the HTTP dependency.

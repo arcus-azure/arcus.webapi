@@ -54,7 +54,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             string key1 = Guid.NewGuid().ToString(), value1 = Guid.NewGuid().ToString();
             var context1 = new Dictionary<string, object> { [key1] = value1 };
             string key2 = Guid.NewGuid().ToString(), value2 = Guid.NewGuid().ToString();
-            var context2 = new Dictionary<string, object> { [key2] = value2 };
+            var context2 = new Dictionary<string, object> { [key2] = value2, [key1] = value2 };
 
             var assertion = new AssertHttpMessageHandler(statusCode, req =>
             {
@@ -78,7 +78,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             AssertLoggedHttpDependency(message, request, statusCode);
             Assert.Contains(key1, message);
             Assert.Contains(key2, message);
-            Assert.Contains(value1, message);
+            Assert.DoesNotContain(value1, message);
             Assert.Contains(value2, message);
         }
 
