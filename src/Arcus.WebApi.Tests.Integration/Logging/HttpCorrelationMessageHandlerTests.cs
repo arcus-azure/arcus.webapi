@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -12,6 +13,7 @@ using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyModel;
 using Serilog;
 using Serilog.Events;
 using Xunit;
@@ -71,7 +73,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    
+
                     string dependencyIdInTelemetry = GetDependencyIdFromTrackedDependencyTelemetry(spySink);
                     Assert.Equal(dependencyIdInTelemetry, dependencyIdAtServiceB);
                 }
@@ -133,8 +135,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string dependencyIdHeaderName)
         {
             // Arrange
-            var expectedDependencyId = Guid.NewGuid().ToString();
-            var expectedTransactionId = Guid.NewGuid().ToString();
+            string expectedDependencyId = Guid.NewGuid().ToString(), expectedTransactionId = Guid.NewGuid().ToString();
+            string telemetryContextKey = $"key-{Guid.NewGuid()}", telemetryContextValue = $"value-{Guid.NewGuid()}";
 
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
@@ -162,6 +164,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                                 options.GenerateDependencyId = () => expectedDependencyId;
                                 options.TransactionIdHeaderName = transactionIdHeaderName;
                                 options.UpstreamServiceHeaderName = dependencyIdHeaderName;
+                                options.AddTelemetryContext(new Dictionary<string, object> { [telemetryContextKey] = telemetryContextValue });
                             });
                 })
                 .Configure(app => app.UseHttpCorrelation())
@@ -169,7 +172,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             HttpRequestBuilder request =
                 CreateHttpRequestToServiceA(ServiceAController.RouteWithMessageHandler, options)
-                    .WithHeader(transactionIdHeaderName, expectedTransactionId);
+                    .WithHeader(transactionIdHeaderName, expectedTransactionId)
+                    .WithHeader(ServiceAController.TelemetryContextKey, telemetryContextKey)
+                    .WithHeader(ServiceAController.TelemetryContextValue, telemetryContextValue);
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -179,7 +184,13 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                    string actualDependencyId = GetDependencyIdFromTrackedDependencyTelemetry(spySink);
+                    StructureValue trackedDependency = GetTrackedDependency(spySink);
+                    Assert.Single(trackedDependency.Properties, 
+                        prop => prop.Name == "Context" 
+                                && prop.Value.ToStringValue().Contains(telemetryContextKey) 
+                                && prop.Value.ToStringValue().Contains(telemetryContextValue));
+
+                    string actualDependencyId = GetDependencyIdFromTrackedDependency(trackedDependency);
                     Assert.Equal(expectedDependencyId, actualDependencyId);
                 }
             }
@@ -244,7 +255,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
         }
 
-        private static HttpRequestBuilder CreateHttpRequestToServiceA(string routeToServiceA, TestApiServerOptions options)
+        private HttpRequestBuilder CreateHttpRequestToServiceA(string routeToServiceA, TestApiServerOptions options)
         {
             var request = HttpRequestBuilder
                 .Get(routeToServiceA)
@@ -293,28 +304,38 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         private static string AssertHeaderAvailable(HttpContext context, string headerName)
         {
             string headerValue = context.Request.Headers[headerName];
-            Assert.NotNull(headerValue);
-            Assert.NotEmpty(headerValue);
+            Assert.False(string.IsNullOrWhiteSpace(headerValue), $"HTTP request header '{headerName}' only contains a blank header value");
 
             return headerValue;
         }
 
         private static string GetDependencyIdFromTrackedDependencyTelemetry(InMemorySink spySink)
         {
+            StructureValue dependency = GetTrackedDependency(spySink);
+
+            string dependencyId = GetDependencyIdFromTrackedDependency(dependency);
+            return dependencyId;
+        }
+
+        private static string GetDependencyIdFromTrackedDependency(StructureValue trackedDependency)
+        {
+            string actualDependencyId = Assert.Single(trackedDependency.Properties, prop => prop.Name == "DependencyId").Value.ToStringValue();
+            Assert.False(string.IsNullOrWhiteSpace(actualDependencyId), "Logged dependency ID only contains blank value");
+
+            return actualDependencyId;
+        }
+
+        private static StructureValue GetTrackedDependency(InMemorySink spySink)
+        {
             LogEvent[] logEvents = spySink.DequeueLogEvents().ToArray();
             Assert.NotEmpty(logEvents);
 
             LogEvent dependencyLogEvent = Assert.Single(logEvents, ev => ev.MessageTemplate.Text == "{@Dependency}");
-
             LogEventPropertyValue dependencyProperty = Assert.Contains("Dependency", dependencyLogEvent.Properties);
             var dependency = Assert.IsType<StructureValue>(dependencyProperty);
             Assert.Contains(dependency.Properties, prop => prop.Name == "DependencyName" && prop.Value.ToStringValue() == "GET /service-b");
-            string actualDependencyId = Assert.Single(dependency.Properties, prop => prop.Name == "DependencyId").Value.ToStringValue();
-            
-            Assert.NotNull(actualDependencyId);
-            Assert.NotEmpty(actualDependencyId);
 
-            return actualDependencyId;
+            return dependency;
         }
     }
 }

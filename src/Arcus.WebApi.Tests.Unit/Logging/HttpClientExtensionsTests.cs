@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -40,6 +41,45 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Assert
             string message = Assert.Single(logger.Messages);
             AssertLoggedHttpDependency(message, request, statusCode);
+        }
+
+        [Fact]
+        public async Task SendWithAccessor_TelemetryContext_TracksRequest()
+        {
+            // Arrange
+            CorrelationInfo correlation = GenerateCorrelationInfo();
+            var accessor = new StubHttpCorrelationInfoAccessor(correlation);
+            var logger = new InMemoryLogger();
+            var statusCode = BogusGenerator.PickRandom<HttpStatusCode>();
+            string key1 = Guid.NewGuid().ToString(), value1 = Guid.NewGuid().ToString();
+            var context1 = new Dictionary<string, object> { [key1] = value1 };
+            string key2 = Guid.NewGuid().ToString(), value2 = Guid.NewGuid().ToString();
+            var context2 = new Dictionary<string, object> { [key2] = value2, [key1] = value2 };
+
+            var assertion = new AssertHttpMessageHandler(statusCode, req =>
+            {
+                // Assert
+                AssertHeaderValue(req, HttpCorrelationProperties.TransactionIdHeaderName, correlation.TransactionId);
+                AssertHeaderAvailable(req, HttpCorrelationProperties.UpstreamServiceHeaderName);
+            });
+
+            var client = new HttpClient(assertion);
+            HttpRequestMessage request = GenerateHttpRequestMessage();
+
+            // Act
+            await client.SendAsync(request, accessor, logger, options =>
+            {
+                options.AddTelemetryContext(context1);
+                options.AddTelemetryContext(context2);
+            });
+
+            // Assert
+            string message = Assert.Single(logger.Messages);
+            AssertLoggedHttpDependency(message, request, statusCode);
+            Assert.Contains(key1, message);
+            Assert.Contains(key2, message);
+            Assert.DoesNotContain(value1, message);
+            Assert.Contains(value2, message);
         }
 
         [Fact]
@@ -146,6 +186,36 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Assert
             string message = Assert.Single(logger.Messages);
             AssertLoggedHttpDependency(message, request, statusCode);
+        }
+
+        [Fact]
+        public async Task SendWithCorrelation_TelemetryContext_TracksRequest()
+        {
+            // Arrange
+            CorrelationInfo correlation = GenerateCorrelationInfo();
+            var logger = new InMemoryLogger();
+            var statusCode = BogusGenerator.PickRandom<HttpStatusCode>();
+            string key = Guid.NewGuid().ToString(), value = Guid.NewGuid().ToString();
+            var telemetryContext = new Dictionary<string, object> { [key] = value };
+
+            var assertion = new AssertHttpMessageHandler(statusCode, req =>
+            {
+                // Assert
+                AssertHeaderValue(req, HttpCorrelationProperties.TransactionIdHeaderName, correlation.TransactionId);
+                AssertHeaderAvailable(req, HttpCorrelationProperties.UpstreamServiceHeaderName);
+            });
+
+            var client = new HttpClient(assertion);
+            HttpRequestMessage request = GenerateHttpRequestMessage();
+
+            // Act
+            await client.SendAsync(request, correlation, logger, options => options.AddTelemetryContext(telemetryContext));
+
+            // Assert
+            string message = Assert.Single(logger.Messages);
+            AssertLoggedHttpDependency(message, request, statusCode);
+            Assert.Contains(key, message);
+            Assert.Contains(value, message);
         }
 
         [Fact]
