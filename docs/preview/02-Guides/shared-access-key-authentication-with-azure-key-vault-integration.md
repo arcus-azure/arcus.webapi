@@ -83,7 +83,7 @@ public class Program
 ## 3. Use Arcus shared access key authentication API filter
 This user guide will make use of the recommended way of securing API endpoints. This is done by registering the authentication mechanism in the startup code and on the API endpoint itself. That being said, we do support finer-grained authentication. See [our dedicated feature documentation](https://webapi.arcus-azure.net/features/security/auth/shared-access-key) for more information.
 
-The `Arcus.WebApi.Security` provides with a single package containing all the available authentication and authorization security mechanisms. For shared access key authentication, we will be using the `AddSharedAccessKeyAuthenticationFilterOnHeader` extension which will register a global API authentication security filter that applies on all available API endpoints:
+The `Arcus.WebApi.Security` package provides all the available authentication and authorization security mechanisms. For shared access key authentication, we will be using the `AddSharedAccessKeyAuthenticationFilterOnHeader` extension which will register a global API authentication security filter that applies on all available API endpoints:
 ```csharp
 using Arcus.Security.Core.Caching.Configuration;
 
