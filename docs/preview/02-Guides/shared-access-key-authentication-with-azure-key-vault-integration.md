@@ -55,7 +55,7 @@ PM > Install-Package -Name Arcus.Security.Providers.AzureKeyVault
 ## 2. Use Arcus secret store with Azure Key Vault integration
 Once the packages are installed, add the secret store via extensions to the API application: 
 * 2.1 Use the `.ConfigureSecretStore` to setup the secret store with necessary secret providers 
-* 2.2 Use the the `.AddAzureKeyVaultWithManagedIdentity` to add the Azure Key Vault secret provider to the secret store
+* 2.2 Use the `.AddAzureKeyVaultWithManagedIdentity` to add the Azure Key Vault secret provider that will access the secret store
 
 ```csharp
 using Arcus.Security.Core.Caching.Configuration;
