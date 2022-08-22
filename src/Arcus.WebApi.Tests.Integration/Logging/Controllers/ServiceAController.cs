@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
@@ -18,7 +19,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
                             ServiceBUrlParameterName = "ServiceB_Url",
                             DependencyIdHeaderNameParameter = "DependencyId_HeaderName",
                             TransactionIdHeaderNameParameter = "TransactionId_HeaderName",
-                            DependencyIdGenerationParameter = "DependencyId_Generation";
+                            DependencyIdGenerationParameter = "DependencyId_Generation",
+                            TelemetryContextKey = "TelemetryContext_Key",
+                            TelemetryContextValue = "TelemetryContext_Value";
 
         private readonly HttpClient _client;
         private readonly HttpAssert _assertion;
@@ -53,6 +56,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         public async Task<IActionResult> GetWithExtension(
             [FromHeader(Name = ServiceBUrlParameterName)] string url,
             [FromHeader(Name = DependencyIdGenerationParameter)] string dependencyIdGeneration,
+            [FromHeader(Name = TelemetryContextKey)] string telemetryContextKey,
+            [FromHeader(Name = TelemetryContextValue)] string telemetryContextValue,
             [FromHeader(Name = DependencyIdHeaderNameParameter)] string dependencyIdHeaderName = HttpCorrelationProperties.UpstreamServiceHeaderName,
             [FromHeader(Name = TransactionIdHeaderNameParameter)] string transactionIdHeaderName = HttpCorrelationProperties.TransactionIdHeaderName)
         {
@@ -68,6 +73,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
                        options.GenerateDependencyId = () => dependencyIdGeneration ?? Guid.NewGuid().ToString();
                        options.UpstreamServiceHeaderName = dependencyIdHeaderName;
                        options.TransactionIdHeaderName = transactionIdHeaderName;
+                       options.AddTelemetryContext(new Dictionary<string, object>
+                       {
+                           [telemetryContextKey ?? "<no-key>"] = telemetryContextValue
+                       });
                    }))
             {
                 return StatusCode((int) response.StatusCode);
