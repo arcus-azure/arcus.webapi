@@ -11,7 +11,7 @@ To fully understand this user guide, some terminology is required:
 * **Arcus secret store**: the secret store is a concept in the Arcus Security library to centralize secrets in an application ([more info](https://security.arcus-azure.net/features/secret-store)).
 
 ## Sample application
-In this user guide, a fictive API application will be used to add the shared access key authentication to. We will be working with two major parts.
+In this user guide, we will use a fictive API application to which we'll add shared access key authentication. We will be working with two major parts.
 
 The initial place where the application will be started:
 ```csharp
