@@ -3,7 +3,7 @@ The Arcus shared access key authentication is an API security filter to easily a
 
 The API security filter makes use of the [Arcus secret store](https://security.arcus-azure.net/features/secret-store) to retrieve the access keys. This menas that the access key is safely stored in a secret-store and easily retrieved using an `ISecretProvider` in the application.
 
-This user guide will walk through the process of adding shared access key authentication to an existing Web API application, using Azure Key Vault as location to store the access keys.
+This user guide will walk through the process of adding shared access key authentication to an existing Web API application, using Azure Key Vault to store the access keys.
 
 ## Terminology
 To fully understand this user guide, some terminology is required:
