@@ -252,7 +252,7 @@ namespace Arcus.WebApi.Logging.Correlation
                 {
                     if (string.IsNullOrWhiteSpace(requestId))
                     {
-                        _logger.LogWarning("No response header was added given no operation parent ID was found");
+                        _logger.LogTrace("No response header was added given no operation parent ID was found");
                     }
                     else
                     {

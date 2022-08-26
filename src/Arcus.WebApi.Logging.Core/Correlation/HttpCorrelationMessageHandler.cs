@@ -70,7 +70,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
                 }
                 finally
                 {
-                    _logger.LogHttpDependency(request, statusCode, measurement, dependencyId);
+                    _logger.LogHttpDependency(request, statusCode, measurement, dependencyId, _options.TelemetryContext);
                 }
             }
         }

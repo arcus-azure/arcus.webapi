@@ -182,6 +182,12 @@ builder.Services.AddHttpClient("from-service-a-to-service-b")
                     // The function to generate the dependency ID for the called service. 
                     // (service A tracks dependency with this ID, service B tracks request with this ID).
                     options.GenerateDependencyId = () => $"my-request-id-{Guid.NewGuid()}";
+
+                    // The dictionary containing any additional contextual inforamtion that will be used when tracking the HTTP dependency (Default: empty dictionary).
+                    options.AddTelemetryContext(new Dictionary<string, object>
+                    {
+                        ["My-HTTP-custom-key"] = "Any additional information"
+                    });
                 });
 ```
 

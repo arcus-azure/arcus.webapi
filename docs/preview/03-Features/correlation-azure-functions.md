@@ -84,7 +84,7 @@ using Microsoft.Extensions.Hosting;
 IHost host = new HostBuilder()
     .ConfigureFunctionsWorkerDefaults(builder =>
     {
-        builder.UseFuntionContext()
+        builder.UseFunctionContext()
                .UseHttpCorrelation();
     })
     .Build();
