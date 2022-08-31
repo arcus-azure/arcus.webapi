@@ -24,7 +24,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class SharedAccessKeyAuthenticationAttributeTests
     {
         private const string HeaderName = "x-shared-access-key",

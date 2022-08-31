@@ -30,10 +30,11 @@
     <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj" />
+    <ProjectReference Include="..\Arcus.WebApi.Logging.AzureFunctions\Arcus.WebApi.Logging.AzureFunctions.csproj" />
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    <ProjectReference Include="..\Arcus.WebApi.Logging.AzureFunctions\Arcus.WebApi.Logging.AzureFunctions.csproj" />
+    
   </ItemGroup>
 
 </Project>

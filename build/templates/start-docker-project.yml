@@ -1,5 +1,6 @@
 parameters:
   dockerProjectName: ''
+  port: ''
 
 steps:
   - bash: |
@@ -7,8 +8,13 @@ steps:
         echo "##vso[task.logissue type=error;]Missing template parameter \"dockerProjectName\""
         echo "##vso[task.complete result=Failed;]"
       fi
+      if [ -z "$PORT" ]; then
+        echo "##vso[task.logissue type=error;]Missing template parameter \"port\""
+        echo "##vso[task.complete result=Failed;]"
+      fi
     env:
       PROJECT_NAME: ${{ parameters.dockerProjectName }}
+      PORT: ${{ parameters.port }}
   - task: UseDotNet@2
     displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
     inputs:
@@ -27,16 +33,4 @@ steps:
       command: 'Run an image'
       imageName: '${{ parameters.dockerProjectName }}:$(Build.BuildId)'
       containerName: '${{ parameters.dockerProjectName }}'
-      ports: '$(Arcus.HttpPort):80'
-  - template: test/run-integration-tests.yml@templates
-    parameters:
-      dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-      projectName: '$(Project).Tests.Integration'
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: |
-        docker logs ${{ parameters.dockerProjectName }}
-      failOnStderr: true
-    displayName: Show ${{ parameters.dockerProjectName }} logs
-    condition: always()
+      ports: '${{ parameters.port }}:80'

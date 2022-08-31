@@ -13,6 +13,13 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
         /// <summary>
         /// Initializes a new instance of the <see cref="StubHttpCorrelationInfoAccessor" /> class.
         /// </summary>
+        public StubHttpCorrelationInfoAccessor()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="StubHttpCorrelationInfoAccessor" /> class.
+        /// </summary>
         /// <param name="correlation">The currently available HTTP correlation instance.</param>
         public StubHttpCorrelationInfoAccessor(CorrelationInfo correlation)
         {

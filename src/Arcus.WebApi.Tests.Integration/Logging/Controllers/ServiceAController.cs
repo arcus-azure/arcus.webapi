@@ -44,7 +44,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         public async Task<IActionResult> GetWithMessageHandler([FromHeader(Name = ServiceBUrlParameterName)] string url)
         {
             _assertion.Assert(HttpContext);
-
             using (HttpResponseMessage response = await _client.GetAsync(url))
             {
                 return StatusCode((int) response.StatusCode);

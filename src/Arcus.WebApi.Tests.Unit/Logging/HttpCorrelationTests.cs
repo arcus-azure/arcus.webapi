@@ -34,7 +34,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
             var options = Options.Create(new HttpCorrelationInfoOptions());
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
@@ -64,7 +64,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
             var options = Options.Create(new CorrelationInfoOptions
             {
@@ -104,7 +104,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
             var options = Options.Create(new HttpCorrelationInfoOptions());
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
@@ -129,7 +129,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
             var options = Options.Create(new HttpCorrelationInfoOptions());
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);

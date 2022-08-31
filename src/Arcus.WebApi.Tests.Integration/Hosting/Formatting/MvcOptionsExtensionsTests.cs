@@ -16,7 +16,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class MvcOptionsExtensionsTests
     {
         private readonly ILogger _logger;

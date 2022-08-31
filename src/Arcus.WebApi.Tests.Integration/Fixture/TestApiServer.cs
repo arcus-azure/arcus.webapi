@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using GuardNet;
@@ -20,7 +21,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
 
         private static readonly HttpClient HttpClient = new HttpClient();
 
-        private TestApiServer(IHost host, TestApiServerOptions options, ILogger logger)
+        protected TestApiServer(IHost host, TestApiServerOptions options, ILogger logger)
         {
             Guard.NotNull(host, nameof(host), "Requires a 'IHost' instance to start/stop the test API server");
 

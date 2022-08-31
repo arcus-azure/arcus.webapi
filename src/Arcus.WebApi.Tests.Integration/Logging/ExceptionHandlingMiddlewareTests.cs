@@ -16,7 +16,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Logging
 {
-    [Trait("Category", "Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class ExceptionHandlingMiddlewareTests
     {
         private readonly ILogger _logger;

@@ -1,15 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Serilog.Configuration;
 
 namespace Arcus.WebApi.Logging.Correlation 
 {
     /// <summary>
-    /// Correlate the incoming request with the outgoing response by using previously configured <see cref="CorrelationInfoOptions"/>.
+    /// Correlate the incoming request with the outgoing response by using previously configured <see cref="HttpCorrelationInfoOptions"/>.
     /// </summary>
     public class CorrelationMiddleware
     {
