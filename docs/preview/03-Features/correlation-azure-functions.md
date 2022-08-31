@@ -77,7 +77,7 @@ public class MyHttpFunction
 
 ## Usage for isolated Azure Functions (receiving side)
 
-To make sure the correlation is added to the HTTP response, following middleware have to be made in the `Program.cs` file:
+To make sure the correlation is added to the HTTP response, following middleware has to be added in the `Program.cs` file:
 ```csharp
 using Microsoft.Extensions.Hosting;
 
