@@ -4,11 +4,7 @@ FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated6.0 AS b
 WORKDIR /home/site/wwwroot
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/runtime:3.1 as runtime3_1
-FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
-# Copy .NET Core 3.1 runtime from the 3.1 image
-COPY --from=runtime3_1 /usr/share/dotnet/host /usr/share/dotnet/host
-COPY --from=runtime3_1 /usr/share/dotnet/shared /usr/share/dotnet/shared
+FROM mcr.microsoft.com/dotnet/sdk:6.0.400-bullseye-slim AS build
 WORKDIR /src
 COPY ["Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated/Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated.csproj", "Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated/"]
 RUN dotnet restore "Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated/Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated.csproj"
