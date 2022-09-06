@@ -1,6 +1,6 @@
 # Arcus - Web API
 [![Build Status](https://dev.azure.com/codit/Arcus/_apis/build/status/Commit%20builds/CI%20-%20Arcus.WebApi?branchName=master)](https://dev.azure.com/codit/Arcus/_build/latest?definitionId=733&branchName=master)
-[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.All?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.All/)
+[![NuGet Badge](https://buildstats.info/nuget/Arcus.WebApi.Security?includePreReleases=true)](https://www.nuget.org/packages/Arcus.WebApi.Security/)
 
 Web API development in a breeze.
 
