@@ -15,6 +15,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its header.
         /// </summary>
+        /// <remarks>
+        ///     Requires the Arcus secret store to retrieve the shared access key while validating the HTTP request.
+        ///     For more information on the secret store, see <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="options">The current MVC options of the application.</param>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
@@ -31,6 +35,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its header.
         /// </summary>
+        /// <remarks>
+        ///     Requires the Arcus secret store to retrieve the shared access key while validating the HTTP request.
+        ///     For more information on the secret store, see <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="options">The current MVC options of the application.</param>
         /// <param name="headerName">The name of the request header which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
@@ -58,6 +66,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its query.
         /// </summary>
+        /// <remarks>
+        ///     Requires the Arcus secret store to retrieve the shared access key while validating the HTTP request.
+        ///     For more information on the secret store, see <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="options">The current MVC options of the application.</param>
         /// <param name="parameterName">The name of the request query parameter name which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
@@ -78,6 +90,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its query.
         /// </summary>
+        /// <remarks>
+        ///     Requires the Arcus secret store to retrieve the shared access key while validating the HTTP request.
+        ///     For more information on the secret store, see <a href="https://security.arcus-azure.net/features/secret-store" />.
+        /// </remarks>
         /// <param name="options">The current MVC options of the application.</param>
         /// <param name="parameterName">The name of the request query parameter name which value must match the stored secret.</param>
         /// <param name="secretName">The name of the secret that's being retrieved using the <see cref="ISecretProvider.GetRawSecretAsync"/> call.</param>
