@@ -1,4 +1,4 @@
----
+﻿---
 title: "Authentication with shared access keys via ASP.NET Core authentication filters"
 layout: default
 ---
@@ -10,18 +10,6 @@ This authentication process consists of two parts:
 
 1. Find the configured parameter that holds the shared access key, this can be a request header, a query parameter or both.
 2. Shared access key matches the value with the secret stored, determined via configured secret provider
-
-- [Authentication with shared access keys](#authentication-with-shared-access-keys)
-  - [Installation](#installation)
-  - [Globally enforce shared access key authentication](#globally-enforce-shared-access-key-authentication)
-    - [Introduction](#introduction)
-    - [Usage](#usage)
-  - [Enforce shared access key authentication per controller or operation](#enforce-shared-access-key-authentication-per-controller-or-operation)
-    - [Introduction](#introduction-1)
-    - [Usage](#usage-1)
-      - [Configuration](#configuration)
-  - [Behavior in validating shared access key parameter](#behavior-in-validating-shared-access-key-parameter)
-  - [Bypassing authentication](#bypassing-authentication)
 
 ## Installation
 
@@ -79,6 +67,8 @@ builder.Services.AddControllers(options =>
 For this setup to work, an Arcus secret store is required as the provided secret name (in this case `"shared-access-key-name"`) will be looked up.
 See [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 
+> 💡 This authentication mechanism supports multiple secret versions so that many different versions of a single configured secret are checked during authentication. See [our official documentation]() for more information on how to configured your secret as 'versioned' in the secret store.
+
 ## Enforce shared access key authentication per controller or operation
 
 ### Introduction
@@ -108,6 +98,8 @@ public class MyApiController : ControllerBase
 
 For this setup to work, an Arcus secret store is required as the provided secret name (in this case `"shared-access-key-name"`) will be looked up.
 See [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
+
+> 💡 This authentication mechanism supports multiple secret versions so that many different versions of a single configured secret are checked during authentication. See [our official documentation]() for more information on how to configured your secret as 'versioned' in the secret store.
 
 #### Configuration
 
