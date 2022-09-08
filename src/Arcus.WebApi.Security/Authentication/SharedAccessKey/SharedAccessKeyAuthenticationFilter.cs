@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
-using Arcus.Security.Core.Extensions;
 using GuardNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
