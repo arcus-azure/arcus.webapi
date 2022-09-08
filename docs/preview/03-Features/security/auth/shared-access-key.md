@@ -67,7 +67,7 @@ builder.Services.AddControllers(options =>
 For this setup to work, an Arcus secret store is required as the provided secret name (in this case `"shared-access-key-name"`) will be looked up.
 See [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 
-> 💡 This authentication mechanism supports multiple secret versions so that many different versions of a single configured secret are checked during authentication. See [our official documentation]() for more information on how to configured your secret as 'versioned' in the secret store.
+> 💡 This authentication mechanism supports multiple secret versions so that many different versions of a single configured secret are checked during authentication. See [our official documentation](https://security.arcus-azure.net/Features/secret-store/versioned-secret-provider) for more information on how to configured your secret as 'versioned' in the secret store.
 
 ## Enforce shared access key authentication per controller or operation
 
@@ -99,7 +99,7 @@ public class MyApiController : ControllerBase
 For this setup to work, an Arcus secret store is required as the provided secret name (in this case `"shared-access-key-name"`) will be looked up.
 See [our official documentation](https://security.arcus-azure.net/features/secret-store/) for more information about setting this up.
 
-> 💡 This authentication mechanism supports multiple secret versions so that many different versions of a single configured secret are checked during authentication. See [our official documentation]() for more information on how to configured your secret as 'versioned' in the secret store.
+> 💡 This authentication mechanism supports multiple secret versions so that many different versions of a single configured secret are checked during authentication. See [our official documentation](https://security.arcus-azure.net/Features/secret-store/versioned-secret-provider) for more information on how to configured your secret as 'versioned' in the secret store.
 
 #### Configuration
 
