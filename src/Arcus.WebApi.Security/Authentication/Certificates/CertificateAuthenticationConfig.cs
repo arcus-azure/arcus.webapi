@@ -14,7 +14,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// </summary>
     public class CertificateAuthenticationConfig
     {
-        private readonly IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, ConfiguredKey configuredKey)> _locationAndKeyByRequirement;
+        private readonly IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)> _locationAndKeyByRequirement;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationConfig"/> class.
@@ -25,7 +25,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="locationAndKeyByRequirement"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="locationAndKeyByRequirement"/> contains any validation location or configured key that is <c>null</c>.</exception>
         internal CertificateAuthenticationConfig(
-            IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, ConfiguredKey configuredKey)> locationAndKeyByRequirement)
+            IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)> locationAndKeyByRequirement)
         {
             Guard.NotNull(locationAndKeyByRequirement, nameof(locationAndKeyByRequirement), "Location and key by certificate requirement dictionary cannot be 'null'");
             Guard.For<ArgumentException>(
@@ -43,7 +43,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <returns>The key/value pair of which certificate requirement to validate together with which value in the actual client certificate to expect.</returns>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="logger"/> is <c>null</c>.</exception>
-        internal async Task<IDictionary<X509ValidationRequirement, ExpectedCertificateValue>> GetAllExpectedCertificateValuesAsync(IServiceProvider services, ILogger logger)
+        internal async Task<IDictionary<X509ValidationRequirement, string>> GetAllExpectedCertificateValuesAsync(IServiceProvider services, ILogger logger)
         {
             Guard.NotNull(services, nameof(services), "Request services cannot be 'null'");
             Guard.NotNull(logger, nameof(logger), "Logger cannot be 'null'");
@@ -55,23 +55,23 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
             return expectedValuesByRequirement
                    .Where(result => result.Value != null)
-                   .ToDictionary(result => result.Key, result => new ExpectedCertificateValue(result.Value));
+                   .ToDictionary(result => result.Key, result => result.Value);
         }
 
         private static async Task<KeyValuePair<X509ValidationRequirement, string>> GetExpectedValueForCertificateRequirementAsync(
-            KeyValuePair<X509ValidationRequirement, (IX509ValidationLocation location, ConfiguredKey configuredKey)> keyValue, 
+            KeyValuePair<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)> keyValue, 
             IServiceProvider services, 
             ILogger logger)
         {
             IX509ValidationLocation location = keyValue.Value.location;
-            ConfiguredKey configuredKey = keyValue.Value.configuredKey;
+            string configuredKey = keyValue.Value.configuredKey;
 
-            Task<string> getExpectedAsync = location.GetExpectedCertificateValueForConfiguredKeyAsync(configuredKey.Value, services);
+            Task<string> getExpectedAsync = location.GetExpectedCertificateValueForConfiguredKeyAsync(configuredKey, services);
             string expected = getExpectedAsync != null ? await getExpectedAsync : null;
 
-            if (expected == null)
+            if (expected is null)
             {
-                logger.LogWarning($"Client certificate authentication failed: no configuration value found for key={configuredKey}");
+                logger.LogWarning("Client certificate authentication failed: no configuration value found for key={ConfiguredKey}", configuredKey);
             }
 
             return new KeyValuePair<X509ValidationRequirement, string>(keyValue.Key, expected);

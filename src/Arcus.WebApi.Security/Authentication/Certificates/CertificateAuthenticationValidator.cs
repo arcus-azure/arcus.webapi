@@ -45,93 +45,79 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             Guard.NotNull(clientCertificate, nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
             Guard.NotNull(services, nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
 
-            ILogger logger = GetLoggerOrDefault(services);
+            ILogger logger = 
+                services.GetService<ILogger<CertificateAuthenticationValidator>>() 
+                ?? NullLogger<CertificateAuthenticationValidator>.Instance;
 
-            IDictionary<X509ValidationRequirement, ExpectedCertificateValue> expectedValuesByRequirement =
+            IDictionary<X509ValidationRequirement, string> expectedValuesByRequirement =
                 await _certificateAuthenticationConfig.GetAllExpectedCertificateValuesAsync(services, logger);
 
             return expectedValuesByRequirement.All(
                 keyValue => ValidateCertificateRequirement(clientCertificate, keyValue, logger));
         }
 
-        private static ILogger GetLoggerOrDefault(IServiceProvider services)
-        {
-            ILogger logger = 
-                services.GetService<ILoggerFactory>()
-                        ?.CreateLogger<CertificateAuthenticationFilter>();
-
-            if (logger != null)
-            {
-                return logger;
-            }
-
-            return NullLogger.Instance;
-        }
-
         private static bool ValidateCertificateRequirement(
             X509Certificate2 clientCertificate, 
-            KeyValuePair<X509ValidationRequirement, ExpectedCertificateValue> keyValue, 
+            KeyValuePair<X509ValidationRequirement, string> requirement, 
             ILogger logger)
         {
-            switch (keyValue.Key)
+            switch (requirement.Key)
             {
                 case X509ValidationRequirement.SubjectName:
-                    return IsCertificateSubjectNameAllowed(clientCertificate, keyValue.Value, logger);
+                    return IsCertificateSubjectNameAllowed(clientCertificate, requirement.Value, logger);
                 case X509ValidationRequirement.IssuerName:
-                    return IsCertificateIssuerNameAllowed(clientCertificate, keyValue.Value, logger);
+                    return IsCertificateIssuerNameAllowed(clientCertificate, requirement.Value, logger);
                 case X509ValidationRequirement.Thumbprint:
-                    return IsCertificateThumbprintAllowed(clientCertificate, keyValue.Value, logger);
+                    return IsCertificateThumbprintAllowed(clientCertificate, requirement.Value, logger);
                 default:
-                    throw new ArgumentOutOfRangeException(nameof(keyValue.Key), keyValue.Key, "Unknown validation type specified");
+                    throw new ArgumentOutOfRangeException(nameof(requirement.Key), requirement.Key, "Unknown validation type specified");
             }
         }
 
-        private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
+        private static bool IsCertificateSubjectNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
-            IEnumerable<string> certificateSubjectNames =
-                (clientCertificate.Subject ?? String.Empty)
+            string[] certificateSubjectNames =
+                (clientCertificate.Subject ?? string.Empty)
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(subject => subject.Trim());
+                    .Select(subject => subject.Trim())
+                    .ToArray();
 
-            bool isAllowed = certificateSubjectNames.Any(subject => String.Equals(subject, expected.Value));
+            bool isAllowed = certificateSubjectNames.Any(subject => string.Equals(subject, expected));
             if (!isAllowed)
             {
-                logger.LogWarning(
-                    "Client certificate authentication failed on subject: "
-                    + $"no subject found (actual={String.Join(", ", certificateSubjectNames)}) in certificate that matches expected={expected}");
+                
+                logger.LogWarning("Client certificate authentication failed on subject: o subject found (actual={SubjectNames}) in certificate that matches expected={Expected}", string.Join(", ", certificateSubjectNames), expected);
             }
 
             return isAllowed;
         }
 
-        private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
+        private static bool IsCertificateIssuerNameAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
-            IEnumerable<string> issuerNames = 
-                (clientCertificate.Issuer ?? String.Empty)
+            string[] issuerNames = 
+                (clientCertificate.Issuer ?? string.Empty)
                     .Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
-                    .Select(issuer => issuer.Trim());
+                    .Select(issuer => issuer.Trim())
+                    .ToArray();
 
-            bool isAllowed = issuerNames.Any(issuer => String.Equals(issuer, expected.Value));
+            bool isAllowed = issuerNames.Any(issuer => string.Equals(expected, issuer));
             if (!isAllowed)
             {
-                logger.LogWarning(
-                    "Client certificate authentication failed on issuer: "
-                    + $"no issuer found (actual={String.Join(", ", issuerNames)}) in certificate that matches expected={expected}");
+                
+                logger.LogWarning("Client certificate authentication failed on issuer: no issuer found (actual={IssuerNames}) in certificate that matches expected={Expected}", string.Join(", ", issuerNames), expected);
             }
 
             return isAllowed;
         }
 
-        private static bool IsCertificateThumbprintAllowed(X509Certificate2 clientCertificate, ExpectedCertificateValue expected, ILogger logger)
+        private static bool IsCertificateThumbprintAllowed(X509Certificate2 clientCertificate, string expected, ILogger logger)
         {
             string actual = clientCertificate.Thumbprint?.Trim();
            
-            bool isAllowed = String.Equals(expected.Value, actual);
+            bool isAllowed = string.Equals(expected, actual);
             if (!isAllowed)
             {
-                logger.LogWarning(
-                    "Client certificate authentication failed on thumbprint: "
-                    + $"expected={expected} <> actual={actual}");
+                logger.LogWarning("Client certificate authentication failed on thumbprint: expected={Expected} <> actual={Actual}", expected, actual);
             }
 
             return isAllowed;
