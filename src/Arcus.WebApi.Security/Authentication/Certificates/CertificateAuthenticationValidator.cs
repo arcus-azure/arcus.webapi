@@ -85,7 +85,6 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             bool isAllowed = certificateSubjectNames.Any(subject => string.Equals(subject, expected));
             if (!isAllowed)
             {
-                
                 logger.LogWarning("Client certificate authentication failed on subject: o subject found (actual={SubjectNames}) in certificate that matches expected={Expected}", string.Join(", ", certificateSubjectNames), expected);
             }
 
@@ -103,7 +102,6 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             bool isAllowed = issuerNames.Any(issuer => string.Equals(expected, issuer));
             if (!isAllowed)
             {
-                
                 logger.LogWarning("Client certificate authentication failed on issuer: no issuer found (actual={IssuerNames}) in certificate that matches expected={Expected}", string.Join(", ", issuerNames), expected);
             }
 
