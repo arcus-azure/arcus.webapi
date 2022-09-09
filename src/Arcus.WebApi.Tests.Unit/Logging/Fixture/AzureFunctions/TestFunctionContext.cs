@@ -1,51 +1,13 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.IO;
-using System.Linq;
-using System.Net;
 using System.Reflection;
-using System.Security.Claims;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Converters;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.DependencyInjection;
-using Xunit;
 
-namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
+namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
 {
-    public class TestHttpResponseData : HttpResponseData
-    {
-        public TestHttpResponseData(FunctionContext functionContext) : base(functionContext)
-        {
-        }
-
-        public override HttpStatusCode StatusCode { get; set; }
-        public override HttpHeadersCollection Headers { get; set; } = new HttpHeadersCollection();
-        public override Stream Body { get; set; } = new MemoryStream();
-        public override HttpCookies Cookies { get; }
-    }
-
-    public class TestHttpRequestData : HttpRequestData
-    {
-        public TestHttpRequestData(FunctionContext functionContext) : base(functionContext)
-        {
-        }
-
-        public override HttpResponseData CreateResponse()
-        {
-            return new TestHttpResponseData(FunctionContext);
-        }
-
-        public override Stream Body { get; }
-        public override HttpHeadersCollection Headers { get; } = new HttpHeadersCollection();
-        public override IReadOnlyCollection<IHttpCookie> Cookies { get; }
-        public override Uri Url { get; }
-        public override IEnumerable<ClaimsIdentity> Identities { get; }
-        public override string Method { get; }
-    }
-
     public class TestFunctionContext : FunctionContext, IDisposable
     {
         public TestFunctionContext(FunctionDefinition functionDefinition, IServiceProvider serviceProvider)
@@ -79,18 +41,18 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
                     new TestFunctionDefinition(new Dictionary<string, BindingMetadata>
                     {
                         { "req", new TestBindingMetadata("req", "httpTrigger", BindingDirection.In) }
-                    }), 
+                    }),
                     provider);
             });
 
-            Type conversionResultIBindingCacheType = 
+            Type conversionResultIBindingCacheType =
                 GetWorkerCoreType("IBindingCache`1")
                     .MakeGenericType(typeof(ConversionResult));
-            
+
             services.AddSingleton(conversionResultIBindingCacheType,
                 provider =>
                 {
-                    Type conversionResultBindingCacheType = 
+                    Type conversionResultBindingCacheType =
                         GetWorkerCoreType("DefaultBindingCache`1")
                             .MakeGenericType(typeof(ConversionResult));
                     object defaultBindingCache = CreateInstance(conversionResultBindingCacheType);
@@ -143,70 +105,5 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
         {
             IsDisposed = true;
         }
-    }
-
-    public class TestInvocationFeatures : IInvocationFeatures
-    {
-        private readonly Dictionary<Type, object> _features = new Dictionary<Type, object>();
-
-        public object Get(Type type)
-        {
-            KeyValuePair<Type, object> item = _features.FirstOrDefault(feature =>
-            {
-                bool implementsRequestedInterface = feature.Value.GetType().GetInterfaces().Any(i => i == type);
-                return feature.Key == type || implementsRequestedInterface;
-            });
-
-            return item.Value;
-        }
-
-        public T Get<T>()
-        {
-            return (T) Get(typeof(T));
-        }
-
-        public IEnumerator<KeyValuePair<Type, object>> GetEnumerator() => _features.GetEnumerator();
-
-        public void Set<T>(T instance)
-        {
-            if (instance == null)
-            {
-                throw new ArgumentNullException(nameof(instance));
-            }
-
-            _features[typeof(T)] = instance;
-        }
-
-        IEnumerator IEnumerable.GetEnumerator() => _features.GetEnumerator();
-    }
-
-    public class TestFunctionDefinition : FunctionDefinition
-    {
-        public TestFunctionDefinition(IDictionary<string, BindingMetadata> inputBindings)
-        {
-            InputBindings = inputBindings.ToImmutableDictionary();
-        }
-
-        public override ImmutableArray<FunctionParameter> Parameters { get; }
-        public override string PathToAssembly { get; }
-        public override string EntryPoint { get; }
-        public override string Id { get; }
-        public override string Name { get; }
-        public override IImmutableDictionary<string, BindingMetadata> InputBindings { get; }
-        public override IImmutableDictionary<string, BindingMetadata> OutputBindings { get; }
-    }
-
-    public class TestBindingMetadata : BindingMetadata
-    {
-        public TestBindingMetadata(string name, string type, BindingDirection direction)
-        {
-            Name = name;
-            Type = type;
-            Direction = direction;
-        }
-
-        public override string Name { get; }
-        public override string Type { get; }
-        public override BindingDirection Direction { get; }
     }
 }

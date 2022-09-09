@@ -16,6 +16,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using static Arcus.WebApi.Logging.Core.Correlation.HttpCorrelationProperties;
+using Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {

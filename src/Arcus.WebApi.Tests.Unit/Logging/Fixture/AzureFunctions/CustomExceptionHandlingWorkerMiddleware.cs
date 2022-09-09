@@ -4,7 +4,7 @@ using Arcus.WebApi.Logging.AzureFunctions;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
-namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
+namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
 {
     public class CustomExceptionHandlingWorkerMiddleware : AzureFunctionsExceptionHandlingMiddleware
     {

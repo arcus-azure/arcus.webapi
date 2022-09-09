@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Logging.AzureFunctions;
 using Arcus.WebApi.Tests.Unit.Logging.Fixture;
+using Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions;
 using Bogus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
