@@ -1,27 +1,11 @@
 ---
-title: "Logging"
+title: "Logging in Web API applications"
 layout: default
 ---
 
-# Logging
+# Logging in Web API applications
 
 The `Arcus.WebApi.Logging` package provides a way to log several kinds of information during the receival and handling of HTTP requests.
-
-- [Logging](#logging)
-  - [Installation](#installation)
-  - [Logging unhandled exceptions](#logging-unhandled-exceptions)
-    - [Usage](#usage)
-  - [Logging incoming requests](#logging-incoming-requests)
-    - [Example](#example)
-    - [Usage](#usage-1)
-    - [Configuration](#configuration)
-    - [Excluding certain routes](#excluding-certain-routes)
-      - [Excluding request/response bodies on specific routes](#excluding-requestresponse-bodies-on-specific-routes)
-      - [Including HTTP status codes/status code ranges on specific routes](#including-http-status-codesstatus-code-ranges-on-specific-routes)
-    - [Customization](#customization)
-      - [Reducing requests to specific HTTP status code(s)](#reducing-requests-to-specific-http-status-codes)
-  - [Tracking application version](#tracking-application-version)
-  - [Application Insights](#application-insights)
 
 To send the logging information to Application Insights, see [this explanation](#application-insights).
 
@@ -43,7 +27,7 @@ However, when the runtime throws a `BadHttpRequestException` we will reflect thi
 
 ### Usage
 
-To use this middleware, add the following line of code in the `Startup.Configure` method:
+To use this middleware, add the following line of code:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;

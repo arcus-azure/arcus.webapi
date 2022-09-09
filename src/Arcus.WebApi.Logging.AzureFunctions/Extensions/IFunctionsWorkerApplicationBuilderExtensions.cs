@@ -76,5 +76,29 @@ namespace Microsoft.Extensions.Hosting
             builder.UseMiddleware<AzureFunctionsCorrelationMiddleware>();
             return builder;
         }
+
+        /// <summary>
+        /// Adds a middleware component that catches unhandled exceptions and provides a general failure for the consumer.
+        /// </summary>
+        /// <param name="builder">The Azure Functions application builder instance to build up the application and middleware pipeline.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IFunctionsWorkerApplicationBuilder UseExceptionHandling(this IFunctionsWorkerApplicationBuilder builder)
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
+             return builder.UseMiddleware<AzureFunctionsExceptionHandlingMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds a middleware component that catches unhandled exceptions and provides a general failure for the consumer.
+        /// </summary>
+        /// <typeparam name="TMiddleware">The custom type that inherits the <see cref="AzureFunctionsExceptionHandlingMiddleware"/> type.</typeparam>
+        /// <param name="builder">The Azure Functions application builder instance to build up the application and middleware pipeline.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IFunctionsWorkerApplicationBuilder UseExceptionHandling<TMiddleware>(this IFunctionsWorkerApplicationBuilder builder)
+            where TMiddleware : AzureFunctionsExceptionHandlingMiddleware
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
+            return builder.UseMiddleware<TMiddleware>();
+        }
     }
 }

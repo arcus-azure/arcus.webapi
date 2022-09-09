@@ -6,11 +6,14 @@ using Moq;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.Net;
+using System.Threading.Tasks;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Tests.Unit.Logging.Fixture;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using static Arcus.WebApi.Logging.Core.Correlation.HttpCorrelationProperties;
 
@@ -18,6 +21,59 @@ namespace Arcus.WebApi.Tests.Unit.Logging
 {
     public class AzureFunctionsAzureFunctionsHttpCorrelationTests
     {
+        [Fact]
+        public async Task HttpCorrelationMiddleware_WithValidInput_ResponseWithNextResponse()
+        {
+            // Arrange
+            var accessor = new StubHttpCorrelationInfoAccessor();
+            AzureFunctionsHttpCorrelation correlation = CreateHttpCorrelation(accessor);
+
+            var context = TestFunctionContext.Create(
+                configureServices: services => services.AddSingleton(correlation));
+
+            var middleware = new AzureFunctionsCorrelationMiddleware();
+
+            // Act
+            await middleware.Invoke(context, async ctx =>
+            {
+                HttpRequestData request = await ctx.GetHttpRequestDataAsync();
+                ctx.GetInvocationResult().Value = request.CreateResponse(HttpStatusCode.Accepted);
+            });
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.Accepted, response.StatusCode);
+
+            CorrelationInfo correlationInfo = accessor.GetCorrelationInfo();
+            Assert.NotNull(correlationInfo);
+        }
+
+        [Fact]
+        public async Task HttpCorrelationMiddleware_WithDisallowedTransactionId_ResponseWithBadRequest()
+        {
+            // Arrange
+            var accessor = new StubHttpCorrelationInfoAccessor();
+            AzureFunctionsHttpCorrelation correlation = CreateHttpCorrelation(accessor, new HttpCorrelationInfoOptions()
+            {
+                Transaction = { AllowInRequest = false }
+            });
+
+            var context = TestFunctionContext.Create(
+                request => request.Headers.Add(TransactionIdHeaderName, "some disallowed transaction ID"),
+                services => services.AddSingleton(correlation));
+
+            var middleware = new AzureFunctionsCorrelationMiddleware();
+            
+            // Act
+            await middleware.Invoke(context, ctx => Task.CompletedTask);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.NotNull(response);
+            Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        }
+
         [Theory]
         [InlineData("|")]
         [InlineData("|other-id.")]
