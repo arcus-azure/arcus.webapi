@@ -9,7 +9,8 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
             IHost host = new HostBuilder()
                 .ConfigureFunctionsWorkerDefaults(builder =>
                 {
-                    builder.UseFunctionContext()
+                    builder.UseExceptionHandling()
+                           .UseFunctionContext()
                            .UseHttpCorrelation();
                 })
                 .Build();

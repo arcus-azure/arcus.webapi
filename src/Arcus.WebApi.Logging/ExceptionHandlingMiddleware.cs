@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using GuardNet;
 using Microsoft.Extensions.Logging.Abstractions;
 
+// ReSharper disable once CheckNamespace
 namespace Arcus.WebApi.Logging
 {
     /// <summary>
@@ -104,7 +105,7 @@ namespace Arcus.WebApi.Logging
         }
 
         /// <summary>
-        /// Determine the HTTP status code based on the caught exception.
+        /// Write the failure to the HTTP response based on the caught exception.
         /// </summary>
         /// <param name="exception">The caught exception during the application pipeline.</param>
         /// <param name="defaultFailureStatusCode">The default HTTP status code for the failure that was determined by the caught <paramref name="exception"/>.</param>
