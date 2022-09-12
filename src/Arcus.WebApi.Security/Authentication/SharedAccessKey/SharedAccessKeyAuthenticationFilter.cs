@@ -7,9 +7,11 @@ using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using GuardNet;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 
@@ -84,67 +86,68 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
                 return;
             }
             
-            string foundSecret = await GetAuthorizationSecretAsync(context);
+            string[] foundSecrets = await GetAuthorizationSecretAsync(context);
 
-            if (!context.HttpContext.Request.Headers.ContainsKey(_headerName) 
-                && !context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+            HttpRequest request = context.HttpContext.Request;
+            bool containsHeader = _headerName != null && request.Headers.ContainsKey(_headerName);
+            bool containsQuery = _queryParameterName != null && request.Query.ContainsKey(_queryParameterName);
+
+            if (containsHeader || containsQuery)
+            {
+                ValidateSharedAccessKeyInRequestHeader(context, foundSecrets, logger);
+                ValidateSharedAccessKeyInQueryParameter(context, foundSecrets, logger);
+            }
+            else
             {
                 LogSecurityEvent(logger, $"Cannot verify shared access key because neither a request header '{_headerName}' or query parameter '{_queryParameterName}' was found in the incoming request that was configured for shared access authentication", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedResult();
             }
-            else
-            {
-                ValidateSharedAccessKeyInRequestHeader(context, foundSecret, logger);
-                ValidateSharedAccessKeyInQueryParameter(context, foundSecret, logger);
-            }
         }
 
-        private async Task<string> GetAuthorizationSecretAsync(AuthorizationFilterContext context)
+        private async Task<string[]> GetAuthorizationSecretAsync(AuthorizationFilterContext context)
         {
-            ISecretProvider userDefinedSecretProvider =
-                context.HttpContext.RequestServices.GetService<ICachedSecretProvider>()
-                ?? context.HttpContext.RequestServices.GetService<ISecretProvider>();
-
+            var userDefinedSecretProvider = context.HttpContext.RequestServices.GetService<ISecretProvider>();
             if (userDefinedSecretProvider is null)
             {
-                throw new KeyNotFoundException(
-                    $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
-                    + "Please configure such an implementation (ex. in the Startup) of your application");
+                throw new InvalidOperationException(
+                    "Cannot retrieve the shared access key to validate the HTTP request because no Arcus secret store was registered in the application," 
+                    + $"please register the secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the '{nameof(IHostBuilder)}' or with '{nameof(IServiceCollectionExtensions.AddSecretStore)}' on the '{nameof(IServiceCollection)}'," 
+                    + "for more information on the Arcus secret store: https://security.arcus-azure.net/features/secret-store");
             }
 
-            Task<string> rawSecretAsync = userDefinedSecretProvider.GetRawSecretAsync(_secretName);
+            Task<IEnumerable<string>> rawSecretAsync = userDefinedSecretProvider.GetRawSecretsAsync(_secretName);
             if (rawSecretAsync is null)
             {
                 throw new InvalidOperationException(
                     $"Configured {nameof(ISecretProvider)} is not implemented correctly as it returns 'null' for a {nameof(Task)} value when calling {nameof(ISecretProvider.GetRawSecretAsync)}");
             }
 
-            string foundSecret = await rawSecretAsync;
-            if (foundSecret is null)
+            IEnumerable<string> foundSecrets = await rawSecretAsync;
+            if (foundSecrets is null)
             {
                 throw new SecretNotFoundException(_secretName);
             }
 
-            return foundSecret;
+            return foundSecrets.ToArray();
         }
 
-        private void ValidateSharedAccessKeyInRequestHeader(AuthorizationFilterContext context, string foundSecret, ILogger logger)
+        private void ValidateSharedAccessKeyInRequestHeader(AuthorizationFilterContext context, string[] foundSecrets, ILogger logger)
         {
-            if (String.IsNullOrWhiteSpace(_headerName))
+            if (string.IsNullOrWhiteSpace(_headerName))
             {
                 return;
             }
 
             if (context.HttpContext.Request.Headers.TryGetValue(_headerName, out StringValues requestSecretHeaders))
             {
-                if (requestSecretHeaders.Any(headerValue => headerValue != foundSecret))
+                if (foundSecrets.Any(secret => secret == requestSecretHeaders.ToString()))
                 {
-                    LogSecurityEvent(logger, $"Shared access key in request header '{_headerName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
-                    context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
+                    LogSecurityEvent(logger, $"Shared access key in request header '{_headerName}' matches expected access key");
                 }
                 else
                 {
-                    LogSecurityEvent(logger, $"Shared access key in request header '{_headerName}' matches expected access key");
+                    LogSecurityEvent(logger, $"Shared access key in request header '{_headerName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
+                    context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
             }
             else
@@ -154,23 +157,23 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             }
         }
 
-        private void ValidateSharedAccessKeyInQueryParameter(AuthorizationFilterContext context, string foundSecret, ILogger logger)
+        private void ValidateSharedAccessKeyInQueryParameter(AuthorizationFilterContext context, string[] foundSecrets, ILogger logger)
         {
-            if (String.IsNullOrWhiteSpace(_queryParameterName))
+            if (string.IsNullOrWhiteSpace(_queryParameterName))
             {
                 return;
             }
 
-            if (context.HttpContext.Request.Query.ContainsKey(_queryParameterName))
+            if (context.HttpContext.Request.Query.TryGetValue(_queryParameterName, out StringValues querySecretParameters))
             {
-                if (context.HttpContext.Request.Query[_queryParameterName] != foundSecret)
+                if (foundSecrets.Any(secret => secret == querySecretParameters.ToString()))
                 {
-                    LogSecurityEvent(logger, $"Shared access key in query parameter '{_queryParameterName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
-                    context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
+                    LogSecurityEvent(logger, $"Shared access key in query parameter '{_queryParameterName}' matches expected access key");
                 }
                 else
                 {
-                    LogSecurityEvent(logger, $"Shared access key in query parameter '{_queryParameterName}' matches expected access key");
+                    LogSecurityEvent(logger, $"Shared access key in query parameter '{_queryParameterName}' doesn't match expected access key", HttpStatusCode.Unauthorized);
+                    context.Result = new UnauthorizedObjectResult("Shared access key in request doesn't match expected access key");
                 }
             }
             else
