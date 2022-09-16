@@ -17,7 +17,8 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
 
         protected override IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
         {
-            return new Dictionary<string, StringValues>();
+            requestHeaders["x-custom-key"] = "x-custom-value";
+            return requestHeaders;
         }
 
         protected override string SanitizeRequestBody(HttpRequestData request, string requestBody)

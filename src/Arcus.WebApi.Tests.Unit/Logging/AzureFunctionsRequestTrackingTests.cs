@@ -84,14 +84,12 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         }
 
         [Fact]
-        public async Task SendRequest_WithCustomOmittedHeader_IgnoresAllHeaders()
+        public async Task SendRequest_WithCustomOmittedHeader_AddsCustomHeader()
         {
             // Arrange
-            string headerName = BogusGenerator.Lorem.Word();
-            string headerValue = BogusGenerator.Lorem.Word();
             var middleware = new CustomRequestTrackingMiddleware(new RequestTrackingOptions());
 
-            var pending = PendingHttpRequestData.Generate(headerName: headerName, headerValue: headerValue);
+            var pending = PendingHttpRequestData.Generate();
             var spyLogger = new InMemoryLogger();
             FunctionContext context = CreateFunctionContext(pending, spyLogger);
             var status = BogusGenerator.PickRandom<HttpStatusCode>();
@@ -100,11 +98,9 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             await middleware.Invoke(context, async ctx => await CreateHttpResponse(ctx, status));
 
             // Assert
-            LogEntry trackedRequestEntry = Assert.Single(spyLogger.Entries, entry => entry.Message.Contains(pending.Url.PathAndQuery));
-            Assert.Contains(pending.Method, trackedRequestEntry.Message);
-            Assert.Contains(((int) status).ToString(), trackedRequestEntry.Message);
-            Assert.DoesNotContain(headerName, trackedRequestEntry.Message);
-            Assert.DoesNotContain(headerValue, trackedRequestEntry.Message);
+            string message = AssertHttpTrackedRequest(spyLogger, pending, status);
+            Assert.Contains("x-custom-key", message);
+            Assert.Contains("x-custom-value", message);
         }
 
         [Fact]
