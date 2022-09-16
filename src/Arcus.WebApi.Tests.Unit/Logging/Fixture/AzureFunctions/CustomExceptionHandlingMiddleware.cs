@@ -6,14 +6,14 @@ using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
 {
-    public class CustomExceptionHandlingWorkerMiddleware : AzureFunctionsExceptionHandlingMiddleware
+    public class CustomExceptionHandlingMiddleware : AzureFunctionsExceptionHandlingMiddleware
     {
         private readonly HttpStatusCode _statusCode;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="CustomExceptionHandlingWorkerMiddleware" /> class.
+        /// Initializes a new instance of the <see cref="CustomExceptionHandlingMiddleware" /> class.
         /// </summary>
-        public CustomExceptionHandlingWorkerMiddleware(HttpStatusCode statusCode)
+        public CustomExceptionHandlingMiddleware(HttpStatusCode statusCode)
         {
             _statusCode = statusCode;
         }

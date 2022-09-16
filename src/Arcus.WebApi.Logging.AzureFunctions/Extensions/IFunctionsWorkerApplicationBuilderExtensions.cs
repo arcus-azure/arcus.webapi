@@ -1,10 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Net;
 using Arcus.Observability.Correlation;
+using Arcus.Observability.Telemetry.Core;
+using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.AzureFunctions;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -98,6 +103,69 @@ namespace Microsoft.Extensions.Hosting
             where TMiddleware : AzureFunctionsExceptionHandlingMiddleware
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
+            return builder.UseMiddleware<TMiddleware>();
+        }
+
+        /// <summary>
+        /// Adds a middleware component that tracks the HTTP request.
+        /// </summary>
+        /// <param name="builder">The Azure Functions application builder instance to build up the application and middleware pipeline.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IFunctionsWorkerApplicationBuilder UseRequestTracking(
+            this IFunctionsWorkerApplicationBuilder builder)
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            return UseRequestTracking(builder, configureOptions: null);
+        }
+
+        /// <summary>
+        /// Adds a middleware component that tracks the HTTP request.
+        /// </summary>
+        /// <param name="builder">The Azure Functions application builder instance to build up the application and middleware pipeline.</param>
+        /// <param name="configureOptions">The function to configure the HTTP request tracking options that influence the way the HTTP request is tracked.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IFunctionsWorkerApplicationBuilder UseRequestTracking(
+            this IFunctionsWorkerApplicationBuilder builder,
+            Action<RequestTrackingOptions> configureOptions)
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+
+            return UseRequestTracking<AzureFunctionsRequestTrackingMiddleware>(builder, configureOptions);
+        }
+
+        /// <summary>
+        /// Adds a middleware component that tracks the HTTP request.
+        /// </summary>
+        /// <typeparam name="TMiddleware">The custom type that inherits from the <see cref="AzureFunctionsRequestTrackingMiddleware"/> type.</typeparam>
+        /// <param name="builder">The Azure Functions application builder instance to build up the application and middleware pipeline.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IFunctionsWorkerApplicationBuilder UseRequestTracking<TMiddleware>(
+            this IFunctionsWorkerApplicationBuilder builder)
+            where TMiddleware : AzureFunctionsRequestTrackingMiddleware
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+
+            return UseRequestTracking<TMiddleware>(builder, configureOptions: null);
+        }
+
+        /// <summary>
+        /// Adds a middleware component that tracks the HTTP request.
+        /// </summary>
+        /// <typeparam name="TMiddleware">The custom type that inherits from the <see cref="AzureFunctionsRequestTrackingMiddleware"/> type.</typeparam>
+        /// <param name="builder">The Azure Functions application builder instance to build up the application and middleware pipeline.</param>
+        /// <param name="configureOptions">The function to configure the HTTP request tracking options that influence the way the HTTP request is tracked.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
+        public static IFunctionsWorkerApplicationBuilder UseRequestTracking<TMiddleware>(
+            this IFunctionsWorkerApplicationBuilder builder,
+            Action<RequestTrackingOptions> configureOptions)
+            where TMiddleware : AzureFunctionsRequestTrackingMiddleware
+        {
+            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+
+            var options = new RequestTrackingOptions();
+            configureOptions?.Invoke(options);
+            builder.Services.AddSingleton(options);
+            
             return builder.UseMiddleware<TMiddleware>();
         }
     }
