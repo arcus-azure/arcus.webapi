@@ -234,7 +234,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
 
                 var partyRequestBody = new string(buffer);
                 Assert.Contains(partyRequestBody, message);
-
             }
         }
 
