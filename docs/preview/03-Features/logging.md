@@ -7,7 +7,7 @@ layout: default
 
 The `Arcus.WebApi.Logging` package provides a way to log several kinds of information during the receival and handling of HTTP requests.
 
-To send the logging information to Application Insights, see [this explanation](#application-insights).
+💡 To send the logging information to Application Insights, see [Arcus Observability](https://observability.arcus-azure.net/Features/sinks/azure-application-insights).
 
 ## Installation
 
@@ -22,7 +22,7 @@ PM > Install-Package Arcus.WebApi.Logging
 The `ExceptionHandlingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log unhandled exceptions that are thrown during request processing.
 The unhandled exceptions are caught by this middleware component and are logged through the `ILogger` implementations that are configured inside the project.
 
-The HTTP status code `500` is used as response code when an unhandled exception is caught. 
+⚡ The HTTP status code `500` is used as response code when an unhandled exception is caught. 
 However, when the runtime throws a `BadHttpRequestException` we will reflect this by returning the corresponding status code determined by the runtime.
 
 ### Usage
@@ -101,9 +101,9 @@ app.UseExceptionHandling<MyExceptionHandlingMiddleware>();
 The `RequestTrackingMiddleware` class can be added to the <span>ASP.NET</span> Core pipeline to log all received HTTP requests.
 The incoming requests are logged by this middleware component using the `ILogger` implementations that are configured in the project.
 
-The HTTP request body is not logged by default.
+⚠ The HTTP request body is not logged by default.
 
-The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
+⚡ The HTTP request headers are logged by default, except certain security headers are by default omitted: `Authentication`, `X-Api-Key` and `X-ARR-ClientCert`.
 See [configuration](#configuration) for more details.
 
 ### Example
@@ -418,28 +418,3 @@ app.UseVersionTracking();
 // Uses the previously registered `IAppVersion` service to include the application to the custom `X-My-Version` response header.
 app.UseVersionTracking(options => options.Header = "X-My-Version");
 ```
-
-## Application Insights
-
-To get the information logged in Azure Application Insights, configure logging like this when building the `WebApplication`:
-
-```csharp
-using Microsoft.AspNetCore.Builder;
-using Serilog;
-using Serilog.Configuration;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-builder.Host.UseSerilog((context, serviceProvider, config) =>
-{
-    return new LoggerConfiguration()
-        .WriteTo.AzureApplicationInsights("my-instrumentation-key")
-        .CreateLogger();
-});
-
-WebApplication app = builder.Build();
-```
-
-To have access to the `.AzureApplicationInsights` extension, make sure you've installed [Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights](https://www.nuget.org/packages/Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights/).
-
-[&larr; back](/)
