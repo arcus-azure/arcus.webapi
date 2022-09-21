@@ -88,7 +88,7 @@ Next, make sure that you pass along the exception middleware to the exception ha
 
 ## Logging incoming requests
 The `AzureFunctionsRequestTrackingMiddleware` class can be added to the Azure Functions worker pipeline to log any incoming HTTP requests.
-The requests are tracked with [Arcus Observability](https://observability.arcus-azure.net/Features/writing-different-telemetry-types#incoming-http-requests-in-azure-function-http-trigger) so that they will show up as requests in Application Insights, when the application is using [Arcus Application Insights Serilog sink](https://observability.arcus-azure.net/Features/sinks/azure-application-insights).
+The requests are tracked with [Arcus Observability](https://observability.arcus-azure.net/Features/writing-different-telemetry-types#incoming-http-requests-in-azure-function-http-trigger) so that they will show up as requests in Application Insights when the application is using [Arcus Application Insights Serilog sink](https://observability.arcus-azure.net/Features/sinks/azure-application-insights).
 
 > ⚠ The HTTP request and response body are not tracked by default.
 
@@ -123,7 +123,7 @@ The middleware component can be configured to influence the behavior of the HTTP
 To learn more about these options, see [the configuration section at the general Web API page](./logging.md) as these options are identical for Azure Functions HTTP triggers and Web API's.
 
 ### Customization
-Optionally, the middleware component can be extended even further by inheriting from the `AzureFunctionsRequestTrackingMiddleware` class. This allows full control over the sanitation process of the HTTP request/response body and HTTP request headers.
+Optionally, the middleware component can be extended even further by inheriting from the `AzureFunctionsRequestTrackingMiddleware` class. This allows full control over the sanitization process of the HTTP request/response body and HTTP request headers.
 
 The following example shows how a custom implementation makes sure that a specific header is not entirely excluded but is redacted from the HTTP request tracking.
 ```csharp
@@ -144,7 +144,7 @@ public class RedactedRequestTrackingMiddleware : AzureFunctionsRequestTrackingMi
 }
 ```
 
-> 💡 Note that the custom middleware also has an constructor overload to pass-in additional options so you can benefit also from custom defined options that alter the behavior of your custom sanitization process in your custom middleware component.
+> 💡 Note that the custom middleware also has a constructor overload to pass-in additional options that allow you to customize the sanitization process in your custom middleware component.
 
 This custom middleware component can be registered with an `.UseRequestTracking<>()` extension overload, which allows you to configure any additional options, if required.
 ```csharp
