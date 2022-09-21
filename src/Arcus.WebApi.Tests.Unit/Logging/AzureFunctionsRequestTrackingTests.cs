@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text;
 using System.Threading.Tasks;
@@ -124,7 +125,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.All(pending.Headers, header =>
             {
                 Assert.DoesNotContain(header.Key, trackedRequestEntry.Message);
-                Assert.DoesNotContain(string.Join(",", header.Value), trackedRequestEntry.Message);
+                Assert.DoesNotContain(header.Value.FirstOrDefault(), trackedRequestEntry.Message);
             });
         }
 
