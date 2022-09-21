@@ -86,7 +86,7 @@ Next, make sure that you pass along the exception middleware to the exception ha
 
 ## Logging incoming requests
 The `AzureFunctionsRequestTrackingMiddleware` class can be added to the Azure Functions worker pipeline to log any incoming HTTP requests.
-The requests are tracked with [Arcus Observability](https://observability.arcus-azure.net/Features/writing-different-telemetry-types#incoming-http-requests-in-azure-function-http-trigger) so that they will show up as requests in Application Insights, when the application is using [Arcus Application Insights Serilog sink](https://observability.arcus-azure.net/Features/sinks/azure-application-insights).
+The requests are tracked with [Arcus Observability](https://observability.arcus-azure.net/Features/writing-different-telemetry-types#incoming-http-requests-in-azure-function-http-trigger) so that they will show up as requests in Application Insights when the application is using [Arcus Application Insights Serilog sink](https://observability.arcus-azure.net/Features/sinks/azure-application-insights).
 
 > ⚠ The HTTP request and response body are not tracked by default.
 
