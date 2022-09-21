@@ -121,7 +121,7 @@ The middleware component can be configured to influence the behavior of the HTTP
 To learn more about these options, see [the configuration section at the general Web API page](./logging.md) as these options are identical for Azure Functions HTTP triggers and Web API's.
 
 ### Customization
-Optionally, the middleware component can be extended even further by inheriting from the `AzureFunctionsRequestTrackingMiddleware` class. This allows full control over the sanitation process of the HTTP request/response body and HTTP request headers.
+Optionally, the middleware component can be extended even further by inheriting from the `AzureFunctionsRequestTrackingMiddleware` class. This allows full control over the sanitization process of the HTTP request/response body and HTTP request headers.
 
 The following example shows how a custom implementation makes sure that a specific header is not entirely excluded but is redacted from the HTTP request tracking.
 ```csharp
