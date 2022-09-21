@@ -64,8 +64,8 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         public async Task SendRequest_WithOmittedHeader_IgnoresHeader()
         {
             // Arrange
-            string headerName = BogusGenerator.Lorem.Word();
-            string headerValue = BogusGenerator.Lorem.Word();
+            string headerName = BogusGenerator.Random.Guid().ToString();
+            string headerValue = BogusGenerator.Random.Guid().ToString();
             AzureFunctionsRequestTrackingMiddleware middleware = CreateMiddleware(options => options.OmittedHeaderNames.Add(headerName));
 
             var pending = PendingHttpRequestData.Generate(headerName: headerName, headerValue: headerValue);
