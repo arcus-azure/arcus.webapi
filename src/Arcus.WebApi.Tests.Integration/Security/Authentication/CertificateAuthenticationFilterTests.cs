@@ -769,7 +769,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             }
         }
 
-        
         [Fact]
         public async Task AuthorizedRoute_WithCertificateAuthenticationWithDirectValidator_ShouldFailOnInvalidBase64Format()
         {
