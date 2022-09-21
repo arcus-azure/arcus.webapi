@@ -142,7 +142,7 @@ public class RedactedRequestTrackingMiddleware : AzureFunctionsRequestTrackingMi
 }
 ```
 
-> 💡 Note that the custom middleware also has an constructor overload to pass-in additional options so you can benefit also from custom defined options that alter the behavior of your custom sanitization process in your custom middleware component.
+> 💡 Note that the custom middleware also has a constructor overload to pass-in additional options that allow you to customize the sanitization process in your custom middleware component.
 
 This custom middleware component can be registered with an `.UseRequestTracking<>()` extension overload, which allows you to configure any additional options, if required.
 ```csharp
