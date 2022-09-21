@@ -8,6 +8,8 @@ The `Arcus.WebApi.Logging.AzureFunctions` package provides a way to log several 
 
 To send the logging information to Application Insights, see [this user guide](https://observability.arcus-azure.net/Guidance/use-with-dotnet-and-functions).
 
+> ⚠ The functionality explained here is only available for Azure Functions that are isolated. It is not available for Azure Functions that are running in-process. For more information on the difference, see [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide).
+
 ## Installation
 These features require to install our NuGet package
 
