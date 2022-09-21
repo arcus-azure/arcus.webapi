@@ -34,6 +34,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
         /// </summary>
+        [Obsolete("Use the new constructor with the certificate authentication filter instead")]
         public CertificateAuthenticationFilter() : this(new CertificateAuthenticationOptions())
         {
         }
@@ -43,6 +44,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         /// <param name="options">The set of additional consumer-configurable options to change the behavior of the certificate authentication.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
+        [Obsolete("Use the new constructor with the certificate authentication filter instead")]
         public CertificateAuthenticationFilter(CertificateAuthenticationOptions options)
         {
             Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
