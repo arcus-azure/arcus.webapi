@@ -112,7 +112,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
         private CertificateAuthenticationValidator DetermineCertificateValidator(IServiceProvider services)
         {
-            if (_validator is NullCertificateAuthenticationValidator)
+            if (_validator is null || _validator is NullCertificateAuthenticationValidator)
             {
                 var validator = services.GetService<CertificateAuthenticationValidator>();
                 if (validator is null)
