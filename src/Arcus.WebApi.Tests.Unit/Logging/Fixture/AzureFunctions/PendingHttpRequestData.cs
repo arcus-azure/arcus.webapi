@@ -24,7 +24,9 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             Stream body = null)
         {
             var method = BogusGenerator.PickRandom<HttpMethod>().ToString();
-            var header = new KeyValuePair<string, string>(headerName ?? BogusGenerator.Lorem.Word(), headerValue ?? BogusGenerator.Lorem.Word());
+            var header = new KeyValuePair<string, string>(
+                headerName ?? BogusGenerator.Random.Guid().ToString(), 
+                headerValue ?? BogusGenerator.Random.Guid().ToString());
 
             return new PendingHttpRequestData
             {
