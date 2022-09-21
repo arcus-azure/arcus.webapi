@@ -14,7 +14,6 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         internal NullCertificateAuthenticationValidator() 
             : base(new CertificateAuthenticationConfig(new Dictionary<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)>()))
         {
-            
         }
     }
 }
