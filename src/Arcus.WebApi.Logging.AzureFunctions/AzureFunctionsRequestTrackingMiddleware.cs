@@ -45,7 +45,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
             {
                 if (Options.IncludeRequestBody)
                 {
-                    request = await EnableHttpRequestBuffering(context);
+                    request = await EnableHttpRequestBufferingAsync(context);
                 }
 
                 string requestBody = await GetPotentialRequestBodyAsync(request, logger);
@@ -70,7 +70,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
             }
         }
 
-        private static async Task<HttpRequestData> EnableHttpRequestBuffering(FunctionContext context)
+        private static async Task<HttpRequestData> EnableHttpRequestBufferingAsync(FunctionContext context)
         {
             BindingMetadata bindingMetadata = context.FunctionDefinition.InputBindings.Values.FirstOrDefault(a => a.Type == "httpTrigger");
             if (bindingMetadata is null)
