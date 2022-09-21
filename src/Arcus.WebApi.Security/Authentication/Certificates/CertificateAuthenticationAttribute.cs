@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
@@ -20,7 +21,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         public CertificateAuthenticationAttribute() : base(typeof(CertificateAuthenticationFilter))
         {
             _options = new CertificateAuthenticationOptions();
-            Arguments = new object[] { _options };
+            Arguments = new object[] { new NullCertificateAuthenticationValidator(), _options };
         }
 
         /// <summary>

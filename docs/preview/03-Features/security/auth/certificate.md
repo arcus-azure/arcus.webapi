@@ -13,17 +13,6 @@ This authentication process consists of following parts:
 2. Determine which properties of the received client certificate are used for authentication
 3. The property value(s) of the client certificate matches the value(s) determined via configured secret provider, configuration or custom implementation
 
-- [Authentication with certificate](#authentication-with-certificate)
-  - [Installation](#installation)
-  - [Globally enforce certificate authentication](#globally-enforce-certificate-authentication)
-    - [Introduction](#introduction)
-    - [Usage](#usage)
-  - [Enforce certificate authentication per controller or operation](#enforce-certificate-authentication-per-controller-or-operation)
-    - [Introduction](#introduction-1)
-    - [Usage](#usage-1)
-      - [Configuration](#configuration)
-  - [Bypassing authentication](#bypassing-authentication)
-
 ## Installation
 
 This feature requires to install our NuGet package
@@ -63,26 +52,20 @@ builder.Services.AddSecretStore(stores =>
     stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 });
 
-var certificateValidator =
-    new CertificateAuthenticationValidator(
-        new CertificateAuthenticationConfigBuilder()
-            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-            .Build());
-
-builder.Services.AddSingleton(certificateValidator);
-
 builder.Services.AddControllers(mvcOptions => 
 {
-    // Adds certificate authentication to the request pipeline.
-    mvcOptions.AddCertificateAuthenticationFilter();
-   
     // Additional consumer-configurable options to change the behavior of the authentication filter.
-    mvcOptions.AddCertificateAuthenticationFilter(configureOptions: options =>
-    {
-        // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
-        // (default: `false`)
-        options.EmitSecurityEvents = true;
-    }));
+    mvcOptions.AddCertificateAuthenticationFilter(
+        auth =>
+        {
+            auth.WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name");
+        },
+        configureOptions: options =>
+        {
+            // Adds certificate authentication to the request pipeline with emitting security events during the authorization of the request.
+            // (default: `false`)
+            options.EmitSecurityEvents = true;
+        }));
 });
 ```
 
@@ -113,13 +96,10 @@ builder.Services.AddSecretStore(stores =>
     stores.AddAzureKeyVaultWithManagedIdentity("https://your-keyvault.vault.azure.net/", CacheConfiguration.Default));
 });
 
-var certificateValidator = 
-    new CertificateAuthenticationValidator(
-        new CertificateAuthenticationConfigBuilder()
-            .WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name")
-            .Build());
-
-builder.Services.AddSingleton(certificateValidator);
+builder.Services.AddCertificateAuthenticationValidation(auth =>
+{
+    auth.WithIssuer(X509ValidationLocation.SecretProvider, "key-to-certificate-issuer-name");
+});
 ```
 
 After that, the `CertificateAuthenticationAttribute` attribute can be applied on the controllers, or if more fine-grained control is needed, on the operations that requires authentication:

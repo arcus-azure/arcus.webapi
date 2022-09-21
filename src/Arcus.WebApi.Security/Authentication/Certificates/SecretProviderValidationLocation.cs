@@ -42,7 +42,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new InvalidOperationException(
                     "Cannot retrieve the certificate value to validate the HTTP request because no Arcus secret store was registered in the application," 
-                    + $"please register the secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the '{nameof(IHostBuilder)}' or with '{nameof(IServiceCollectionExtensions.AddSecretStore)}' on the '{nameof(IServiceCollection)}'," 
+                    + $"please register the secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the '{nameof(IHostBuilder)}' or with 'AddSecretStore' on the '{nameof(IServiceCollection)}'," 
                     + "for more information on the Arcus secret store: https://security.arcus-azure.net/features/secret-store");
             }
 

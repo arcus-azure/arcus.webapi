@@ -28,6 +28,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         private const string Base64Pattern = @"^[a-zA-Z0-9\+/]*={0,3}$";
         private static readonly Regex Base64Regex = new Regex(Base64Pattern, RegexOptions.Compiled);
 
+        private readonly CertificateAuthenticationValidator _validator;
         private readonly CertificateAuthenticationOptions _options;
 
         /// <summary>
@@ -45,6 +46,23 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         public CertificateAuthenticationFilter(CertificateAuthenticationOptions options)
         {
             Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
+            _options = options;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CertificateAuthenticationFilter" /> class.
+        /// </summary>
+        /// <param name="validator">The instance to validate the incoming client certificate.</param>
+        /// <param name="options">The set of additional consumer-configurable options to change the behavior of the certificate authentication.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="validator"/> or the <paramref name="options"/> is <c>null</c>.</exception>
+        public CertificateAuthenticationFilter(
+            CertificateAuthenticationValidator validator,
+            CertificateAuthenticationOptions options)
+        {
+            Guard.NotNull(validator, nameof(validator), "Requires an instance to validate the incoming client certificate of the HTTP request");
+            Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
+
+            _validator = validator;
             _options = options;
         }
 
@@ -68,13 +86,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 return;
             }
 
-            var validator = services.GetService<CertificateAuthenticationValidator>();
-            if (validator is null)
-            {
-                throw new KeyNotFoundException(
-                    $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
-                    + "Please configure such an instance (ex. in the Startup) of your application");
-            }
+            CertificateAuthenticationValidator validator = DetermineCertificateValidator(services);
 
             if (TryGetClientCertificateFromRequest(context.HttpContext, logger, out X509Certificate2 clientCertificate))
             {
@@ -94,6 +106,24 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 LogSecurityEvent(logger, "No client certificate is specified in the request while this authentication filter requires a certificate to validate on the configured validation requirements", HttpStatusCode.Unauthorized);
                 context.Result = new UnauthorizedObjectResult("No client certificate found in request");
             }
+        }
+
+        private CertificateAuthenticationValidator DetermineCertificateValidator(IServiceProvider services)
+        {
+            if (_validator != null)
+            {
+                return _validator;
+            }
+
+            var validator = services.GetService<CertificateAuthenticationValidator>();
+            if (validator is null)
+            {
+                throw new InvalidOperationException(
+                    $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
+                    + "Please configure such an instance (ex. in the Startup) of your application");
+            }
+
+            return validator;
         }
 
         private static bool TryGetClientCertificateFromRequest(HttpContext context, ILogger logger, out X509Certificate2 clientCertificate)
