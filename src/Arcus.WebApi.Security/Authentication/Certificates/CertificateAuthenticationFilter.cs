@@ -112,20 +112,20 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
         private CertificateAuthenticationValidator DetermineCertificateValidator(IServiceProvider services)
         {
-            if (_validator != null)
+            if (_validator is NullCertificateAuthenticationValidator)
             {
-                return _validator;
+                var validator = services.GetService<CertificateAuthenticationValidator>();
+                if (validator is null)
+                {
+                    throw new InvalidOperationException(
+                        $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
+                        + "Please configure such an instance (ex. in the Startup) of your application");
+                }
+
+                return validator;
             }
 
-            var validator = services.GetService<CertificateAuthenticationValidator>();
-            if (validator is null)
-            {
-                throw new InvalidOperationException(
-                    $"No configured {nameof(CertificateAuthenticationValidator)} instance found in the request services container. "
-                    + "Please configure such an instance (ex. in the Startup) of your application");
-            }
-
-            return validator;
+            return _validator;
         }
 
         private static bool TryGetClientCertificateFromRequest(HttpContext context, ILogger logger, out X509Certificate2 clientCertificate)
