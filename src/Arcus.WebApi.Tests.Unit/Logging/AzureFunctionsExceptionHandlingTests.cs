@@ -47,7 +47,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
                 configureServices: services => services.AddLogging(logging => logging.AddProvider(new CustomLoggerProvider(spyLogger))));
 
             var statusCode = BogusGenerator.PickRandom<HttpStatusCode>();
-            var middleware = new CustomExceptionHandlingWorkerMiddleware(statusCode);
+            var middleware = new CustomExceptionHandlingMiddleware(statusCode);
 
             // Act
             await middleware.Invoke(context, ctx => throw new InvalidOperationException("Sabotage this!"));

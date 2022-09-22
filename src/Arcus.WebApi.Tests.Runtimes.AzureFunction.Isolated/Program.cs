@@ -11,7 +11,8 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
                 {
                     builder.UseExceptionHandling()
                            .UseFunctionContext()
-                           .UseHttpCorrelation();
+                           .UseHttpCorrelation()
+                           .UseRequestTracking();
                 })
                 .Build();
     

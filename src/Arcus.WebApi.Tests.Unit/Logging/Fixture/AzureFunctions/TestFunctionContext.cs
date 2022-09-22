@@ -32,6 +32,18 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             Action<HttpRequestData> configureHttpRequest = null,
             Action<IServiceCollection> configureServices = null)
         {
+            return Create(context =>
+            {
+                var request = new TestHttpRequestData(context);
+                configureHttpRequest?.Invoke(request);
+                return request;
+            }, configureServices);
+        }
+
+        public static FunctionContext Create(
+            Func<FunctionContext, HttpRequestData> createHttpRequest,
+            Action<IServiceCollection> configureServices = null)
+        {
             var services = new ServiceCollection();
             configureServices?.Invoke(services);
             services.AddLogging();
@@ -58,8 +70,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
                     object defaultBindingCache = CreateInstance(conversionResultBindingCacheType);
 
                     var context = provider.GetRequiredService<FunctionContext>();
-                    var request = new TestHttpRequestData(context);
-                    configureHttpRequest?.Invoke(request);
+                    var request = createHttpRequest(context);
 
                     ConversionResult result = ConversionResult.Success(request);
                     InvokeMethod(defaultBindingCache, "TryAdd", "req", result);

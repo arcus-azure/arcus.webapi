@@ -7,7 +7,7 @@ using GuardNet;
 namespace Arcus.WebApi.Logging
 {
     /// <summary>
-    /// Options that control the behavior in the <see cref="RequestTrackingMiddleware"/>.
+    /// Options that control the behavior in the HTTP request tracking middleware.
     /// </summary>
     public class RequestTrackingOptions
     {

@@ -7,19 +7,21 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
+using Arcus.WebApi.Logging.Core.RequestTracking;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+using Serilog.Context;
 
 namespace Arcus.WebApi.Logging
 {
     /// <summary>
     /// Request tracing middleware component to log every incoming HTTP request.
     /// </summary>
-    public class RequestTrackingMiddleware
+    public class RequestTrackingMiddleware : RequestTrackingTemplate
     {
         private readonly RequestDelegate _next;
         private readonly ILogger<RequestTrackingMiddleware> _logger;
@@ -35,6 +37,7 @@ namespace Arcus.WebApi.Logging
             RequestTrackingOptions options,
             RequestDelegate next,
             ILogger<RequestTrackingMiddleware> logger)
+            : base(options)
         {
             Guard.NotNull(options, nameof(options), "Requires a set of options to control the behavior of the HTTP tracking middleware");
             Guard.NotNull(next, nameof(next), "Requires a function pipeline to delegate the remainder of the request processing");
@@ -42,13 +45,7 @@ namespace Arcus.WebApi.Logging
 
             _next = next;
             _logger = logger;
-            Options = options;
         }
-
-        /// <summary>
-        /// Gets the consumer-configured options to control the behavior of the request tracking.
-        /// </summary>
-        public RequestTrackingOptions Options { get; }
 
         /// <summary>
         /// Request handling method.
@@ -62,7 +59,7 @@ namespace Arcus.WebApi.Logging
             Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
             Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
 
-            if (IsRequestPathOmitted(httpContext.Request))
+            if (IsRequestPathOmitted(httpContext.Request.Path, _logger))
             {
                 await _next(httpContext);
             }
@@ -88,27 +85,6 @@ namespace Arcus.WebApi.Logging
                     await TrackRequest(httpContext, filter, trackedStatusCodeRanges);
                 }
             }
-        }
-
-        private bool IsRequestPathOmitted(HttpRequest request)
-        {
-            IEnumerable<string> allOmittedRoutes = Options.OmittedRoutes ?? new Collection<string>();
-            string[] matchedOmittedRoutes =
-                allOmittedRoutes
-                    .Select(omittedRoute => omittedRoute?.StartsWith("/") == true ? omittedRoute : "/" + omittedRoute)
-                    .Where(omittedRoute => request.Path.StartsWithSegments(omittedRoute, StringComparison.OrdinalIgnoreCase))
-                    .ToArray();
-
-            if (matchedOmittedRoutes.Length > 0)
-            {
-                string endpoint = request.GetDisplayUrl();
-                string formattedOmittedRoutes = String.Join(", ", matchedOmittedRoutes);
-                _logger.LogTrace("Skip request tracking for endpoint '{Endpoint}' due to an omitted route(s) '{OmittedRoutes}' specified in the options", endpoint, formattedOmittedRoutes);
-
-                return true;
-            }
-
-            return false;
         }
 
         private RequestTrackingAttribute[] DetermineAppliedAttributes(IEndpointFeature endpoint)
@@ -178,7 +154,7 @@ namespace Arcus.WebApi.Logging
                     }
                     finally
                     {
-                        if (AllowedToTrackStatusCode(httpContext, attributeTrackedStatusCodes))
+                        if (AllowedToTrackStatusCode(httpContext.Response.StatusCode, attributeTrackedStatusCodes, _logger))
                         {
                             string responseBody = await GetPotentialResponseBodyAsync(httpContext, includeResponseBody);
                             
@@ -231,59 +207,10 @@ namespace Arcus.WebApi.Logging
 
         private void LogRequest(string requestBody, string responseBody, HttpContext httpContext, DurationMeasurement duration)
         {
-            try
-            {
-                IDictionary<string, StringValues> telemetryContext = GetRequestHeaders(httpContext);
+            Dictionary<string, object> telemetryContext = CreateTelemetryContext(requestBody, responseBody, httpContext.Request.Headers, _logger);
+            telemetryContext.Add("Body", "Request body is now available in 'RequestBody' dimension");
 
-                if (string.IsNullOrWhiteSpace(requestBody) == false)
-                {
-                    telemetryContext.Add("Body", "Request body is now available in 'RequestBody' dimension");
-                    telemetryContext.Add("RequestBody", requestBody);
-                }
-
-                if (string.IsNullOrWhiteSpace(responseBody) == false)
-                {
-                    telemetryContext.Add("ResponseBody", responseBody);
-                }
-
-                Dictionary<string, object> logContext = telemetryContext.ToDictionary(kv => kv.Key, kv => (object)kv.Value);
-                _logger.LogRequest(httpContext.Request, httpContext.Response, duration, logContext);
-            }
-            catch (Exception exception)
-            {
-                _logger.LogCritical(exception, "Failed to track request due to an unexpected failure");
-            }
-        }
-
-        private IDictionary<string, StringValues> GetRequestHeaders(HttpContext httpContext)
-        {
-            if (Options.IncludeRequestHeaders)
-            {
-                _logger.LogTrace("Prepare for the request headers to be tracked...");
-                IDictionary<string, StringValues> sanitizedHeaders = SanitizeRequestHeaders(httpContext.Request.Headers);
-                if (sanitizedHeaders != null && sanitizedHeaders.Count > 0)
-                {
-                    string headerNames = String.Join(", ", sanitizedHeaders.Keys.Select(k => $"'{k}'"));
-                    _logger.LogTrace("Found {RequestHeaders} request headers to be tracked", headerNames);
-
-                    return sanitizedHeaders;
-                }
-
-                _logger.LogWarning("No request headers were found to be tracked");
-            }
-
-            return new Dictionary<string, StringValues>();
-        }
-
-        /// <summary>
-        /// Sanitize headers so that sensitive information is not logged via request tracking
-        /// </summary>
-        /// <param name="requestHeaders">The headers of the current HTTP request.</param>
-        /// <remarks>Override this method if there are headers that contain sensitive information that should not be logged via request-tracking.</remarks>
-        /// <returns>A collection of headers and the header contents that must be logged via request-tracking.</returns>
-        protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
-        {
-            return requestHeaders.Where(header => Options.OmittedHeaderNames?.Contains(header.Key) == false);
+            _logger.LogRequest(httpContext.Request, httpContext.Response, duration, telemetryContext);
         }
 
         private async Task<string> GetPotentialRequestBodyAsync(HttpContext httpContext, bool includeRequestBody)
@@ -292,7 +219,7 @@ namespace Arcus.WebApi.Logging
             {
                 httpContext.Request.EnableBuffering();
 
-                string requestBody = await GetBodyAsync(httpContext.Request.Body, Options.RequestBodyBufferSize, "Request");
+                string requestBody = await GetBodyAsync(httpContext.Request.Body, Options.RequestBodyBufferSize, "Request", _logger);
                 string sanitizedBody = SanitizeRequestBody(httpContext.Request, requestBody);
 
                 return sanitizedBody;
@@ -316,7 +243,7 @@ namespace Arcus.WebApi.Logging
         {
             if (includeResponseBody)
             {
-                string responseBody = await GetBodyAsync(httpContext.Response.Body, Options.ResponseBodyBufferSize, "Response");
+                string responseBody = await GetBodyAsync(httpContext.Response.Body, Options.ResponseBodyBufferSize, "Response", _logger);
                 string sanitizedBody = SanitizeResponseBody(httpContext.Response, responseBody);
 
                 return sanitizedBody;
@@ -334,111 +261,6 @@ namespace Arcus.WebApi.Logging
         protected virtual string SanitizeResponseBody(HttpResponse response, string responseBody)
         {
             return responseBody;
-        }
-
-        private async Task<string> GetBodyAsync(Stream body, int? maxLength, string target)
-        {
-            _logger.LogTrace("Prepare for {Target} body to be tracked...", target);
-            string sanitizedBody = await SanitizeStreamAsync(body, maxLength, target);
-            if (sanitizedBody != null)
-            {
-                _logger.LogTrace("Found {Target} body to be tracked", target);
-                return sanitizedBody;
-            }
-
-            _logger.LogWarning("No {Target} body was found to be tracked", target);
-            return null;
-        }
-
-        private static async Task<string> SanitizeStreamAsync(Stream stream, int? maxLength, string targetName)
-        {
-            if (!stream.CanRead)
-            {
-                return $"{targetName} body could not be tracked because stream is not readable";
-            }
-
-            if (!stream.CanSeek)
-            {
-                return $"{targetName} body could not be tracked because stream is not seekable";
-            }
-
-            string contents;
-            long? originalPosition = null;
-
-            try
-            {
-                originalPosition = stream.Position;
-                if (stream.Position != 0)
-                {
-                    stream.Seek(0, SeekOrigin.Begin);
-                }
-
-                var reader = new StreamReader(stream);
-                if (maxLength.HasValue)
-                {
-                    var buffer = new char[maxLength.Value];
-                    await reader.ReadBlockAsync(buffer, 0, buffer.Length);
-                    contents = new String(buffer);
-                }
-                else
-                {
-                    contents = await reader.ReadToEndAsync();
-                }
-            }
-            catch
-            {
-                // We don't want to track additional telemetry for cost purposes,
-                // so we surface it like this
-                contents = $"Unable to get '{targetName}' body for request tracking";
-            }
-
-            try
-            {
-                if (originalPosition.HasValue)
-                {
-                    stream.Seek(originalPosition.Value, SeekOrigin.Begin);
-                }
-            }
-            catch
-            {
-                // Nothing to do here, we want to ensure the value is always returned.
-            }
-
-            // Trim string 'NULL' characters when the buffer was greater than the actual request/response body that was tracked.
-            return contents?.TrimEnd('\0');
-        }
-
-        private bool AllowedToTrackStatusCode(HttpContext httpContext, IEnumerable<StatusCodeRange> attributeTrackedStatusCodes)
-        {
-            IEnumerable<HttpStatusCode> optionsTrackedStatusCodes =
-                Options.TrackedStatusCodes ?? Enumerable.Empty<HttpStatusCode>();
-
-            IEnumerable<StatusCodeRange> optionsTrackedStatusCodeRanges =
-                Options.TrackedStatusCodeRanges ?? Enumerable.Empty<StatusCodeRange>();
-
-            StatusCodeRange[] combinedStatusCodeRanges =
-                optionsTrackedStatusCodes
-                    .Select(code => new StatusCodeRange((int)code))
-                    .Concat(optionsTrackedStatusCodeRanges)
-                    .Concat(attributeTrackedStatusCodes)
-                    .Where(range => range != null)
-                    .Distinct().ToArray();
-
-            bool allowedToTrackStatusCode =
-                combinedStatusCodeRanges.Length <= 0
-                || combinedStatusCodeRanges.Any(range => range.IsWithinRange(httpContext.Response.StatusCode));
-
-            string formattedStatusCodes = String.Join(", ", combinedStatusCodeRanges.Select(range => range.ToString()));
-            if (allowedToTrackStatusCode)
-            {
-                _logger.LogTrace("Request tracking for this endpoint is allowed as the response status code '{ResponseStatusCode}' is within  the allowed tracked status code ranges '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
-            }
-            else
-            {
-                _logger.LogTrace("Request tracking for this endpoint is disallowed as the response status code '{ResponseStatusCode}' is not within the allowed tracked status code ranges '{TrackedStatusCodes}'", httpContext.Response.StatusCode, formattedStatusCodes);
-            }
-
-            return allowedToTrackStatusCode;
         }
 
         private static async Task CopyTemporaryStreamToResponseStreamAsync(
