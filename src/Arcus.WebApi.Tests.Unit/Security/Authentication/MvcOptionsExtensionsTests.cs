@@ -1,4 +1,5 @@
 ﻿using System;
+using Arcus.WebApi.Security.Authentication.Certificates;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
@@ -15,8 +16,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnHeader(headerName, "MySecret"));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnHeader(headerName, "MySecret"));
         }
         
         [Theory]
@@ -27,8 +28,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnHeader(headerName, "MySecret", options => options.EmitSecurityEvents = true));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnHeader(headerName, "MySecret", options => options.EmitSecurityEvents = true));
         }
         
         [Theory]
@@ -39,8 +40,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnHeader("x-api-key", secretName));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnHeader("x-api-key", secretName));
         }
         
         [Theory]
@@ -51,8 +52,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnHeader("x-api-key", secretName, options => options.EmitSecurityEvents = true));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnHeader("x-api-key", secretName, options => options.EmitSecurityEvents = true));
         }
         
         [Theory]
@@ -63,8 +64,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnHeader(parameterName, "MySecret"));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnHeader(parameterName, "MySecret"));
         }
         
         [Theory]
@@ -75,8 +76,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnQuery(parameterName, "MySecret", options => options.EmitSecurityEvents = true));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnQuery(parameterName, "MySecret", options => options.EmitSecurityEvents = true));
         }
         
         [Theory]
@@ -87,8 +88,8 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnQuery("x-api-key", secretName));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnQuery("x-api-key", secretName));
         }
         
         [Theory]
@@ -99,8 +100,51 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var options = new MvcOptions();
             
             // Act / Assert
-            Assert.ThrowsAny<ArgumentException>(() =>
-                options.AddSharedAccessKeyAuthenticationFilterOnQuery("x-api-key", secretName, options => options.EmitSecurityEvents = true));
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddSharedAccessKeyAuthenticationFilterOnQuery("x-api-key", secretName, options => options.EmitSecurityEvents = true));
+        }
+
+        [Fact]
+        public void AddCertificateAuthenticationFilter_WithoutConfiguredAuthentication_Fails()
+        {
+            // Arrange
+            var options = new MvcOptions();
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddCertificateAuthenticationFilter(configureAuthentication: null));
+        }
+
+        [Fact]
+        public void AddCertificateAuthenticationFilter_WithoutConfiguredAuthenticationWithOptions_Fails()
+        {
+            // Arrange
+            var options = new MvcOptions();
+
+            // Act / Assert
+            Assert.ThrowsAny<ArgumentException>(
+                () => options.AddCertificateAuthenticationFilter(configureAuthentication: null, configureOptions: opt => { }));
+        }
+
+        [Fact]
+        public void AddCertificateAuthenticationFilter_WithoutConfiguredAuthenticationEntries_Fails()
+        {
+            // Arrange
+            var options = new MvcOptions();
+
+            // Act / Assert
+            Assert.ThrowsAny<InvalidOperationException>(
+                () => options.AddCertificateAuthenticationFilter(configureAuthentication: auth => { }));
+        }
+
+        [Fact]
+        public void AddCertificateAuthenticationFilter_WithConfiguredAuthenticationEntry_Succeeds()
+        {
+            // Arrange
+            var options = new MvcOptions();
+
+            // Act / Assert
+            options.AddCertificateAuthenticationFilter(auth => auth.WithSubject(X509ValidationLocation.Configuration, "SubjectConfig"));
         }
     }
 }
