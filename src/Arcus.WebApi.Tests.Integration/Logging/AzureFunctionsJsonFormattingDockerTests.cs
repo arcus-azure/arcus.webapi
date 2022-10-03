@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Text;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
@@ -32,8 +33,27 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         [Fact]
         public async Task Request_WithoutJsonFormattingHeaders_ReturnsFailure()
         {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
+            request.Content = new StringContent("Something to write so that we required a Content-Type");
+
             // Act
-            using (HttpResponseMessage response = await HttpClient.GetAsync(Endpoint))
+            using (HttpResponseMessage response = await HttpClient.SendAsync(request))
+            {
+                // Assert
+                Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+            }
+        }
+
+        [Fact]
+        public async Task Request_WithWrongContentType_ReturnsFailure()
+        {
+            // Arrange
+            var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
+            request.Content = new StringContent("Something to write so that we required a Content-Type", Encoding.UTF8, "text/plain");
+
+            // Act
+            using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
                 Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
@@ -45,6 +65,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
+            request.Content = new StringContent("Something to write so that we required a Content-Type");
             request.Headers.TryAddWithoutValidation("allow", "application/json");
 
             // Act
@@ -56,11 +77,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
 
         [Fact]
-        public async Task Request_WithoutAllowHeader_ReturnsFailure()
+        public async Task Request_WithWrongAllowHeader_ReturnsFailure()
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
-            request.Headers.TryAddWithoutValidation("content-Type", "application/json");
+            request.Content = new StringContent("Something to write so that we required a Content-Type", Encoding.UTF8, "application/json");
+            request.Headers.TryAddWithoutValidation("allow", "text/plain");
 
             // Act
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
@@ -75,7 +97,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
-            request.Headers.TryAddWithoutValidation("content-type", "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type", Encoding.UTF8, "application/json");
             request.Headers.TryAddWithoutValidation("allow", "application/json");
 
             // Act

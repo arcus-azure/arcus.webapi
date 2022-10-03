@@ -36,7 +36,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             return new TestHttpResponseData(FunctionContext);
         }
 
-        public override Stream Body { get; }
+        public override Stream Body { get; } = new MemoryStream();
         public override HttpHeadersCollection Headers { get; } = new HttpHeadersCollection();
         public override IReadOnlyCollection<IHttpCookie> Cookies { get; }
         public override Uri Url { get; }

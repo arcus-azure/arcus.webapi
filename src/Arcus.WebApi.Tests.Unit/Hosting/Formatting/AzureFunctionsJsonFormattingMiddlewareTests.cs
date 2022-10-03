@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Text;
 using System.Threading.Tasks;
 using Arcus.WebApi.Hosting.AzureFunctions.Formatting;
 using Arcus.WebApi.Logging.AzureFunctions;
@@ -16,10 +17,31 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
         {
             // Arrange
             var middleware = new AzureFunctionsJsonFormattingMiddleware();
-            var context = TestFunctionContext.Create();
+            var contents = Encoding.UTF8.GetBytes("Something to write so that we require a Content-Type");
+            var context = TestFunctionContext.Create(req => req.Body.Write(contents, 0, contents.Length));
 
             // Act
-            await middleware.Invoke(context, ctx => Task.CompletedTask);
+            await middleware.Invoke(context, CreateOkResponse);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Request_WithWrongContentType_ReturnsFailure()
+        {
+            // Arrange
+            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var contents = Encoding.UTF8.GetBytes("Something to write so that we require a Content-Type");
+            var context = TestFunctionContext.Create(req =>
+            {
+                req.Body.Write(contents, 0, contents.Length);
+                req.Headers.TryAddWithoutValidation("content-type", "text/plain");
+            });
+
+            // Act
+            await middleware.Invoke(context, CreateOkResponse);
 
             // Assert
             HttpResponseData response = context.GetHttpResponseData();
@@ -31,52 +53,67 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
         {
             // Arrange
             var middleware = new AzureFunctionsJsonFormattingMiddleware();
-            var context = TestFunctionContext.Create(req => req.Headers.TryAddWithoutValidation("allow", "application/json"));
-
-            // Act
-            await middleware.Invoke(context, ctx => Task.CompletedTask);
-
-            // Assert
-            HttpResponseData response = context.GetHttpResponseData();
-            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task Request_WithoutAllowHeader_ReturnsFailure()
-        {
-            // Arrange
-            var middleware = new AzureFunctionsJsonFormattingMiddleware();
-            var context = TestFunctionContext.Create(req => req.Headers.Add("content-Type", "application/json"));
-
-            // Act
-            await middleware.Invoke(context, ctx => Task.CompletedTask);
-
-            // Assert
-            HttpResponseData response = context.GetHttpResponseData();
-            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
-        }
-
-        [Fact]
-        public async Task Request_WithJsonAllowAndContentTypeHeaders_ReturnsFailure()
-        {
-            // Arrange
-            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var contents = Encoding.UTF8.GetBytes("Something to write so that we require a Content-Type");
             var context = TestFunctionContext.Create(req =>
             {
+                req.Body.Write(contents, 0, contents.Length);
+                req.Headers.TryAddWithoutValidation("allow", "application/json");
+            });
+
+            // Act
+            await middleware.Invoke(context, CreateOkResponse);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Request_WithWrongAllowHeader_ReturnsFailure()
+        {
+            // Arrange
+            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var contents = Encoding.UTF8.GetBytes("Something to write so that we require a Content-Type");
+            var context = TestFunctionContext.Create(req =>
+            {
+                req.Body.Write(contents, 0, contents.Length);
+                req.Headers.Add("content-Type", "application/json");
+                req.Headers.Add("accept", "text/plain");
+            });
+
+            // Act
+            await middleware.Invoke(context, CreateOkResponse);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Request_WithJsonAllowAndContentTypeHeaders_ReturnsOk()
+        {
+            // Arrange
+            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var contents = Encoding.UTF8.GetBytes("Something to write so that we require a Content-Type");
+            var context = TestFunctionContext.Create(req =>
+            {
+                req.Body.Write(contents, 0, contents.Length);
                 req.Headers.Add("content-type", "application/json");
                 req.Headers.TryAddWithoutValidation("allow", "application/json");
             });
 
             // Act
-            await middleware.Invoke(context, async ctx =>
-            {
-                HttpRequestData request = await ctx.GetHttpRequestDataAsync();
-                ctx.GetInvocationResult().Value = request.CreateResponse(HttpStatusCode.OK);
-            });
+            await middleware.Invoke(context, CreateOkResponse);
 
             // Assert
             HttpResponseData response = context.GetHttpResponseData();
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        private static async Task CreateOkResponse(FunctionContext context)
+        {
+            HttpRequestData request = await context.GetHttpRequestDataAsync();
+            context.GetInvocationResult().Value = request.CreateResponse(HttpStatusCode.OK);
         }
     }
 }
