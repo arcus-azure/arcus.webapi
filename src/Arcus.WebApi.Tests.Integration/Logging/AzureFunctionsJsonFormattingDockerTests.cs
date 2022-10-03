@@ -81,7 +81,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
-            request.Content = new StringContent("Something to write so that we required a Content-Type", Encoding.UTF8, "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type");
+            request.Headers.TryAddWithoutValidation("content-type", "application/json");
             request.Headers.TryAddWithoutValidation("allow", "text/plain");
 
             // Act
@@ -97,7 +98,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
-            request.Content = new StringContent("Something to write so that we require a Content-Type", Encoding.UTF8, "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type");
+            request.Headers.TryAddWithoutValidation("content-type", "application/json");
             request.Headers.TryAddWithoutValidation("allow", "application/json");
 
             // Act
