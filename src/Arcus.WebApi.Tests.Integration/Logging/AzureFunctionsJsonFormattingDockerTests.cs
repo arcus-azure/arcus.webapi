@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Microsoft.Extensions.Logging;
+using Microsoft.Rest;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -98,9 +99,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
-            request.Content = new StringContent("Something to write so that we require a Content-Type");
-            request.Headers.TryAddWithoutValidation("content-type", "application/json");
-            request.Headers.TryAddWithoutValidation("allow", "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type", Encoding.UTF8, "application/json");
+            request.Headers.TryAddWithoutValidation("Accept", "application/json");
 
             // Act
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
