@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
@@ -99,8 +100,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, Endpoint);
-            request.Content = new StringContent("Something to write so that we require a Content-Type", Encoding.UTF8, "application/json");
-            request.Headers.TryAddWithoutValidation("Accept", "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type");
+            request.Content.Headers.Remove("Content-Type");
+            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
