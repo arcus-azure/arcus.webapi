@@ -5,7 +5,7 @@ layout: default
 
 # JSON formatting
 The `Arcus.WebApi.Hosting.AzureFunctions` library provides a way to restrict and configure the JSON input and output formatting of your application.
-This allows for a easier and more secure formatting when working with JSON types.
+This allows for an easier and more secure formatting when working with JSON types.
 
 > ⚠ These features are only available for Azure Functions using the isolated functions worker. For more information on the difference between in-process and isolated Azure Functions, see [Microsoft's documentation](https://learn.microsoft.com/en-us/azure/azure-functions/dotnet-isolated-process-guide).
 
