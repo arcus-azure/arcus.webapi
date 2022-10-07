@@ -17,7 +17,7 @@ using Microsoft.Extensions.Logging;
 namespace Microsoft.Extensions.Hosting
 {
     /// <summary>
-    /// Extensions on the <see cref="IFunctionsWorkerApplicationBuilder"/> related to HTTP correlation.
+    /// Extensions on the <see cref="IFunctionsWorkerApplicationBuilder"/> related to logging.
     /// </summary>
     // ReSharper disable once InconsistentNaming
     public static class IFunctionsWorkerApplicationBuilderExtensions
@@ -32,7 +32,7 @@ namespace Microsoft.Extensions.Hosting
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the function context middleware");
 
-            builder.Services.AddScoped<IFunctionContextAccessor, DefaultFunctionContextAccessor>();
+            builder.Services.AddSingleton<IFunctionContextAccessor, DefaultFunctionContextAccessor>();
             builder.UseMiddleware<FunctionContextMiddleware>();
 
             return builder;
