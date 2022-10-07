@@ -47,7 +47,7 @@ namespace Arcus.WebApi.Hosting.AzureFunctions.Formatting
             if (request is null)
             {
                 throw new InvalidOperationException(
-                    "Cannot determine HTTP request in HTTP JSON formatting middleware, this probably means that their is no HTTP trigger function triggering this invocation."
+                    "Cannot determine HTTP request in HTTP JSON formatting middleware, this probably means that there is no HTTP trigger function triggering this invocation."
                     + "Please only use the HTTP JSON formatting in HTTP scenarios");
             }
 
