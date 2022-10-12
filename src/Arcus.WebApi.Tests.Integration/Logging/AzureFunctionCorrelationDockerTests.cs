@@ -90,7 +90,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
         [Theory]
         [MemberData(nameof(RunningAzureFunctionsDockerProjectUrls))]
-        public async Task SendRequest_WithRequestIdHeader_ResponseWithDifferentRequestIdHeader(string url)
+        public async Task SendRequest_WithRequestIdHeader_ResponseWithSameRequestIdHeader(string url)
         {
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(16, prefix: null);
@@ -105,8 +105,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                string actual = GetResponseHeader(response, TransactionIdHeaderName);
-                Assert.Equal(expected, actual);
+                string actual = GetResponseHeader(response, "traceparent");
+                Assert.Contains(expected, actual);
             }
         }
 
