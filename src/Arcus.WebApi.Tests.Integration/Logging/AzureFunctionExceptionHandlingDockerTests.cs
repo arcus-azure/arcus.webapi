@@ -15,7 +15,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 {
     [Collection(Constants.TestCollections.Docker)]
     [Trait(Constants.TestTraits.Category, Constants.TestTraits.Docker)]
-    public class AzureFunctionExceptionHandlingTests
+    public class AzureFunctionExceptionHandlingDockerTests
     {
         private readonly TestConfig _config;
         private readonly ILogger _logger;
@@ -23,9 +23,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         private static readonly HttpClient HttpClient = new HttpClient();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureFunctionExceptionHandlingTests" /> class.
+        /// Initializes a new instance of the <see cref="AzureFunctionExceptionHandlingDockerTests" /> class.
         /// </summary>
-        public AzureFunctionExceptionHandlingTests(ITestOutputHelper outputWriter)
+        public AzureFunctionExceptionHandlingDockerTests(ITestOutputHelper outputWriter)
         {
             _logger = new XunitTestLogger(outputWriter);
             _config = TestConfig.Create();

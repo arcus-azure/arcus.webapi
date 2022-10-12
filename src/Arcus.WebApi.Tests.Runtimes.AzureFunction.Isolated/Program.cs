@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Microsoft.Extensions.Hosting;
 
 namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
@@ -9,10 +10,13 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
             IHost host = new HostBuilder()
                 .ConfigureFunctionsWorkerDefaults(builder =>
                 {
-                    builder.UseExceptionHandling()
+                    builder.ConfigureJsonFormatting(options => options.Converters.Add(new JsonStringEnumConverter()));
+
+                    builder.UseOnlyJsonFormatting()
                            .UseFunctionContext()
                            .UseHttpCorrelation()
-                           .UseRequestTracking();
+                           .UseRequestTracking()
+                           .UseExceptionHandling();
                 })
                 .Build();
     

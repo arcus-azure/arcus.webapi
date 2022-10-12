@@ -17,7 +17,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 {
     [Collection(Constants.TestCollections.Docker)]
     [Trait(Constants.TestTraits.Category, Constants.TestTraits.Docker)]
-    public class AzureFunctionCorrelationTests
+    public class AzureFunctionCorrelationDockerTests
     {
         private readonly XunitTestLogger _logger;
 
@@ -26,9 +26,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         private static readonly Faker BogusGenerator = new Faker();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureFunctionCorrelationTests"/> class.
+        /// Initializes a new instance of the <see cref="AzureFunctionCorrelationDockerTests"/> class.
         /// </summary>
-        public AzureFunctionCorrelationTests(ITestOutputHelper outputWriter)
+        public AzureFunctionCorrelationDockerTests(ITestOutputHelper outputWriter)
         {
             _logger = new XunitTestLogger(outputWriter);
         }
