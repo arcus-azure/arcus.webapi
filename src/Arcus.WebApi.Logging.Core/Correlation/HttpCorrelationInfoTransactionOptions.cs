@@ -14,11 +14,17 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Get or sets whether the transaction ID can be specified in the request, and will be used throughout the request handling.
         /// </summary>
+        /// <remarks>
+        ///     This is only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         public bool AllowInRequest { get; set; } = true;
 
         /// <summary>
         /// Gets or sets whether or not the transaction ID should be generated when there isn't any transaction ID found in the request.
         /// </summary>
+        /// <remarks>
+        ///     This is only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         public bool GenerateWhenNotSpecified { get; set; } = true;
 
         /// <summary>
@@ -48,6 +54,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// (2) the <see cref="P:Arcus.Observability.Correlation.CorrelationInfoTransactionOptions.IncludeInResponse" /> is set to <c>true</c> (default: <c>true</c>), and
         /// (3) the <see cref="P:Arcus.Observability.Correlation.CorrelationInfoTransactionOptions.GenerateWhenNotSpecified" /> is set to <c>true</c> (default: <c>true</c>).
         /// </summary>
+        /// <remarks>
+        ///     This is only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         public Func<string> GenerateId
         {
             get => this._generateId;

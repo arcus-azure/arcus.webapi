@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Bogus;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
@@ -21,6 +23,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
         private static readonly TestConfig TestConfig = TestConfig.Create();
         private static readonly HttpClient HttpClient = new HttpClient();
+        private static readonly Faker BogusGenerator = new Faker();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AzureFunctionCorrelationTests"/> class.
@@ -54,7 +57,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "", OperationParentId = "" });
                 Assert.False(string.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
                 Assert.False(string.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
-                Assert.Null(content.OperationParentId);
+                Assert.NotNull(content.OperationParentId);
 
                 Assert.Equal(correlationId, content.TransactionId);
             }
@@ -65,9 +68,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithTransactionIdHeader_ResponseWithSameCorrelationHeader(string url)
         {
             // Arrange
-            string expected = $"transaction-{Guid.NewGuid()}";
+            string expected = BogusGenerator.Random.Hexadecimal(32, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add(TransactionIdHeaderName, expected);
+            request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
@@ -87,9 +90,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithRequestIdHeader_ResponseWithDifferentRequestIdHeader(string url)
         {
             // Arrange
-            string expected = $"parent{Guid.NewGuid()}".Replace("-", "");
+            string expected = BogusGenerator.Random.Hexadecimal(16, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add(UpstreamServiceHeaderName, expected);
+            request.Headers.Add(UpstreamServiceHeaderName, $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{expected}-00");
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);

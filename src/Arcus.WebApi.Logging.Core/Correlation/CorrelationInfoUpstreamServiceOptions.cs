@@ -1,6 +1,7 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
 using GuardNet;
+using Microsoft.Net.Http.Headers;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -9,12 +10,19 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class CorrelationInfoUpstreamServiceOptions
     {
-        private string _headerName = HttpCorrelationProperties.UpstreamServiceHeaderName;
+#if !NETSTANDARD
+        private string _headerName = HeaderNames.TraceParent;
+#else
+        private string _headerName = "traceparent";
+#endif
         private Func<string> _generateId = () => Guid.NewGuid().ToString();
 
         /// <summary>
         /// Gets or sets the flag indicating whether or not the upstream service information should be extracted from the <see cref="OperationParentIdHeaderName"/> following the W3C Trace-Context standard. 
         /// </summary>
+        /// <remarks>
+        ///     This is only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         public bool ExtractFromRequest { get; set; } = true;
 
         /// <summary>
@@ -57,6 +65,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets or sets the function to generate the operation parent ID without extracting from the request.
         /// </summary>
+        /// <remarks>
+        ///     This is only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         /// <exception cref="T:System.ArgumentNullException">Thrown when the <paramref name="value" /> is <c>null</c>.</exception>
         public Func<string> GenerateId
         {
@@ -65,6 +76,31 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 Guard.NotNull<Func<string>>(value, nameof (value), "Requires a function to generate the operation parent ID");
                 _generateId = value;
+            }
+        }
+
+        internal void SetHeaderNameByFormat(HttpCorrelationFormat format)
+        {
+            switch (format)
+            {
+#if !NETSTANDARD
+
+                case HttpCorrelationFormat.W3C:
+                    _headerName = HeaderNames.TraceParent;
+                    break;
+                case HttpCorrelationFormat.Hierarchical:
+                    _headerName = HeaderNames.RequestId;
+                    break; 
+#else
+                case HttpCorrelationFormat.W3C:
+                    _headerName = "traceparent";
+                    break;
+                case HttpCorrelationFormat.Hierarchical:
+                    _headerName = "Request-Id";
+                    break;
+#endif
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(format), format, "Cannot set upstream header name because of an unknown HTTP correlation format");
             }
         }
     }

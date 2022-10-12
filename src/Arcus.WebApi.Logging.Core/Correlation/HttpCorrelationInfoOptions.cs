@@ -8,6 +8,21 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class HttpCorrelationInfoOptions : CorrelationInfoOptions
     {
+        private HttpCorrelationFormat _format = HttpCorrelationFormat.W3C;
+
+        /// <summary>
+        /// Gets or sets the format within the Arcus HTTP correlation system will correlate HTTP requests.
+        /// </summary>
+        public HttpCorrelationFormat Format
+        {
+            get => _format;
+            set
+            {
+                _format = value;
+                UpstreamService.SetHeaderNameByFormat(_format);
+            }
+        }
+
         /// <summary>
         /// Gets the correlation options specific for the operation ID.
         /// </summary>

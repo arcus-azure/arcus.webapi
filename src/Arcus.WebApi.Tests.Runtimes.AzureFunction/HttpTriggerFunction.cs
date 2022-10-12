@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
@@ -29,19 +30,21 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            if (_correlationService.TryHttpCorrelate(out string errorMessage))
+            using (HttpCorrelationResult result = _correlationService.CorrelateHttpRequest())
             {
-                CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
-                _logger.LogInformation(
-                    "Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]",
-                    correlationInfo.OperationId,
-                    correlationInfo.TransactionId);
+                if (result.IsSuccess)
+                {
+                    CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
+                    _logger.LogInformation("Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]", correlationInfo.OperationId, correlationInfo.TransactionId);
 
-                string json = JsonConvert.SerializeObject(correlationInfo);
-                return new OkObjectResult(json);
+                    string json = JsonConvert.SerializeObject(correlationInfo);
+                    return new OkObjectResult(json);
+                }
+                else
+                {
+                    return new BadRequestObjectResult(result.ErrorMessage);
+                }
             }
-
-            return new BadRequestObjectResult(errorMessage);
         }
     }
 }

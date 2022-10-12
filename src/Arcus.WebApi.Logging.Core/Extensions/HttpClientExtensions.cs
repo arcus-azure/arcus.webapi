@@ -18,6 +18,7 @@ namespace System.Net.Http
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
         /// <remarks>
+        ///     Note that when you use the W3C correlation system, you don't need to explicitly add HTTP correlation tracking because Microsoft tracks dependencies automatically for you.
         ///     This way of sending correlated HTTP requests is not needed if you used
         ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
         ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
@@ -48,6 +49,7 @@ namespace System.Net.Http
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
         /// <remarks>
+        ///     Note that when you use the W3C correlation system, you don't need to explicitly add HTTP correlation tracking because Microsoft tracks dependencies automatically for you.
         ///     This way of sending correlated HTTP requests is not needed if you used
         ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
         ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
@@ -81,6 +83,7 @@ namespace System.Net.Http
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
         /// <remarks>
+        ///     Note that when you use the W3C correlation system, you don't need to explicitly add HTTP correlation tracking because Microsoft tracks dependencies automatically for you.
         ///     This way of sending correlated HTTP requests is not needed if you used
         ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
         ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,
@@ -111,6 +114,7 @@ namespace System.Net.Http
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
         /// </summary>
         /// <remarks>
+        ///     Note that when you use the W3C correlation system, you don't need to explicitly add HTTP correlation tracking because Microsoft tracks dependencies automatically for you.
         ///     This way of sending correlated HTTP requests is not needed if you used
         ///     <see cref="IHttpClientBuilderExtensions.WithHttpCorrelationTracking(IHttpClientBuilder)"/> to register <see cref="HttpClient"/> instances.
         ///     This extension is only needed when the <see cref="HttpClient"/> used here is created by yourself,

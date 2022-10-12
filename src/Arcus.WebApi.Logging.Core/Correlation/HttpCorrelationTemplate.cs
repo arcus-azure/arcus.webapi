@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
@@ -7,6 +8,9 @@ using Arcus.Observability.Correlation;
 using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Http.Headers;
+using Microsoft.Net.Http.Headers;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -71,6 +75,138 @@ namespace Arcus.WebApi.Logging.Core.Correlation
                 requestHeaders = new HeaderDictionary();
             }
 
+            if (_options.Format is HttpCorrelationFormat.Hierarchical)
+            {
+                HttpCorrelationResult result = CorrelateHierarchical(requestHeaders, traceIdentifier);
+                return result;
+            }
+
+            if (_options.Format is HttpCorrelationFormat.W3C)
+            {
+                StringValues traceParent = requestHeaders.GetTraceParent();
+                if (IsTraceParentHeaderW3CCompliant(traceParent))
+                {
+                    HttpCorrelationResult result = CorrelateW3CForExistingParent(requestHeaders);
+                    return result;
+                }
+                else
+                {
+                    HttpCorrelationResult result = CorrelateW3CForNewParent(requestHeaders);
+                    return result;
+                }
+            }
+
+            throw new InvalidOperationException(
+                "Could not determine which type of HTTP correlation system to use (Hierarchical or W3C); we recommend to use W3C instead of the deprecated Hierarchical correlation system");
+        }
+
+        private HttpCorrelationResult CorrelateW3CForNewParent(IHeaderDictionary requestHeaders)
+        {
+            Activity newActivity = CreateNewActivity(requestHeaders);
+            string transactionId = newActivity.TraceId.ToHexString();
+            _logger.LogTrace("Correlation transaction ID '{TransactionId}' found in 'traceparent' HTTP request header", transactionId);
+
+            string operationId = newActivity.SpanId.ToHexString();
+            _logger.LogTrace("Correlation operation ID '{OperationId}' generated for incoming HTTP request", operationId);
+
+            newActivity.Start();
+            Activity.Current = newActivity;
+
+            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
+            return HttpCorrelationResult.Success(requestId: null);
+        }
+
+        private HttpCorrelationResult CorrelateW3CForExistingParent(IHeaderDictionary requestHeaders)
+        {
+            Activity newActivity = CreateNewActivity(requestHeaders);
+
+            // Format example:   00-4b1c0c8d608f57db7bd0b13c88ef865e-4c6893cc6c6cad10-00
+            // Format structure: 00-<-----trace/transaction-id----->-<span/parent-id>-00 
+            string traceParent = requestHeaders.GetTraceParent().TruncateString(55);
+            string transactionId = ActivityTraceId.CreateFromString(traceParent.AsSpan(3, 32)).ToHexString();
+            _logger.LogTrace("Correlation transaction ID '{TransactionId}' found in 'traceparent' HTTP request header", transactionId);
+
+            var parentSpanId = ActivitySpanId.CreateFromString(traceParent.AsSpan(36, 16));
+            string operationParentId = parentSpanId.ToHexString();
+            _logger.LogTrace("Correlation operation parent ID '{OperationParentId}' found in 'traceparent' HTTP request header", operationParentId);
+
+            newActivity.SetParentId(ActivityTraceId.CreateFromString(transactionId), parentSpanId);
+            newActivity.Start();
+            string operationId = newActivity.SpanId.ToHexString();
+            _logger.LogTrace("Correlation operation ID '{OperationId}' generated for incoming HTTP request", operationId);
+            Activity.Current = newActivity;
+
+            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId, operationParentId));
+            return HttpCorrelationResult.Success(traceParent);
+        }
+
+        private static Activity CreateNewActivity(IHeaderDictionary requestHeaders)
+        {
+            Activity currentActivity = Activity.Current;
+            var newActivity = new Activity("ActivityCreatedByHostingDiagnosticListener");
+            newActivity.TraceStateString = requestHeaders.GetTraceState();
+
+            if (currentActivity is null)
+            {
+                return newActivity;
+            }
+
+            foreach (KeyValuePair<string, string> tag in currentActivity.Tags)
+            {
+                newActivity.AddTag(tag.Key, tag.Value);
+            }
+
+            foreach (KeyValuePair<string, string> baggage in currentActivity.Baggage)
+            {
+                newActivity.AddBaggage(baggage.Key, baggage.Value);
+            }
+
+            const int contextHeaderKeyMaxLength = 50;
+            const int contextHeaderValueMaxLength = 1024;
+
+            if (!currentActivity.Baggage.Any())
+            {
+                string[] baggage1 = requestHeaders.GetCommaSeparatedValues("Correlation-Context");
+                if (baggage1 != StringValues.Empty)
+                {
+                    foreach (string item in baggage1)
+                    {
+                        string[] parts = item.Split('=');
+                        if (parts.Length == 2)
+                        {
+                            string itemName = parts[0].TruncateString(contextHeaderKeyMaxLength);
+                            string itemValue = parts[1].TruncateString(contextHeaderValueMaxLength);
+                            currentActivity.AddBaggage(itemName.Trim(), itemValue.Trim());
+                        }
+                    }
+                }
+            }
+
+            return newActivity;
+        }
+
+        private static bool IsTraceParentHeaderW3CCompliant(StringValues ids)
+        {
+            if (ids == StringValues.Empty)
+            {
+                return false;
+            }
+
+            string id = ids;
+            if (id.Length != 55 
+                || ('0' > id[0] || id[0] > '9') 
+                && ('a' > id[0] || id[0] > 'f') 
+                || ('0' > id[1] || id[1] > '9') 
+                && ('a' > id[1] || id[1] > 'f'))
+            {
+                return false;
+            }
+
+            return id[0] != 'f' || id[1] != 'f';
+        }
+
+        private HttpCorrelationResult CorrelateHierarchical(IHeaderDictionary requestHeaders, string traceIdentifier)
+        {
             if (TryGetTransactionId(requestHeaders, out string alreadyPresentTransactionId))
             {
                 if (!_options.Transaction.AllowInRequest)

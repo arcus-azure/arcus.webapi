@@ -3,6 +3,7 @@ using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -74,6 +75,23 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
 
+            return AddHttpCorrelation(services, configureOptions, configureMicrosoftApplicationInsightsOptions: null);
+        }
+
+        /// <summary>
+        /// Adds operation and transaction correlation to the application.
+        /// </summary>
+        /// <param name="services">The services collection containing the dependency injection services.</param>
+        /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
+        /// <param name="configureMicrosoftApplicationInsightsOptions"></param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
+        public static IServiceCollection AddHttpCorrelation(
+            this IServiceCollection services,
+            Action<HttpCorrelationInfoOptions> configureOptions,
+            Action<ApplicationInsightsServiceOptions> configureMicrosoftApplicationInsightsOptions)
+        {
+            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
+
             services.AddHttpContextAccessor();
             services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
             {
@@ -82,17 +100,27 @@ namespace Microsoft.Extensions.DependencyInjection
             });
             services.AddScoped<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
-            services.Configure<HttpCorrelationInfoOptions>(options => configureOptions?.Invoke(options));
+
+            var options = new HttpCorrelationInfoOptions();
+            configureOptions?.Invoke(options);
 
             services.AddScoped(serviceProvider =>
             {
-                var options = serviceProvider.GetRequiredService<IOptions<HttpCorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
                 
-                return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
+                return new HttpCorrelation(Options.Options.Create(options), httpContextAccessor, correlationInfoAccessor, logger);
             });
+
+            if (options.Format is HttpCorrelationFormat.W3C)
+            {
+                services.AddApplicationInsightsTelemetry(opt =>
+                {
+                    opt.EnableRequestTrackingTelemetryModule = false;
+                    configureMicrosoftApplicationInsightsOptions?.Invoke(opt);
+                }); 
+            }
 
             return services;
         }
