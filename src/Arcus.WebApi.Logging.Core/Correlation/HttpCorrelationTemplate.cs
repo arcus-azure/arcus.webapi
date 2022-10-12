@@ -193,11 +193,15 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             }
 
             string id = ids;
+            bool firstPartOutsideBoundaries = 
+                (id[0] < '0' || id[0] > '9') && (id[0] < 'a' || id[0] > 'f');
+
+            bool secondPartOutsideBoundaries = 
+                (id[1] < '0' || id[1] > '9') && (id[1] < 'a' || id[1] > 'f');
+            
             if (id.Length != 55 
-                || ('0' > id[0] || id[0] > '9') 
-                && ('a' > id[0] || id[0] > 'f') 
-                || ('0' > id[1] || id[1] > '9') 
-                && ('a' > id[1] || id[1] > 'f'))
+                || firstPartOutsideBoundaries 
+                || secondPartOutsideBoundaries)
             {
                 return false;
             }
