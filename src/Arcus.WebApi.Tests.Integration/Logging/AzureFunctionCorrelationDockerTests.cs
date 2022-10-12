@@ -83,7 +83,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                string actual = GetResponseHeader(response, "traceparent");
+                string actual = GetResponseHeader(response, "X-Transaction-Id");
                 Assert.Equal(expected, actual);
             }
         }
@@ -105,7 +105,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                string actual = GetResponseHeader(response, "traceparent");
+                string actual = GetResponseHeader(response, "X-Transaction-Id");
                 Assert.Equal(expected, actual);
             }
         }
