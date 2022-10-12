@@ -81,6 +81,12 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
         internal void SetHeaderNameByFormat(HttpCorrelationFormat format)
         {
+            bool headerNameIsCustom = _headerName != "traceparent" && _headerName != "Request-Id";
+            if (headerNameIsCustom)
+            {
+                return;
+            }
+
             switch (format)
             {
 #if !NETSTANDARD

@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.Testing.Logging;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
@@ -70,12 +71,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
 
         [Fact]
-        public async Task SendRequest_WithSerilogCorrelationenrichment_ReturnsOkWithDifferentOperationIdAndSameTransactionId()
+        public async Task SendRequest_WithSerilogCorrelationEnrichment_ReturnsOkWithDifferentOperationIdAndSameTransactionId()
         {
             // Arrange
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation())
+                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical))
                 .PreConfigure(app => app.UseHttpCorrelation())
                 .ConfigureHost(host => host.UseSerilog((context, serviceProvider, config) =>
                     config.Enrich.WithHttpCorrelationInfo(serviceProvider)
@@ -109,7 +110,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
         
         [Fact]
-        public async Task SendRequest_WithSerilogCorrelationenrichment_ReturnsOkWithDifferentOperationIdAndDifferentTransactionId()
+        public async Task SendRequest_WithSerilogCorrelationEnrichment_ReturnsOkWithDifferentOperationIdAndDifferentTransactionId()
         {
             // Arrange
             var spySink = new InMemorySink();

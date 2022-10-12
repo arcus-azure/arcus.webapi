@@ -58,7 +58,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                         dependencyIdAtServiceB = AssertUpstreamServiceHeader(context);
                         AssertHeaderValue(context, HttpCorrelationProperties.TransactionIdHeaderName, generatedTransactionId);
                     });
-                    services.AddHttpCorrelation()
+                    services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical)
                             .AddHttpClient("from-service-a-to-service-b")
                             .WithHttpCorrelationTracking();
                 })
@@ -103,7 +103,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                         dependencyIdAtServiceB = AssertUpstreamServiceHeader(context);
                         AssertHeaderValue(context, HttpCorrelationProperties.TransactionIdHeaderName, transactionId);
                     });
-                    services.AddHttpCorrelation()
+                    services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical)
                             .AddHttpClient("from-service-a-to-service-b")
                             .WithHttpCorrelationTracking();
                 })
@@ -156,6 +156,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     });
                     services.AddHttpCorrelation(options =>
                             {
+                                options.Format = HttpCorrelationFormat.Hierarchical;
                                 options.Transaction.HeaderName = transactionIdHeaderName;
                                 options.UpstreamService.HeaderName = dependencyIdHeaderName;
                             })
@@ -228,6 +229,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     services.AddHttpClient("from-service-a-to-service-b");
                     services.AddHttpCorrelation(options =>
                     {
+                        options.Format = HttpCorrelationFormat.Hierarchical;
                         options.Transaction.HeaderName = transactionIdHeaderName;
                         options.UpstreamService.HeaderName = dependencyIdHeaderName;
                     });
