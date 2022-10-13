@@ -169,10 +169,6 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         /// <returns>A collection of headers and the header contents that must be logged via request-tracking.</returns>
         protected virtual IDictionary<string, StringValues> SanitizeRequestHeaders(IDictionary<string, StringValues> requestHeaders)
         {
-            if (requestHeaders.TryGetValue("value", out StringValues value))
-            {
-                requestHeaders["value"] = "<redacted>";
-            }
             return requestHeaders.Where(header => Options.OmittedHeaderNames?.Contains(header.Key) == false);
         }
 
