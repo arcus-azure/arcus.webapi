@@ -75,23 +75,6 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
 
-            return AddHttpCorrelation(services, configureOptions, configureMicrosoftApplicationInsightsOptions: null);
-        }
-
-        /// <summary>
-        /// Adds operation and transaction correlation to the application.
-        /// </summary>
-        /// <param name="services">The services collection containing the dependency injection services.</param>
-        /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
-        /// <param name="configureMicrosoftApplicationInsightsOptions"></param>
-        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
-        public static IServiceCollection AddHttpCorrelation(
-            this IServiceCollection services,
-            Action<HttpCorrelationInfoOptions> configureOptions,
-            Action<ApplicationInsightsServiceOptions> configureMicrosoftApplicationInsightsOptions)
-        {
-            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
-
             services.AddHttpContextAccessor();
             services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
             {
@@ -118,7 +101,6 @@ namespace Microsoft.Extensions.DependencyInjection
                 services.AddApplicationInsightsTelemetry(opt =>
                 {
                     opt.EnableRequestTrackingTelemetryModule = false;
-                    configureMicrosoftApplicationInsightsOptions?.Invoke(opt);
                 }); 
             }
 
