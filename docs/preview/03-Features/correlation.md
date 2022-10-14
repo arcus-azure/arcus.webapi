@@ -6,7 +6,7 @@ layout: default
 # Correlation Between HTTP Requests (W3C)
 The `Arcus.WebApi.Logging` library provides a way to add correlation between HTTP requests. 
 
-🚩 This page describes W3C HTTP correlation, see [this page](./correlation-hierarchical.md) for information on the (deprecated) Hierarchical HTTP correlation.
+🚩 This page describes  [W3C Trace-Context](https://www.w3.org/TR/trace-context-1/) correlation, see [this page](./correlation-hierarchical.md) for information on the (deprecated) Hierarchical HTTP correlation.
 
 ## How This Works
 This diagram shows an example of a user interacting with service A that calls another service B.
