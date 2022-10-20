@@ -56,8 +56,6 @@ builder.Services.AddHttpClient("from-service-a-to-service-b");
 WebApplication app = builder.Build();
 ```
 
-Then, the [created `HttpClient`](https://docs.microsoft.com/en-us/dotnet/architecture/microservices/implement-resilient-applications/use-httpclientfactory-to-implement-resilient-http-requests) will be enhanced with HTTP correlation tracking. This means that the request will be altered to include the HTTP correlation information and the endpoint will be tracked as a [HTTP dependency telemetry](https://observability.arcus-azure.net/Features/writing-different-telemetry-types#measuring-http-dependencies).
-
 ### Receiving side
 To make sure the correlation is added to the HTTP response, following additions have to be made:
 
