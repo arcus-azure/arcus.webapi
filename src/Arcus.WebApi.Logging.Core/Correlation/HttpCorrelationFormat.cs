@@ -6,7 +6,7 @@
     public enum HttpCorrelationFormat
     {
         /// <summary>
-        /// Uses the W3C HTTP correlation system with traceparent and tracestate to represent parent-child relationship.
+        /// Uses the W3C HTTP Trace Context correlation system with traceparent and tracestate to represent parent-child relationship.
         /// </summary>
         W3C,
 

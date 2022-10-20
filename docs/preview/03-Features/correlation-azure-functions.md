@@ -11,7 +11,7 @@ The `Arcus.WebApi.Logging.AzureFunctions` library provides a way to add correlat
 
 See [the general HTTP correlation page](correlation.md) to get a grasp on how HTTP correlation works.
 
-🚩 By default, the W3C is used as HTTP correlation format, but you can go back to the (deprecated) Hierarchical system we had before, by passing `HttpCorrelationFormat.Hierarchical` to the `services.AddHttpCorrelation()`.
+🚩 By default, the W3C Trace-Context specification is used as the default HTTP correlation format in Arcus, but you can go back to the (deprecated) Hierarchical system we had before, by passing `HttpCorrelationFormat.Hierarchical` to the `services.AddHttpCorrelation()`.
 
 ## Installation
 
