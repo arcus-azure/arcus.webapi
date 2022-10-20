@@ -75,6 +75,7 @@ app.UseRequestTracking();
 
 > ⚡ To use HTTP correlation in Azure Functions, see [this dedicated page](correlation-azure-functions.md), as the configuration on the receiving is slightly different.
 
+The `UseRequestTracking` extension will make sure that the incoming HTTP request will be tracked as a 'request' in Application Insights (if configured).
 For more information on HTTP request tracking, see [our dedicated feature documentation page](./logging.md);
 
 ## Configuration
