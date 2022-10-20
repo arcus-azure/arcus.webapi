@@ -36,7 +36,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions());
+            var options = Options.Create(new HttpCorrelationInfoOptions { Format = HttpCorrelationFormat.Hierarchical });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act

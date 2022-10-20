@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
+using Bogus;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Xunit;
@@ -21,6 +23,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
         private static readonly TestConfig TestConfig = TestConfig.Create();
         private static readonly HttpClient HttpClient = new HttpClient();
+        private static readonly Faker BogusGenerator = new Faker();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="AzureFunctionCorrelationDockerTests"/> class.
@@ -42,7 +45,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
-            using (HttpResponseMessage response = await HttpClient.GetAsync(url))
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Remove("traceparent");
+
+            using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
@@ -65,9 +71,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithTransactionIdHeader_ResponseWithSameCorrelationHeader(string url)
         {
             // Arrange
-            string expected = $"transaction-{Guid.NewGuid()}";
+            string expected = BogusGenerator.Random.Hexadecimal(32, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add(TransactionIdHeaderName, expected);
+            request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
@@ -84,12 +90,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
         [Theory]
         [MemberData(nameof(RunningAzureFunctionsDockerProjectUrls))]
-        public async Task SendRequest_WithRequestIdHeader_ResponseWithDifferentRequestIdHeader(string url)
+        public async Task SendRequest_WithRequestIdHeader_ResponseWithSameRequestIdHeader(string url)
         {
             // Arrange
-            string expected = $"parent{Guid.NewGuid()}".Replace("-", "");
+            string expected = BogusGenerator.Random.Hexadecimal(16, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Add(UpstreamServiceHeaderName, expected);
+            request.Headers.Add("traceparent", $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{expected}-00");
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
@@ -99,8 +105,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                string actual = GetResponseHeader(response, UpstreamServiceHeaderName);
-                Assert.Equal(expected, actual);
+                string actual = GetResponseHeader(response, "traceparent");
+                Assert.Contains(expected, actual);
             }
         }
 

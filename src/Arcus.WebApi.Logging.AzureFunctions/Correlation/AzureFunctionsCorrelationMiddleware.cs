@@ -31,27 +31,29 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             var service = context.InstanceServices.GetRequiredService<AzureFunctionsHttpCorrelation>();
             HttpRequestData request = await DetermineHttpRequestAsync(context);
 
-            HttpCorrelationResult result = service.TrySettingCorrelationFromRequest(request, context.InvocationId);
-            if (result.IsSuccess)
+            using (HttpCorrelationResult result = service.TrySettingCorrelationFromRequest(request, context.InvocationId))
             {
-                try
+                if (result.IsSuccess)
                 {
-                    await next(context);
+                    try
+                    {
+                        await next(context);
+                    }
+                    finally
+                    {
+                        HttpResponseData response = context.GetHttpResponseData();
+                        service.SetCorrelationHeadersInResponse(response, result);
+                    }
                 }
-                finally
+                else
                 {
-                    HttpResponseData response = context.GetHttpResponseData();
-                    service.SetCorrelationHeadersInResponse(response, result);
-                }
-            }
-            else
-            {
-                ILogger<AzureFunctionsCorrelationMiddleware> logger = context.GetLogger<AzureFunctionsCorrelationMiddleware>();
-                logger?.LogError("Unable to correlate the incoming request, returning 400 BadRequest (reason: {ErrorMessage})", result.ErrorMessage);
+                    ILogger<AzureFunctionsCorrelationMiddleware> logger = context.GetLogger<AzureFunctionsCorrelationMiddleware>();
+                    logger?.LogError("Unable to correlate the incoming request, returning 400 BadRequest (reason: {ErrorMessage})", result.ErrorMessage);
 
-                HttpResponseData response = request.CreateResponse(HttpStatusCode.BadRequest);
-                await response.WriteStringAsync(result.ErrorMessage);
-                context.GetInvocationResult().Value = response;
+                    HttpResponseData response = request.CreateResponse(HttpStatusCode.BadRequest);
+                    await response.WriteStringAsync(result.ErrorMessage);
+                    context.GetInvocationResult().Value = response;
+                }
             }
         }
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Net.Http;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             // Arrange
             var services = new ServiceCollection();
-            services.AddHttpCorrelation();
+            services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical);
             IHttpClientBuilder builder = services.AddHttpClient("service-a");
 
             // Act

@@ -57,6 +57,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             var accessor = new StubHttpCorrelationInfoAccessor();
             AzureFunctionsHttpCorrelation correlation = CreateHttpCorrelation(accessor, new HttpCorrelationInfoOptions()
             {
+                Format = HttpCorrelationFormat.Hierarchical,
                 Transaction = { AllowInRequest = false }
             });
 
@@ -571,11 +572,14 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             AssertResponseHeader(response, headerName, requestId);
         }
 
-        private AzureFunctionsHttpCorrelation CreateHttpCorrelation(
+        private static AzureFunctionsHttpCorrelation CreateHttpCorrelation(
             StubHttpCorrelationInfoAccessor accessor,
             HttpCorrelationInfoOptions options = null)
         {
-            var correlation = new AzureFunctionsHttpCorrelation(options ?? new HttpCorrelationInfoOptions(), accessor, NullLogger<AzureFunctionsHttpCorrelation>.Instance);
+            options = options ?? new HttpCorrelationInfoOptions();
+            options.Format = HttpCorrelationFormat.Hierarchical;
+
+            var correlation = new AzureFunctionsHttpCorrelation(options, accessor, NullLogger<AzureFunctionsHttpCorrelation>.Instance);
             return correlation;
         }
 

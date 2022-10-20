@@ -35,6 +35,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets or sets the function to generate the operation ID when the <see cref="P:Arcus.Observability.Correlation.CorrelationInfoOperationOptions.IncludeInResponse" /> is set to <c>true</c> (default: <c>true</c>).
         /// </summary>
+        /// <remarks>
+        ///     This is only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         public Func<string> GenerateId
         {
             get => _generateId;

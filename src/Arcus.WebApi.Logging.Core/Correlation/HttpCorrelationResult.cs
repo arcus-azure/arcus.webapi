@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using GuardNet;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
@@ -7,7 +8,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// Represents the result of the <see cref="HttpCorrelationTemplate{THttpRequest,THttpResponse}.TrySettingCorrelationFromRequest"/>
     /// whether the incoming HTTP request was successfully correlated into the application or not.
     /// </summary>
-    public class HttpCorrelationResult
+    public class HttpCorrelationResult : IDisposable
     {
         private HttpCorrelationResult(bool isSuccess, string requestId, string errorMessage)
         {
@@ -58,6 +59,18 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             Guard.NotNullOrWhitespace(errorMessage, nameof(errorMessage), "Requires an error user message that describes why the HTTP correlation process failed on the current HTTP request");
             return new HttpCorrelationResult(isSuccess: false, requestId: null, errorMessage);
+        }
+
+        /// <summary>
+        /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
+        /// </summary>
+        public void Dispose()
+        {
+            Activity activity = Activity.Current;
+            if (activity != null && activity.OperationName == "ActivityCreatedByHostingDiagnosticListener")
+            {
+                activity.Stop();
+            }
         }
     }
 }

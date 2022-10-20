@@ -16,6 +16,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an additional HTTP message handler that will enrich the send HTTP request with HTTP correlation.
         /// </summary>
+        /// <remarks>
+        ///     Note that when you use the W3C correlation system, you don't need to explicitly add HTTP correlation tracking because Microsoft tracks dependencies automatically for you.
+        /// </remarks>
         /// <param name="builder">The builder instance to add the HTTP message handler.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         /// <exception cref="InvalidOperationException">Thrown when the no <see cref="IHttpContextAccessor"/> was found in the dependency injection container.</exception>
@@ -28,6 +31,9 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <summary>
         /// Adds an additional HTTP message handler that will enrich the send HTTP request with HTTP correlation.
         /// </summary>
+        /// <remarks>
+        ///     Note that when you use the W3C correlation system, you don't need to explicitly add HTTP correlation tracking because Microsoft tracks dependencies automatically for you.
+        /// </remarks>
         /// <param name="builder">The builder instance to add the HTTP message handler.</param>
         /// <param name="configureOptions">The function to configure additional options that influence how the HTTP correlation will be added and tracked.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>

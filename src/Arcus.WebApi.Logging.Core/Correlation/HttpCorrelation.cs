@@ -120,6 +120,7 @@ namespace Arcus.WebApi.Logging.Correlation
 
             var httpOptions = new HttpCorrelationInfoOptions
             {
+                Format = HttpCorrelationFormat.Hierarchical,
                 Operation =
                 {
                     GenerateId = options.Operation.GenerateId,
@@ -180,7 +181,37 @@ namespace Arcus.WebApi.Logging.Correlation
         /// </returns>
         /// <exception cref="ArgumentNullException">Thrown when the given <see cref="HttpContext"/> is not available to correlate the request with the response.</exception>
         /// <exception cref="ArgumentException">Thrown when the given <see cref="HttpContext"/> doesn't have any response headers to set the correlation headers.</exception>
+        [Obsolete("Use the " + nameof(CorrelateHttpRequest) + " instead which let's you decide the current scope of the received HTTP request in which additional dependencies should be tracked")]
         public bool TryHttpCorrelate(out string errorMessage)
+        {
+            HttpContext httpContext = _httpContextAccessor.HttpContext;
+
+            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context from the HTTP context accessor to start correlating the HTTP request");
+            Guard.For<ArgumentException>(() => httpContext.Response is null, "Requires a 'Response'");
+            Guard.For<ArgumentException>(() => httpContext.Response.Headers is null, "Requires a 'Response' object with headers");
+
+            using (HttpCorrelationResult result = TrySettingCorrelationFromRequest(httpContext.Request, httpContext.TraceIdentifier))
+            {
+                if (result.IsSuccess)
+                {
+                    AddCorrelationResponseHeaders(httpContext, result.RequestId);
+                
+                    errorMessage = null;
+                    return true;
+                }
+
+                errorMessage = result.ErrorMessage;
+                return false;
+            }
+        }
+
+        /// <summary>
+        /// Correlate the current HTTP request according to the previously configured <see cref="CorrelationInfoOptions"/>;
+        /// returning an <see cref="HttpCorrelationResult"/> which acts as the current scope in which additional dependencies should be tracked.
+        /// </summary>
+        /// <exception cref="ArgumentNullException">Thrown when the given <see cref="HttpContext"/> is not available to correlate the request with the response.</exception>
+        /// <exception cref="ArgumentException">Thrown when the given <see cref="HttpContext"/> doesn't have any response headers to set the correlation headers.</exception>
+        public HttpCorrelationResult CorrelateHttpRequest()
         {
             HttpContext httpContext = _httpContextAccessor.HttpContext;
 
@@ -192,13 +223,9 @@ namespace Arcus.WebApi.Logging.Correlation
             if (result.IsSuccess)
             {
                 AddCorrelationResponseHeaders(httpContext, result.RequestId);
-                
-                errorMessage = null;
-                return true;
             }
 
-            errorMessage = result.ErrorMessage;
-            return false;
+            return result;
         }
 
         /// <summary>

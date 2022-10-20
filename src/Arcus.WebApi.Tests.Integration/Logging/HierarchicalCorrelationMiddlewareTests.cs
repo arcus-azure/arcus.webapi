@@ -21,7 +21,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 {
     [Collection(Constants.TestCollections.Integration)]
     [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
-    public class CorrelationMiddlewareTests
+    public class HierarchicalCorrelationMiddlewareTests
     {
         private const string DefaultOperationId = HttpCorrelationProperties.OperationIdHeaderName, 
                              DefaultTransactionId = HttpCorrelationProperties.TransactionIdHeaderName,
@@ -30,9 +30,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         private readonly ILogger _logger;
         
         /// <summary>
-        /// Initializes a new instance of the <see cref="CorrelationMiddlewareTests" /> class.
+        /// Initializes a new instance of the <see cref="HierarchicalCorrelationMiddlewareTests" /> class.
         /// </summary>
-        public CorrelationMiddlewareTests(ITestOutputHelper outputWriter)
+        public HierarchicalCorrelationMiddlewareTests(ITestOutputHelper outputWriter)
         {
             _logger = new XunitTestLogger(outputWriter);
         }
@@ -42,7 +42,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Transaction.AllowInRequest = false))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
+                    opt.Transaction.AllowInRequest = false;
+                }))
                 .Configure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -67,7 +71,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequest_WithCorrelationInfoOptionsNotGenerateTransactionId_ResponseWithoutTransactionId()
         {
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Transaction.GenerateWhenNotSpecified = false))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Transaction.GenerateWhenNotSpecified = false;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -94,7 +101,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Transaction.IncludeInResponse = false))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Transaction.IncludeInResponse = false;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var service = await TestApiServer.StartNewAsync(options, _logger))
@@ -123,7 +133,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             var expectedTransactionId = $"transaction-{Guid.NewGuid():N}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Transaction.GenerateId = () => expectedTransactionId))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Transaction.GenerateId = () => expectedTransactionId;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -152,7 +165,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Operation.IncludeInResponse = true))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Operation.IncludeInResponse = true;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -182,7 +198,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             var operationIdHeaderName = "My-Operation-ID";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Operation.HeaderName = operationIdHeaderName))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Operation.HeaderName = operationIdHeaderName;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -212,7 +231,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(options => options.UpstreamService.ExtractFromRequest = false))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
+                    opt.UpstreamService.ExtractFromRequest = false;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -243,7 +266,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string expectedTransactionId = $"transaction-{Guid.NewGuid()}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation())
+                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -273,7 +296,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string expected = $"parent{Guid.NewGuid()}".Replace("-", "");
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation())
+                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -304,7 +327,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             var expectedOperationId = $"operation-{Guid.NewGuid():N}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Operation.GenerateId = () => expectedOperationId))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Operation.GenerateId = () => expectedOperationId;
+                }))
                 .PreConfigure(app => app.UseTraceIdentifier(opt => opt.EnableTraceIdentifier = false)
                                         .UseHttpCorrelation());
 
@@ -337,7 +363,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var operationParentId = Guid.NewGuid().ToString();
             var requestId = $"|{Guid.NewGuid()}.{operationParentId}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.UpstreamService.ExtractFromRequest = extractFromRequest))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
+                    opt.UpstreamService.ExtractFromRequest = extractFromRequest;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -368,7 +398,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.UpstreamService.ExtractFromRequest = extractFromRequest))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
+                    opt.UpstreamService.ExtractFromRequest = extractFromRequest;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -402,7 +436,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var operationParentId = Guid.NewGuid().ToString();
             var requestId = $"|{Guid.NewGuid()}.{operationParentId}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.OperationParent.ExtractFromRequest = extractFromRequest))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.OperationParent.ExtractFromRequest = extractFromRequest;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -436,7 +473,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.OperationParent.ExtractFromRequest = extractFromRequest))
+                .ConfigureServices(services => services.AddHttpCorrelation(opt =>
+                {
+                    opt.OperationParent.ExtractFromRequest = extractFromRequest;
+                }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -512,6 +552,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.UpstreamService.ExtractFromRequest = extractFromRequest;
                     opt.UpstreamService.OperationParentIdHeaderName = operationParentIdHeaderName;
                 }))
@@ -545,7 +586,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             var correlationInfo = new CorrelationInfo($"operation-{Guid.NewGuid()}", $"transaction-{Guid.NewGuid()}", $"parent{Guid.NewGuid()}".Replace("-", ""));
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation())
+                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -577,7 +618,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddHttpCorrelation()
+                .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical)
                                                        .AddScoped<IHttpCorrelationInfoAccessor, NullCorrelationInfoAccessor>())
                 .PreConfigure(app => app.UseHttpCorrelation());
 
