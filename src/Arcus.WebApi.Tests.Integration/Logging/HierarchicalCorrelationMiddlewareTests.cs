@@ -619,7 +619,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt => opt.Format = HttpCorrelationFormat.Hierarchical)
-                                                       .AddScoped<IHttpCorrelationInfoAccessor, NullCorrelationInfoAccessor>())
+                                                       .AddSingleton<IHttpCorrelationInfoAccessor, NullCorrelationInfoAccessor>())
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))

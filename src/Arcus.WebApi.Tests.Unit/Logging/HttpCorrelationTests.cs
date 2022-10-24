@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
+using Arcus.WebApi.Tests.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -106,7 +107,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions());
+            var options = Options.Create(new HttpCorrelationInfoOptions { Format = HttpCorrelationFormat.Hierarchical });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act / Assert
@@ -131,7 +132,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
             var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions());
+            var options = Options.Create(new HttpCorrelationInfoOptions { Format = HttpCorrelationFormat.Hierarchical });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act / Assert

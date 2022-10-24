@@ -8,6 +8,7 @@ using Arcus.WebApi.Logging.AzureFunctions;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -63,6 +64,8 @@ namespace Microsoft.Extensions.Hosting
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
 
+            builder.Services.AddApplicationInsightsTelemetryWorkerService();
+
             builder.Services.AddScoped<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             builder.Services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             builder.Services.AddScoped<IHttpCorrelationInfoAccessor, AzureFunctionsHttpCorrelationInfoAccessor>();
@@ -75,7 +78,16 @@ namespace Microsoft.Extensions.Hosting
                 var correlationAccessor = provider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = provider.GetService<ILogger<AzureFunctionsHttpCorrelation>>();
 
-                return new AzureFunctionsHttpCorrelation(options, correlationAccessor, logger);
+                switch (options.Format)
+                {
+                    case HttpCorrelationFormat.W3C:
+                        var client = provider.GetRequiredService<TelemetryClient>();
+                        return new AzureFunctionsHttpCorrelation(client, options, correlationAccessor, logger);
+                    case HttpCorrelationFormat.Hierarchical:
+                        return new AzureFunctionsHttpCorrelation(options, correlationAccessor, logger);
+                    default:
+                        throw new ArgumentOutOfRangeException(nameof(options), options.Format, "Unknown HTTP correlation format");
+                }
             });
 
             builder.UseMiddleware<AzureFunctionsCorrelationMiddleware>();

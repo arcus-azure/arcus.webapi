@@ -10,7 +10,6 @@
   
   <ItemGroup>
     <PackageReference Include="Arcus.Testing.Logging" Version="0.4.0" />
-    <PackageReference Include="Bogus" Version="29.0.2" />
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.0" />
@@ -34,10 +33,6 @@
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Logging.AzureFunctions\Arcus.WebApi.Logging.AzureFunctions.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
-    
   </ItemGroup>
 
 </Project>

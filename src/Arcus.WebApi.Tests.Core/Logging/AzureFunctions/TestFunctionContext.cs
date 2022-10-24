@@ -34,7 +34,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
         {
             return Create(context =>
             {
-                var request = new TestHttpRequestData(context);
+                var request = TestHttpRequestData.Generate(context);
                 configureHttpRequest?.Invoke(request);
                 return request;
             }, configureServices);

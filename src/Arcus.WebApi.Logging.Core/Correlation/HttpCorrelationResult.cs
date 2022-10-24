@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using Arcus.Observability.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -10,6 +14,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class HttpCorrelationResult : IDisposable
     {
+        private readonly TelemetryClient _telemetryClient;
+        private readonly IOperationHolder<RequestTelemetry> _operationHolder;
+
         private HttpCorrelationResult(bool isSuccess, string requestId, string errorMessage)
         {
             Guard.For(() => isSuccess && errorMessage != null, new ArgumentException("Cannot create a successful HTTP correlation result with an error user message", nameof(errorMessage)));
@@ -18,6 +25,17 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             RequestId = requestId;
             ErrorMessage = errorMessage;
             IsSuccess = isSuccess;
+        }
+
+        private HttpCorrelationResult(
+            CorrelationInfo correlationInfo,
+            IOperationHolder<RequestTelemetry> operationHolder,
+            TelemetryClient client)
+        {
+            _telemetryClient = client;
+            _operationHolder = operationHolder;
+            CorrelationInfo = correlationInfo;
+            IsSuccess = true;
         }
 
         /// <summary>
@@ -37,6 +55,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// Gets the value indicating whether or not this result represents a successful HTTP correlation on the current HTTP request.
         /// </summary>
         public bool IsSuccess { get; }
+
+        /// <summary>
+        /// Gets the determined HTTP correlation for this result.
+        /// </summary>
+        internal CorrelationInfo CorrelationInfo { get; }
 
         /// <summary>
         /// Creates an <see cref="HttpCorrelationResult"/> representing a successful HTTP correlation on the current HTTP request.
@@ -62,6 +85,25 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="client"></param>
+        /// <param name="transactionId"></param>
+        /// <param name="operationParentId"></param>
+        /// <returns></returns>
+        public static HttpCorrelationResult Success(TelemetryClient client, string transactionId, string operationParentId)
+        {
+            var telemetry = new RequestTelemetry();
+            telemetry.Context.Operation.Id = transactionId;
+            telemetry.Context.Operation.ParentId = operationParentId;
+
+            IOperationHolder<RequestTelemetry> operationHolder = client.StartOperation(telemetry);
+            var correlationInfo = new CorrelationInfo(telemetry.Id, transactionId, operationParentId);
+
+            return new HttpCorrelationResult(correlationInfo, operationHolder, client);
+        }
+
+        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -70,6 +112,18 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             if (activity != null && activity.OperationName == "ActivityCreatedByHostingDiagnosticListener")
             {
                 activity.Stop();
+            }
+
+            if (_telemetryClient != null)
+            {
+                _telemetryClient.TelemetryConfiguration.DisableTelemetry = true;
+            }
+
+            _operationHolder?.Dispose();
+
+            if (_telemetryClient != null)
+            {
+                _telemetryClient.TelemetryConfiguration.DisableTelemetry = false;
             }
         }
     }

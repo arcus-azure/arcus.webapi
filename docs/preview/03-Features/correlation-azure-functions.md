@@ -62,16 +62,19 @@ public class MyHttpFunction
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
         ILogger log)
     {
-        if (_httpCorrelation.TryHttpCorrelate(out string errorMessage))
+        log.LogInformation("C# HTTP trigger function processed a request.");
+
+        using (HttpCorrelationResult result = _httpCorrelation.CorrelateHttpRequest())
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
+            if (result.IsSuccess)
+            {
+                 // Easily access correlation information in your application
+                 CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
+                 return new OkObjectResult("This HTTP triggered function executed successfully.");
+            }
 
-            // Easily access correlation information in your application
-            CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
-            return new OkObjectResult("This HTTP triggered function executed successfully.");
+            return new BadRequestObjectResult(result.ErrorMessage);
         }
-
-        return new BadRequestObjectResult(errorMessage);
     }
 ```
 

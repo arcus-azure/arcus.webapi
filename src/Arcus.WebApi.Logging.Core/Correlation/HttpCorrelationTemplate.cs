@@ -9,8 +9,7 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Generic;
-using Microsoft.AspNetCore.Http.Headers;
-using Microsoft.Net.Http.Headers;
+using Microsoft.ApplicationInsights;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -21,6 +20,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         where THttpRequest : class 
         where THttpResponse : class
     {
+        private readonly TelemetryClient _telemetryClient;
         private readonly HttpCorrelationInfoOptions _options;
         private readonly IHttpCorrelationInfoAccessor _correlationInfoAccessor;
         private readonly ILogger _logger;
@@ -50,6 +50,30 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         }
 
         /// <summary>
+        /// Initializes a new instance of the <see cref="HttpCorrelationTemplate{THttpRequest,THttpResponse}" /> class.
+        /// </summary>
+        /// <param name="client">The client instance to send out automatic dependency telemetry for built-in Microsoft dependencies.</param>
+        /// <param name="options">The options controlling how the correlation should happen.</param>
+        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
+        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> or <paramref name="correlationInfoAccessor"/> is <c>null</c>.</exception>
+        protected HttpCorrelationTemplate(
+            TelemetryClient client,
+            HttpCorrelationInfoOptions options,
+            IHttpCorrelationInfoAccessor correlationInfoAccessor,
+            ILogger logger)
+        {
+            Guard.NotNull(client, nameof(client), "Requires a client instance to send out automatic dependency telemetry for built-in Microsoft dependencies");
+            Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
+            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
+
+            _telemetryClient = client;
+            _options = options;
+            _correlationInfoAccessor = correlationInfoAccessor;
+            _logger = logger ?? NullLogger.Instance;
+        }
+
+        /// <summary>
         /// Correlate the current HTTP request according to the previously configured <see cref="HttpCorrelationInfoOptions"/>;
         /// returning an <see cref="HttpCorrelationResult"/> reflecting the success status of the operation.
         /// </summary>
@@ -67,6 +91,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         public HttpCorrelationResult TrySettingCorrelationFromRequest(THttpRequest request, string traceIdentifier)
         {
             Guard.NotNull(request, nameof(request), "Requires a HTTP request to determine the HTTP correlation of the application");
+            Guard.For<InvalidOperationException>(
+                () => _options.Format is HttpCorrelationFormat.W3C && _telemetryClient is null && Activity.Current is null, 
+                "Requires a telemetry client when the HTTP correlation is configured using W3C because no current diagnostic Activity is present");
 
             IHeaderDictionary requestHeaders = GetRequestHeaders(request);
             if (requestHeaders is null)
@@ -102,27 +129,36 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
         private HttpCorrelationResult CorrelateW3CForNewParent(IHeaderDictionary requestHeaders)
         {
-            Activity newActivity = CreateNewActivity(requestHeaders);
-            string transactionId = newActivity.TraceId.ToHexString();
-            _logger.LogTrace("Correlation transaction ID '{TransactionId}' found in 'traceparent' HTTP request header", transactionId);
+            if (Activity.Current is null)
+            {
+                string transactionId = ActivityTraceId.CreateRandom().ToHexString();
+                var result = HttpCorrelationResult.Success(_telemetryClient, transactionId, operationParentId: null);
+                _correlationInfoAccessor.SetCorrelationInfo(result.CorrelationInfo);
 
-            string operationId = newActivity.SpanId.ToHexString();
-            _logger.LogTrace("Correlation operation ID '{OperationId}' generated for incoming HTTP request", operationId);
+                return result;
+            }
+            else
+            {
+                Activity newActivity = CreateNewActivity(requestHeaders);
+                string transactionId = newActivity.TraceId.ToHexString();
+                _logger.LogTrace("Correlation transaction ID '{TransactionId}' found in 'traceparent' HTTP request header", transactionId);
 
-            newActivity.Start();
-            Activity.Current = newActivity;
+                string operationId = newActivity.SpanId.ToHexString();
+                _logger.LogTrace("Correlation operation ID '{OperationId}' generated for incoming HTTP request", operationId);
 
-            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
-            return HttpCorrelationResult.Success(requestId: null);
+                newActivity.Start();
+                Activity.Current = newActivity;
+
+                _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
+                return HttpCorrelationResult.Success(requestId: null);
+            }
         }
 
         private HttpCorrelationResult CorrelateW3CForExistingParent(IHeaderDictionary requestHeaders)
         {
-            Activity newActivity = CreateNewActivity(requestHeaders);
-
             // Format example:   00-4b1c0c8d608f57db7bd0b13c88ef865e-4c6893cc6c6cad10-00
             // Format structure: 00-<-----trace/transaction-id----->-<span/parent-id>-00 
-            string traceParent = requestHeaders.GetTraceParent().TruncateString(55);
+            string traceParent = requestHeaders.GetTraceParent();
             string transactionId = ActivityTraceId.CreateFromString(traceParent.AsSpan(3, 32)).ToHexString();
             _logger.LogTrace("Correlation transaction ID '{TransactionId}' found in 'traceparent' HTTP request header", transactionId);
 
@@ -130,6 +166,15 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             string operationParentId = parentSpanId.ToHexString();
             _logger.LogTrace("Correlation operation parent ID '{OperationParentId}' found in 'traceparent' HTTP request header", operationParentId);
 
+            if (Activity.Current is null)
+            {
+                var result = HttpCorrelationResult.Success(_telemetryClient, transactionId, operationParentId);
+                _correlationInfoAccessor.SetCorrelationInfo(result.CorrelationInfo);
+
+                return result;
+            }
+
+            Activity newActivity = CreateNewActivity(requestHeaders);
             newActivity.SetParentId(ActivityTraceId.CreateFromString(transactionId), parentSpanId);
             newActivity.Start();
             string operationId = newActivity.SpanId.ToHexString();

@@ -4,6 +4,7 @@ using System.Linq;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,24 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
     public class AzureFunctionsHttpCorrelation : HttpCorrelationTemplate<HttpRequestData, HttpResponseData>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AzureFunctionsHttpCorrelation" /> class.
+        /// Initializes a new instance of the <see cref="AzureFunctionsHttpCorrelation" /> class that uses W3C HTTP correlation.
+        /// </summary>
+        /// <param name="client">The client instance to send out automatic dependency telemetry for built-in Microsoft dependencies.</param>
+        /// <param name="options">The options controlling how the correlation should happen.</param>
+        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
+        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="client"/>, <paramref name="options"/> or <paramref name="correlationInfoAccessor"/> is <c>null</c>.</exception>
+        public AzureFunctionsHttpCorrelation(
+            TelemetryClient client,
+            HttpCorrelationInfoOptions options, 
+            IHttpCorrelationInfoAccessor correlationInfoAccessor, 
+            ILogger<AzureFunctionsHttpCorrelation> logger) 
+            : base(client, options, correlationInfoAccessor, logger)
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AzureFunctionsHttpCorrelation" /> class that uses Hierarchical HTTP correlation.
         /// </summary>
         /// <param name="options">The options controlling how the correlation should happen.</param>
         /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>

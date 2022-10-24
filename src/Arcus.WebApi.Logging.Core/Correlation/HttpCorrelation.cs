@@ -107,7 +107,7 @@ namespace Arcus.WebApi.Logging.Correlation
             IHttpContextAccessor httpContextAccessor,
             ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
-            : this(Options.Create(CreateHttpCorrelationOptions(options?.Value)), httpContextAccessor, correlationInfoAccessor, logger)
+            : this(Microsoft.Extensions.Options.Options.Create(CreateHttpCorrelationOptions(options?.Value)), httpContextAccessor, correlationInfoAccessor, logger)
         {
         }
 
