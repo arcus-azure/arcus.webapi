@@ -110,6 +110,27 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        [Fact]
+        public async Task Request_WithAllAllowAndJsonContentTypeHeaders_ReturnsOk()
+        {
+            // Arrange
+            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var contents = Encoding.UTF8.GetBytes("Something to write so that we require a Content-Type");
+            var context = TestFunctionContext.Create(req =>
+            {
+                req.Body.Write(contents, 0, contents.Length);
+                req.Headers.Add("content-type", "application/json");
+                req.Headers.TryAddWithoutValidation("allow", "*/*");
+            });
+
+            // Act
+            await middleware.Invoke(context, CreateOkResponse);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
         private static async Task CreateOkResponse(FunctionContext context)
         {
             HttpRequestData request = await context.GetHttpRequestDataAsync();
