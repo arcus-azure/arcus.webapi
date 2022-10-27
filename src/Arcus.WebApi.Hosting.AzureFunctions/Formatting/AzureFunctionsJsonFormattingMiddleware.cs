@@ -80,11 +80,13 @@ namespace Arcus.WebApi.Hosting.AzureFunctions.Formatting
         {
             if (request.Headers.TryGetValues("Accept", out IEnumerable<string> headerValues))
             {
-                if (headerValues.All(value => value != "application/json"))
+                if (headerValues.Any(value => value == "application/json" || value == "*/*"))
                 {
-                    logger.LogError("Could not process current request because the HTTP request does not allow JSON as response (Accept: {Accept})", string.Join(", ", headerValues));
-                    return false;
+                    return true;
                 }
+
+                logger.LogError("Could not process current request because the HTTP request does not allow JSON as response (Accept: {Accept})", string.Join(", ", headerValues));
+                return false;
             }
 
             return true;
