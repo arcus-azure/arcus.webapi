@@ -45,12 +45,12 @@ namespace Microsoft.Extensions.DependencyInjection
             services.AddCorrelation(
                 serviceProvider => (HttpCorrelationInfoAccessor) serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>(),
                 configureOptions);
-            services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
+            services.AddSingleton<IHttpCorrelationInfoAccessor>(serviceProvider =>
             {
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 return new HttpCorrelationInfoAccessor(httpContextAccessor);
             });
-            services.AddScoped(serviceProvider =>
+            services.AddSingleton(serviceProvider =>
             {
                 var options = serviceProvider.GetRequiredService<IOptions<CorrelationInfoOptions>>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();

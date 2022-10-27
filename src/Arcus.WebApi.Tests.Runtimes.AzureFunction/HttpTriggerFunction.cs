@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using Microsoft.AspNetCore.Mvc;
@@ -13,13 +14,13 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
 {
     public class HttpTriggerFunction
     {
-        private readonly HttpCorrelation _correlationService;
+        private readonly AzureFunctionsInProcessHttpCorrelation _correlationService;
         private readonly ILogger<HttpTriggerFunction> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpTriggerFunction"/> class.
         /// </summary>
-        public HttpTriggerFunction(HttpCorrelation correlationService, ILogger<HttpTriggerFunction> logger)
+        public HttpTriggerFunction(AzureFunctionsInProcessHttpCorrelation correlationService, ILogger<HttpTriggerFunction> logger)
         {
             _correlationService = correlationService;
             _logger = logger;

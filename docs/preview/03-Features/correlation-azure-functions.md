@@ -50,9 +50,9 @@ using Arcus.WebApi.Logging.Correlation;
 
 public class MyHttpFunction
 {
-    private readonly HttpCorrelation _httpCorrelation;
+    private readonly AzureFunctionsInProcessHttpCorrelation _httpCorrelation;
 
-    public MyHttpFunction(HttpCorrelation httpCorrelation)
+    public MyHttpFunction(AzureFunctionsInProcessHttpCorrelation httpCorrelation)
     {
         _httpCorrelation = httpCorrelation;
     }

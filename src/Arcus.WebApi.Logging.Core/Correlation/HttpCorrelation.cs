@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -111,6 +112,7 @@ namespace Arcus.WebApi.Logging.Correlation
         {
         }
 
+        [Obsolete]
         private static HttpCorrelationInfoOptions CreateHttpCorrelationOptions(CorrelationInfoOptions options)
         {
             if (options is null)

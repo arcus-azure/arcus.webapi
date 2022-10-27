@@ -9,6 +9,7 @@ using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Builder.Extensions;
 using Microsoft.Extensions.DependencyInjection;
@@ -73,13 +74,14 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.Transaction.GenerateWhenNotSpecified = false;
                 }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute);
+                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute).WithHeader(DefaultOperationParentId, null);
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
@@ -103,6 +105,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.Transaction.IncludeInResponse = false;
                 }))
                 .PreConfigure(app => app.UseHttpCorrelation());
@@ -110,7 +113,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             await using (var service = await TestApiServer.StartNewAsync(options, _logger))
             {
                 // Act
-                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute);
+                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute).WithHeader(DefaultOperationParentId, null);
                 using (HttpResponseMessage response = await service.SendAsync(request))
                 {
                     // Assert
@@ -135,13 +138,14 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.Transaction.GenerateId = () => expectedTransactionId;
                 }))
                 .PreConfigure(app => app.UseHttpCorrelation());
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute);
+                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute).WithHeader(DefaultOperationParentId, null);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -167,13 +171,14 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.Operation.IncludeInResponse = true;
                 }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute);
+                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute).WithHeader(DefaultOperationParentId, null);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -200,13 +205,14 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.Operation.HeaderName = operationIdHeaderName;
                 }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute);
+                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute).WithHeader(DefaultOperationParentId, null);
                 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -273,7 +279,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             {
                 var request = HttpRequestBuilder
                     .Get(CorrelationController.GetRoute)
-                    .WithHeader(DefaultTransactionId, expectedTransactionId);
+                    .WithHeader(DefaultTransactionId, expectedTransactionId)
+                    .WithHeader(DefaultOperationParentId, null);
 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -329,6 +336,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             var options = new TestApiServerOptions()
                 .ConfigureServices(services => services.AddHttpCorrelation(opt =>
                 {
+                    opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.Operation.GenerateId = () => expectedOperationId;
                 }))
                 .PreConfigure(app => app.UseTraceIdentifier(opt => opt.EnableTraceIdentifier = false)
@@ -336,7 +344,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute);
+                var request = HttpRequestBuilder.Get(CorrelationController.GetRoute).WithHeader(DefaultOperationParentId, null);
 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))

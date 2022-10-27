@@ -29,6 +29,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         {
             using (HttpResponseMessage response = await _client.GetAsync(ArcusStockController.Route))
             {
+                await Task.Delay(1000);
                 return StatusCode((int) response.StatusCode);
             }
         }

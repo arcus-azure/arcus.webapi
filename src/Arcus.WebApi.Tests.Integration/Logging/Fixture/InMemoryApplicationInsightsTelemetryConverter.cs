@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights.Converters;
 using Microsoft.ApplicationInsights.Channel;
@@ -12,7 +13,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
     public class InMemoryApplicationInsightsTelemetryConverter : TelemetryConverterBase
     {
         private readonly ApplicationInsightsTelemetryConverter _telemetryConverter;
-        private readonly ConcurrentStack<ITelemetry> _telemetries = new ConcurrentStack<ITelemetry>();
+        private readonly ICollection<ITelemetry> _telemetries = new Collection<ITelemetry>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="InMemoryApplicationInsightsTelemetryConverter" /> class.
@@ -29,7 +30,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             IEnumerable<ITelemetry> telemetries = _telemetryConverter.Convert(logEvent, formatProvider);
             foreach (ITelemetry telemetry in telemetries)
             {
-                _telemetries.Push(telemetry);
+                _telemetries.Add(telemetry);
             }
 
             return Enumerable.Empty<ITelemetry>();

@@ -1,14 +1,13 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Tests.Core;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
-using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Builder;
@@ -71,7 +70,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             await using (var arcusApp = await TestApiServer.StartNewAsync(arcusOptions, _logger))
             await using (var microsoftApp = await TestApiServer.StartNewAsync(microsoftOptions, _logger))
             {
-                var request = HttpRequestBuilder.Get(MicrosoftProductController.Route);
+                var request = HttpRequestBuilder.Get(MicrosoftProductController.Route).WithHeader(HttpCorrelationProperties.UpstreamServiceHeaderName, null);
 
                 using (HttpResponseMessage response = await microsoftApp.SendAsync(request))
                 {
@@ -80,12 +79,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
 
             RequestTelemetry requestMicrosoftEndpoint = AssertX.GetRequestFrom(productChannel.Telemetries, r => r.Url == new Uri($"{microsoftOptions.Url}{MicrosoftProductController.Route}"));
-            DependencyTelemetry dependViaMicrosoftOnArcusEndpoint = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Name == $"GET /{ArcusStockController.Route}");
-            RequestTelemetry requestArcusEndpoint = AssertX.GetRequestFrom(stockSpySink.Telemetries, r => r.Url == new Uri(arcusOptions.Url + ArcusStockController.Route));
-            DependencyTelemetry dependViaArcusOnKeyVault = AssertX.GetDependencyFrom(stockSpySink.Telemetries, d => d.Type == "Azure key vault");
-            DependencyTelemetry dependViaMicrosoftOnSql = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "SQL");
-            DependencyTelemetry dependViaMicrosoftOnServiceBus = AssertX.GetDependencyFrom(productChannel.Telemetries, d => d.Type == "Azure Service Bus");
-            DependencyTelemetry dependViaMicrosoftOnEventHubs = AssertX.GetDependencyFrom(productChannel.Telemetries, d => d.Type == "Queue Message | Azure Service Bus");
+            RequestTelemetry requestArcusEndpoint = AssertX.GetRequestFrom(stockSpySink.Telemetries, r => r.Url == new Uri(arcusOptions.Url + ArcusStockController.Route) && r.Context.Operation.Id == requestMicrosoftEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaArcusOnKeyVault = AssertX.GetDependencyFrom(stockSpySink.Telemetries, d => d.Type == "Azure key vault" && d.Context.Operation.Id == requestMicrosoftEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnArcusEndpoint = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Name == $"GET /{ArcusStockController.Route}" && d.Context.Operation.Id == requestMicrosoftEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnSql = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "SQL" && d.Context.Operation.Id == requestMicrosoftEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnServiceBus = AssertX.GetDependencyFrom(productChannel.Telemetries, d => d.Type == "Azure Service Bus" && d.Context.Operation.Id == requestMicrosoftEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnEventHubs = AssertX.GetDependencyFrom(productChannel.Telemetries, d => d.Type == "Queue Message | Azure Service Bus" && d.Context.Operation.Id == requestMicrosoftEndpoint.Context.Operation.Id);
 
             Assert.Equal(requestMicrosoftEndpoint.Id, dependViaMicrosoftOnArcusEndpoint.Context.Operation.ParentId);
             Assert.Equal(dependViaMicrosoftOnArcusEndpoint.Id, requestArcusEndpoint.Context.Operation.ParentId);
@@ -119,7 +118,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
 
             await using (var arcusApp = await TestApiServer.StartNewAsync(arcusOptions, _logger))
             {
-                var request = HttpRequestBuilder.Get(ArcusStockController.Route);
+                var request = HttpRequestBuilder.Get(ArcusStockController.Route).WithHeader(HttpCorrelationProperties.UpstreamServiceHeaderName, null);
 
                 using (HttpResponseMessage response = await arcusApp.SendAsync(request))
                 {
@@ -128,10 +127,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
 
             RequestTelemetry requestArcusEndpoint = AssertX.GetRequestFrom(stockSpySink.Telemetries, r => r.Url == new Uri(arcusOptions.Url + ArcusStockController.Route));
-            DependencyTelemetry dependViaArcusOnKeyVault = AssertX.GetDependencyFrom(stockSpySink.Telemetries, d => d.Type == "Azure key vault");
-            DependencyTelemetry dependViaMicrosoftOnSql = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "SQL");
-            DependencyTelemetry dependViaMicrosoftOnServiceBus = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "Azure Service Bus");
-            DependencyTelemetry dependViaMicrosoftOnEventHubs = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "Queue Message | Azure Service Bus");
+            DependencyTelemetry dependViaArcusOnKeyVault = AssertX.GetDependencyFrom(stockSpySink.Telemetries, d => d.Type == "Azure key vault" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnSql = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "SQL" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnServiceBus = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "Azure Service Bus" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnEventHubs = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "Queue Message | Azure Service Bus" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
 
             Assert.Equal(requestArcusEndpoint.Id, dependViaArcusOnKeyVault.Context.Operation.ParentId);
             Assert.Equal(requestArcusEndpoint.Id, dependViaMicrosoftOnSql.Context.Operation.ParentId);

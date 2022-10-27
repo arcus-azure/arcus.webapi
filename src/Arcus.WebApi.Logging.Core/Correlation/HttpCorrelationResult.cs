@@ -59,7 +59,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets the determined HTTP correlation for this result.
         /// </summary>
-        internal CorrelationInfo CorrelationInfo { get; }
+        public CorrelationInfo CorrelationInfo { get; }
 
         /// <summary>
         /// Creates an <see cref="HttpCorrelationResult"/> representing a successful HTTP correlation on the current HTTP request.

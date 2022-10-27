@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Reflection;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Converters;
@@ -28,7 +29,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
         public override BindingContext BindingContext { get; }
         public override RetryContext RetryContext { get; }
 
-        public static FunctionContext Create(
+        public static TestFunctionContext Create(
             Action<HttpRequestData> configureHttpRequest = null,
             Action<IServiceCollection> configureServices = null)
         {
@@ -40,7 +41,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             }, configureServices);
         }
 
-        public static FunctionContext Create(
+        public static TestFunctionContext Create(
             Func<FunctionContext, HttpRequestData> createHttpRequest,
             Action<IServiceCollection> configureServices = null)
         {
@@ -78,7 +79,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
                     return defaultBindingCache;
                 });
 
-            IServiceProvider provider = services.BuildServiceProvider();
+            ServiceProvider provider = services.BuildServiceProvider();
             var context = provider.GetRequiredService<FunctionContext>();
 
             object invocationRequest = CreateInstance(GetWorkerGrpcType("Messages.InvocationRequest"));
@@ -88,7 +89,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             object bindingFeature = CreateInstance(bindingFeatureType, context, invocationRequest, outputBindingInfoProvider);
             context.Features.Set(bindingFeature);
 
-            return context;
+            return context as TestFunctionContext;
         }
 
         private static void InvokeMethod(object instance, string methodName, params object[] parameters)
@@ -114,6 +115,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
 
         public void Dispose()
         {
+            Activity.Current?.Stop();
+            Activity.Current?.Dispose();
+            Activity.Current = null;
+
+            if (InstanceServices is IDisposable provider)
+            {
+                provider.Dispose();
+            }
+
             IsDisposed = true;
         }
     }

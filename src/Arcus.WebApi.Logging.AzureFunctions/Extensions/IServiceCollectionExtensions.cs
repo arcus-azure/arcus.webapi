@@ -1,8 +1,10 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -75,24 +77,25 @@ namespace Microsoft.Extensions.DependencyInjection
 
             IServiceCollection services = builder.Services;
             services.AddHttpContextAccessor();
-            services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
+            services.AddSingleton<IHttpCorrelationInfoAccessor>(serviceProvider =>
             {
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 return new HttpCorrelationInfoAccessor(httpContextAccessor);
             });
-            services.AddScoped<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
-            services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
 
             var options = new HttpCorrelationInfoOptions();
             configureOptions?.Invoke(options);
 
-            services.AddScoped(serviceProvider =>
+            services.AddSingleton(serviceProvider =>
             {
+                var client = serviceProvider.GetRequiredService<TelemetryClient>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
                 
-                return new HttpCorrelation(Options.Options.Create(options), httpContextAccessor, correlationInfoAccessor, logger);
+                return new AzureFunctionsInProcessHttpCorrelation(client, options, httpContextAccessor, correlationInfoAccessor, logger);
             });
 
             if (options.Format is HttpCorrelationFormat.W3C)

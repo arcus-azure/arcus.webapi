@@ -262,7 +262,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             var request = HttpRequestBuilder
                 .Get(routeToServiceA)
-                .WithHeader(ServiceAController.ServiceBUrlParameterName, options.Url + ServiceBController.Route);
+                .WithHeader(ServiceAController.ServiceBUrlParameterName, options.Url + ServiceBController.Route)
+                .WithHeader(HttpCorrelationProperties.UpstreamServiceHeaderName, null);
             
             return request;
         }

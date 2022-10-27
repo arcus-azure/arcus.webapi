@@ -1,12 +1,15 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using GuardNet;
+using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.ApplicationInsights;
 
 namespace Arcus.WebApi.Tests.Integration.Fixture
 {
@@ -49,15 +52,27 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             Guard.NotNull(logger, nameof(logger), "Requires a logger instance to write diagnostic messages during the lifetime of the test API server");
 
             IHostBuilder builder = Host.CreateDefaultBuilder();
+            options.ApplyOptions(builder);
             options.ConfigureServices(services =>
             {
+                services.Configure<ApplicationInsightsServiceOptions>(ai =>
+                {
+                    ai.EnableAdaptiveSampling = false;
+                    ai.AddAutoCollectedMetricExtractor = false;
+                    ai.EnableActiveTelemetryConfigurationSetup = false;
+                    ai.EnableEventCounterCollectionModule = false;
+                    ai.EnableDiagnosticsTelemetryModule = false;
+                    ai.EnablePerformanceCounterCollectionModule = false;
+                    ai.EnableQuickPulseMetricStream = false;
+                    ai.InstrumentationKey = "ikey";
+                });
                 services.AddLogging(logging =>
                 {
+                    logging.AddFilter<ApplicationInsightsLoggerProvider>("Microsoft.AspNetCore.DataProtection.KeyManagement.XmlKeyManager", LogLevel.None);
                     logging.SetMinimumLevel(LogLevel.Trace)
                            .AddProvider(new CustomLoggerProvider(logger));
                 });
             });
-            options.ApplyOptions(builder);
 
             IHost host = builder.Build();
             var server = new TestApiServer(host, options, logger);
@@ -76,6 +91,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             Guard.NotNull(builder, nameof(builder), "Requires a HTTP request builder instance to create a HTTP request to the test API server");
 
             HttpRequestMessage request = builder.Build(_options.Url);
+
             try
             {
                 HttpResponseMessage response = await HttpClient.SendAsync(request);
@@ -96,6 +112,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         {
             await _host.StopAsync();
             _host.Dispose();
+
+            Activity.Current?.Stop();
+            Activity.Current?.Dispose();
+            Activity.Current = null;
         }
     }
 }

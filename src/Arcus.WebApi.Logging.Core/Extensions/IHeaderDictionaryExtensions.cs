@@ -17,7 +17,7 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="headers">The HTTP request headers where the 'traceparent' header is located.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="headers"/> is <c>null</c>.</exception>
-        internal static StringValues GetTraceParent(this IHeaderDictionary headers)
+        public static StringValues GetTraceParent(this IHeaderDictionary headers)
         {
             Guard.NotNull(headers, nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'traceparent' header value");
 #if NET6_0

@@ -5,6 +5,7 @@
         public static class TestCollections
         {
             public const string Integration = "Integration";
+            public const string Correlation = "Correlation";
             public const string Docker = "Docker";
         }
 
