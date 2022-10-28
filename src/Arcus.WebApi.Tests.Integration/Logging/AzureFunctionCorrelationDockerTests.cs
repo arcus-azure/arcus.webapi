@@ -46,6 +46,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Content-Type", "application/json");
+            request.Headers.Add("Allow", "application/json");
             request.Headers.Remove("traceparent");
 
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
@@ -73,6 +75,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(32, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Content-Type", "application/json");
+            request.Headers.Add("Allow", "application/json");
             request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
 
             // Act
@@ -95,6 +99,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(16, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add("Content-Type", "application/json");
+            request.Headers.Add("Allow", "application/json");
             request.Headers.Add("traceparent", $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{expected}-00");
 
             // Act
