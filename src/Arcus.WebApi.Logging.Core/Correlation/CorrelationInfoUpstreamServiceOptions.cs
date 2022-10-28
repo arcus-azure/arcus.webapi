@@ -47,6 +47,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets or sets the request header name where te operation parent ID is located (default: <c>"Request-Id"</c>).
         /// </summary>
+        /// <remarks>
+        ///     Currently only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="value"/> is blank.</exception>
         public string HeaderName
         {

@@ -459,7 +459,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             switch (_options.Format)
             {
-                case HttpCorrelationFormat.Hierarchical: return "Request-Id";
+                case HttpCorrelationFormat.Hierarchical: return _options.UpstreamService.HeaderName;
                 case HttpCorrelationFormat.W3C: return "traceparent";
                 default:
                     throw new ArgumentOutOfRangeException(nameof(_options), _options.Format, "Unknown HTTP correlation format");
