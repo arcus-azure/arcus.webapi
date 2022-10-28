@@ -66,11 +66,11 @@ namespace Microsoft.Extensions.Hosting
 
             builder.Services.AddApplicationInsightsTelemetryWorkerService();
 
-            builder.Services.AddScoped<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
-            builder.Services.AddScoped(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
-            builder.Services.AddScoped<IHttpCorrelationInfoAccessor, AzureFunctionsHttpCorrelationInfoAccessor>();
+            builder.Services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            builder.Services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            builder.Services.AddSingleton<IHttpCorrelationInfoAccessor, AzureFunctionsHttpCorrelationInfoAccessor>();
 
-            builder.Services.AddScoped(provider =>
+            builder.Services.AddSingleton(provider =>
             {
                 var options = new HttpCorrelationInfoOptions();
                 configureOptions?.Invoke(options);
