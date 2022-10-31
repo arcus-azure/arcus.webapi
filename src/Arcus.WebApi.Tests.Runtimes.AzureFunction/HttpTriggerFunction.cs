@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -14,15 +15,13 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
 {
     public class HttpTriggerFunction
     {
-        private readonly AzureFunctionsInProcessHttpCorrelation _correlationService;
         private readonly ILogger<HttpTriggerFunction> _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpTriggerFunction"/> class.
         /// </summary>
-        public HttpTriggerFunction(AzureFunctionsInProcessHttpCorrelation correlationService, ILogger<HttpTriggerFunction> logger)
+        public HttpTriggerFunction(ILogger<HttpTriggerFunction> logger)
         {
-            _correlationService = correlationService;
             _logger = logger;
         }
         
@@ -31,11 +30,12 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            using (HttpCorrelationResult result = _correlationService.CorrelateHttpRequest())
+            var correlationService = req.HttpContext.RequestServices.GetRequiredService<AzureFunctionsInProcessHttpCorrelation>();
+            using (HttpCorrelationResult result = correlationService.CorrelateHttpRequest())
             {
                 if (result.IsSuccess)
                 {
-                    CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
+                    CorrelationInfo correlationInfo = correlationService.GetCorrelationInfo();
                     _logger.LogInformation("Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]", correlationInfo.OperationId, correlationInfo.TransactionId);
 
                     string json = JsonConvert.SerializeObject(correlationInfo);
