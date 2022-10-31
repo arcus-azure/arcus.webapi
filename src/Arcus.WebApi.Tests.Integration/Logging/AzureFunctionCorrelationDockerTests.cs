@@ -35,6 +35,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             _logger = new XunitTestLogger(outputWriter);
             HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
+            HttpClient.DefaultRequestHeaders.Remove("traceparent");
         }
 
         public static IEnumerable<object[]> RunningAzureFunctionsDockerProjectUrls => new[]
@@ -49,14 +50,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
-            request.Headers.Remove("traceparent");
-            request.Content = new StringContent("Something to write so that we require a Content-Type");
-            request.Content.Headers.Remove("Content-Type");
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
-            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-
-            using (HttpResponseMessage response = await HttpClient.SendAsync(request))
+            using (HttpResponseMessage response = await HttpClient.GetAsync(url))
             {
                 // Assert
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
