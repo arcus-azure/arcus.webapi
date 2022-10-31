@@ -5,6 +5,7 @@ using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -90,12 +91,17 @@ namespace Microsoft.Extensions.DependencyInjection
 
             services.AddSingleton(serviceProvider =>
             {
-                var client = serviceProvider.GetRequiredService<TelemetryClient>();
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
-                
-                return new AzureFunctionsInProcessHttpCorrelation(client, options, httpContextAccessor, correlationInfoAccessor, logger);
+
+                if (options.Format is HttpCorrelationFormat.W3C)
+                {
+                    var config = serviceProvider.GetRequiredService<TelemetryConfiguration>();
+                    return new AzureFunctionsInProcessHttpCorrelation(config, options, httpContextAccessor, correlationInfoAccessor, logger);
+                }
+
+                return new AzureFunctionsInProcessHttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
             });
 
             if (options.Format is HttpCorrelationFormat.W3C)
