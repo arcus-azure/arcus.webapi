@@ -116,8 +116,6 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
             Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
-            Guard.NotNullOrWhitespace(operationParentId, nameof(operationParentId), "Requires a non-blank operation parent ID for the pending HTTP correlation");
-            Guard.NotNullOrWhitespace(traceParent, nameof(traceParent), "Requires a non-blank 'traceparent' value representing the original HTTP header value");
 
             var telemetry = new RequestTelemetry();
             telemetry.Context.Operation.Id = transactionId;
