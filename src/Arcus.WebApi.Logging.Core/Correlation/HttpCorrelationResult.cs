@@ -30,11 +30,13 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         private HttpCorrelationResult(
             CorrelationInfo correlationInfo,
             IOperationHolder<RequestTelemetry> operationHolder,
-            TelemetryClient client)
+            TelemetryClient client,
+            string traceParent)
         {
             _telemetryClient = client;
             _operationHolder = operationHolder;
             CorrelationInfo = correlationInfo;
+            RequestId = traceParent;
             IsSuccess = true;
         }
 
@@ -85,14 +87,38 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         }
 
         /// <summary>
-        /// 
+        /// Creates an <see cref="HttpCorrelationResult"/> representing a succeeded W3C HTTP correlation on the current HTTP request.
         /// </summary>
-        /// <param name="client"></param>
-        /// <param name="transactionId"></param>
-        /// <param name="operationParentId"></param>
-        /// <returns></returns>
-        public static HttpCorrelationResult Success(TelemetryClient client, string transactionId, string operationParentId)
+        /// <param name="client">The used telemetry client to automatically track built-in Microsoft dependencies.</param>
+        /// <param name="transactionId">The retrieved transaction ID from the 'traceparent'.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="client"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="transactionId"/> is blank.</exception>
+        public static HttpCorrelationResult Success(TelemetryClient client, string transactionId)
         {
+            Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+            Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
+
+            return Success(client, transactionId, operationParentId: null, traceParent: null);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="HttpCorrelationResult"/> representing a succeeded W3C HTTP correlation on the current HTTP request.
+        /// </summary>
+        /// <param name="client">The used telemetry client to automatically track built-in Microsoft dependencies.</param>
+        /// <param name="transactionId">The retrieved transaction ID from the 'traceparent'.</param>
+        /// <param name="operationParentId">The retrieved operation parent ID from the 'traceparent'.</param>
+        /// <param name="traceParent">The original 'traceparent' value of the HTTP request.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="client"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when the <paramref name="transactionId"/>, <paramref name="operationParentId"/>, or the <paramref name="traceParent"/> is blank.
+        /// </exception>
+        public static HttpCorrelationResult Success(TelemetryClient client, string transactionId, string operationParentId, string traceParent)
+        {
+            Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+            Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
+            Guard.NotNullOrWhitespace(operationParentId, nameof(operationParentId), "Requires a non-blank operation parent ID for the pending HTTP correlation");
+            Guard.NotNullOrWhitespace(traceParent, nameof(traceParent), "Requires a non-blank 'traceparent' value representing the original HTTP header value");
+
             var telemetry = new RequestTelemetry();
             telemetry.Context.Operation.Id = transactionId;
             telemetry.Context.Operation.ParentId = operationParentId;
@@ -100,7 +126,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             IOperationHolder<RequestTelemetry> operationHolder = client.StartOperation(telemetry);
             var correlationInfo = new CorrelationInfo(telemetry.Id, transactionId, operationParentId);
 
-            return new HttpCorrelationResult(correlationInfo, operationHolder, client);
+            return new HttpCorrelationResult(correlationInfo, operationHolder, client, traceParent);
         }
 
         /// <summary>

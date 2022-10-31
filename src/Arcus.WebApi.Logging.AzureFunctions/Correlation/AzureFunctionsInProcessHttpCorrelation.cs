@@ -79,7 +79,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             string transactionId = ActivityTraceId.CreateRandom().ToHexString();
             Logger.LogTrace("Correlation transaction ID '{TransactionId}' found in 'traceparent' HTTP request header", transactionId);
 
-            var result = HttpCorrelationResult.Success(_telemetryClient, transactionId, operationParentId: null);
+            var result = HttpCorrelationResult.Success(_telemetryClient, transactionId);
             _correlationInfoAccessor.SetCorrelationInfo(result.CorrelationInfo);
 
             return result;
@@ -105,7 +105,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             string operationParentId = parentSpanId.ToHexString();
             Logger.LogTrace("Correlation operation parent ID '{OperationParentId}' found in 'traceparent' HTTP request header", operationParentId);
 
-            var result = HttpCorrelationResult.Success(_telemetryClient, transactionId, operationParentId);
+            var result = HttpCorrelationResult.Success(_telemetryClient, transactionId, operationParentId, traceParent);
             _correlationInfoAccessor.SetCorrelationInfo(result.CorrelationInfo);
 
             return result;
