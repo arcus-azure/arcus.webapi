@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -66,12 +67,34 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
         }
 
-        [Theory]
-        [MemberData(nameof(RunningAzureFunctionsDockerProjectUrls))]
-        public async Task SendRequest_WithTransactionIdHeader_ResponseWithSameCorrelationHeader(string url)
+        [Fact]
+        public async Task SendRequestInProcess_WithTransactionIdHeader_ResponseWithSameCorrelationHeader()
+        {
+            // Arrange
+            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsInProcessHttpPort()}/api/HttpTriggerFunction";
+            string expected = Guid.NewGuid().ToString();
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Headers.Add(TransactionIdHeaderName, expected);
+
+            // Act
+            _logger.LogInformation("GET -> '{Uri}'", url);
+            using (HttpResponseMessage response = await HttpClient.SendAsync(request))
+            {
+                // Assert
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                string actual = GetResponseHeader(response, TransactionIdHeaderName);
+                Assert.Equal(expected, actual);
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestIsolated_WithTransactionIdHeader_ResponseWithSameCorrelationHeader()
         {
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(32, prefix: null);
+            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" ;
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
 
@@ -88,12 +111,34 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
         }
 
-        [Theory]
-        [MemberData(nameof(RunningAzureFunctionsDockerProjectUrls))]
-        public async Task SendRequest_WithRequestIdHeader_ResponseWithSameRequestIdHeader(string url)
+        [Fact]
+        public async Task SendRequestInProcess_WithRequestIdHeader_ResponseWithSameRequestIdHeader()
+        {
+            // Arrange
+            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsInProcessHttpPort()}/api/HttpTriggerFunction";
+            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var expected = $"|{BogusGenerator.Random.Hexadecimal(16, prefix: null)}.";
+            request.Headers.Add("Request-Id", expected);
+
+            // Act
+            _logger.LogInformation("GET -> '{Uri}'", url);
+            using (HttpResponseMessage response = await HttpClient.SendAsync(request))
+            {
+                // Assert
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                string actual = GetResponseHeader(response, "Request-Id");
+                Assert.Contains(expected, actual);
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestIsolated_WithRequestIdHeader_ResponseWithSameRequestIdHeader()
         {
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(16, prefix: null);
+            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" ;
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("traceparent", $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{expected}-00");
 
