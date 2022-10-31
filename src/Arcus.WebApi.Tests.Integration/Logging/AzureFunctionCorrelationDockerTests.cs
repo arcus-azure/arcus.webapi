@@ -34,6 +34,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public AzureFunctionCorrelationDockerTests(ITestOutputHelper outputWriter)
         {
             _logger = new XunitTestLogger(outputWriter);
+            HttpClient.DefaultRequestHeaders.TryAddWithoutValidation("Content-Type", "application/json");
         }
 
         public static IEnumerable<object[]> RunningAzureFunctionsDockerProjectUrls => new[]
