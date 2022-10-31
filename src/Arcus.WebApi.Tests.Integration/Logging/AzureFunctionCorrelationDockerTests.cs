@@ -51,8 +51,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             _logger.LogInformation("GET -> '{Uri}'", url);
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Remove("traceparent");
-            request.Content = new StringContent("something to have", Encoding.UTF8, "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type");
+            request.Content.Headers.Remove("Content-Type");
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
@@ -102,8 +104,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" ;
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
-            request.Content = new StringContent("something to have", Encoding.UTF8, "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type");
+            request.Content.Headers.Remove("Content-Type");
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);
@@ -148,8 +152,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" ;
             var request = new HttpRequestMessage(HttpMethod.Get, url);
             request.Headers.Add("traceparent", $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{expected}-00");
-            request.Content = new StringContent("something to have", Encoding.UTF8, "application/json");
+            request.Content = new StringContent("Something to write so that we require a Content-Type");
+            request.Content.Headers.Remove("Content-Type");
             request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", url);

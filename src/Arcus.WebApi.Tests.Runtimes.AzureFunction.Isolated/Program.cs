@@ -12,7 +12,8 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
                 {
                     builder.ConfigureJsonFormatting(options => options.Converters.Add(new JsonStringEnumConverter()));
 
-                    builder.UseFunctionContext()
+                    builder.UseOnlyJsonFormatting()
+                           .UseFunctionContext()
                            .UseHttpCorrelation()
                            .UseRequestTracking()
                            .UseExceptionHandling();
