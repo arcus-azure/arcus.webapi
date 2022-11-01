@@ -44,7 +44,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <summary>
         /// Initializes a new instance of the <see cref="AzureFunctionsInProcessHttpCorrelation"/> class.
         /// </summary>
-        /// <param name="telemetryConfiguration">The configuration to send out automatic dependency telemetry for built-in Microsoft dependencies.</param>
+        /// <param name="telemetryClient">The telemetry client to send out automatic dependency telemetry for built-in Microsoft dependencies.</param>
         /// <param name="options">The options controlling how the correlation should happen.</param>
         /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
         /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
@@ -52,17 +52,17 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
         /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
         public AzureFunctionsInProcessHttpCorrelation(
-            TelemetryConfiguration telemetryConfiguration,
+            TelemetryClient telemetryClient,
             HttpCorrelationInfoOptions options,
             IHttpContextAccessor httpContextAccessor,
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
             : base(Options.Create(options), httpContextAccessor, correlationInfoAccessor, logger)
         {
-            Guard.NotNull(telemetryConfiguration, nameof(telemetryConfiguration), "Requires a telemetry client to automatically track built-in Microsoft dependencies");
+            Guard.NotNull(telemetryClient, nameof(telemetryClient), "Requires a telemetry client to automatically track built-in Microsoft dependencies");
             Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a HTTP correlation accessor to get/set the determined HTTP correlation from incoming HTTP requests");
             
-            _telemetryClient = new TelemetryClient(telemetryConfiguration);
+            _telemetryClient = telemetryClient;
             _correlationInfoAccessor = correlationInfoAccessor;
         }
 

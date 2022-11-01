@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using GuardNet;
 using Microsoft.Extensions.Primitives;
 
@@ -32,21 +31,6 @@ namespace Microsoft.AspNetCore.Http
             }
 
             return traceParent.TruncateString(55);
-        }
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="headers"></param>
-        /// <returns></returns>
-        public static (string transactionId, string operationParentId) DeconstructTraceParent(
-            this IHeaderDictionary headers)
-        {
-            string traceParent = GetTraceParent(headers).TruncateString(55);
-            string transactionId = ActivityTraceId.CreateFromString(traceParent.AsSpan(3, 32)).ToHexString();
-            string operationParentId = ActivitySpanId.CreateFromString(traceParent.AsSpan(36, 16)).ToHexString();
-
-            return (transactionId, operationParentId);
         }
 
         /// <summary>

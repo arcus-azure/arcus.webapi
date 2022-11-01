@@ -97,8 +97,8 @@ namespace Microsoft.Extensions.DependencyInjection
 
                 if (options.Format is HttpCorrelationFormat.W3C)
                 {
-                    var config = serviceProvider.GetRequiredService<TelemetryConfiguration>();
-                    return new AzureFunctionsInProcessHttpCorrelation(config, options, httpContextAccessor, correlationInfoAccessor, logger);
+                    var client = serviceProvider.GetRequiredService<TelemetryClient>();
+                    return new AzureFunctionsInProcessHttpCorrelation(client, options, httpContextAccessor, correlationInfoAccessor, logger);
                 }
 
                 return new AzureFunctionsInProcessHttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);

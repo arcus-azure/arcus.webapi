@@ -23,6 +23,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
     public class AzureFunctionCorrelationDockerTests
     {
         private readonly XunitTestLogger _logger;
+        private readonly string _inProcessEndpoint = $"http://localhost:{TestConfig.GetDockerAzureFunctionsInProcessHttpPort()}/api/HttpTriggerFunction",
+                                _isolatedEndpoint = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction";
 
         private static readonly TestConfig TestConfig = TestConfig.Create();
         private static readonly HttpClient HttpClient = new HttpClient();
@@ -38,22 +40,38 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             HttpClient.DefaultRequestHeaders.Remove("traceparent");
         }
 
-        public static IEnumerable<object[]> RunningAzureFunctionsDockerProjectUrls => new[]
-        {
-            new object[] { $"http://localhost:{TestConfig.GetDockerAzureFunctionsInProcessHttpPort()}/api/HttpTriggerFunction" },
-            new object[] { $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" }
-        };
-
-        [Theory]
-        [MemberData(nameof(RunningAzureFunctionsDockerProjectUrls))]
-        public async Task SendRequest_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess(string url)
+        [Fact]
+        public async Task SendRequestInProcess_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess()
         {
             // Act
-            _logger.LogInformation("GET -> '{Uri}'", url);
-            using (HttpResponseMessage response = await HttpClient.GetAsync(url))
+            _logger.LogInformation("GET -> '{Uri}'", _inProcessEndpoint);
+            using (HttpResponseMessage response = await HttpClient.GetAsync(_inProcessEndpoint))
             {
                 // Assert
-                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _inProcessEndpoint);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+                string correlationId = GetResponseHeader(response, TransactionIdHeaderName);
+
+                string json = await response.Content.ReadAsStringAsync();
+                var content = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "", OperationParentId = "" });
+                Assert.False(string.IsNullOrWhiteSpace(content.TransactionId), "Accessed 'X-Transaction-ID' cannot be blank");
+                Assert.False(string.IsNullOrWhiteSpace(content.OperationId), "Accessed 'X-Operation-ID' cannot be blank");
+                Assert.Null(content.OperationParentId);
+
+                Assert.Equal(correlationId, content.TransactionId);
+            }
+        }
+
+        [Fact]
+        public async Task SendRequestIsolated_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess()
+        {
+            // Act
+            _logger.LogInformation("GET -> '{Uri}'", _isolatedEndpoint);
+            using (HttpResponseMessage response = await HttpClient.GetAsync(_isolatedEndpoint))
+            {
+                // Assert
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _isolatedEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string correlationId = GetResponseHeader(response, TransactionIdHeaderName);
@@ -72,17 +90,16 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequestInProcess_WithTransactionIdHeader_ResponseWithSameCorrelationHeader()
         {
             // Arrange
-            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsInProcessHttpPort()}/api/HttpTriggerFunction";
             string expected = Guid.NewGuid().ToString();
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var request = new HttpRequestMessage(HttpMethod.Get, _inProcessEndpoint);
             request.Headers.Add(TransactionIdHeaderName, expected);
 
             // Act
-            _logger.LogInformation("GET -> '{Uri}'", url);
+            _logger.LogInformation("GET -> '{Uri}'", _inProcessEndpoint);
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
-                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _inProcessEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, TransactionIdHeaderName);
@@ -95,8 +112,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(32, prefix: null);
-            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" ;
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var request = new HttpRequestMessage(HttpMethod.Get, _isolatedEndpoint);
             request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
             request.Content = new StringContent("Something to write so that we require a Content-Type");
             request.Content.Headers.Remove("Content-Type");
@@ -104,11 +120,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
-            _logger.LogInformation("GET -> '{Uri}'", url);
+            _logger.LogInformation("GET -> '{Uri}'", _isolatedEndpoint);
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
-                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _isolatedEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, TransactionIdHeaderName);
@@ -120,17 +136,16 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequestInProcess_WithRequestIdHeader_ResponseWithSameRequestIdHeader()
         {
             // Arrange
-            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsInProcessHttpPort()}/api/HttpTriggerFunction";
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var request = new HttpRequestMessage(HttpMethod.Get, _inProcessEndpoint);
             var expected = $"|{BogusGenerator.Random.Hexadecimal(16, prefix: null)}.";
             request.Headers.Add("Request-Id", expected);
 
             // Act
-            _logger.LogInformation("GET -> '{Uri}'", url);
+            _logger.LogInformation("GET -> '{Uri}'", _inProcessEndpoint);
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
-                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _inProcessEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, "Request-Id");
@@ -143,8 +158,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             string expected = BogusGenerator.Random.Hexadecimal(16, prefix: null);
-            string url = $"http://localhost:{TestConfig.GetDockerAzureFunctionsIsolatedHttpPort()}/api/HttpTriggerFunction" ;
-            var request = new HttpRequestMessage(HttpMethod.Get, url);
+            var request = new HttpRequestMessage(HttpMethod.Get, _isolatedEndpoint);
             request.Headers.Add("traceparent", $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{expected}-00");
             request.Content = new StringContent("Something to write so that we require a Content-Type");
             request.Content.Headers.Remove("Content-Type");
@@ -152,11 +166,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 
             // Act
-            _logger.LogInformation("GET -> '{Uri}'", url);
+            _logger.LogInformation("GET -> '{Uri}'", _isolatedEndpoint);
             using (HttpResponseMessage response = await HttpClient.SendAsync(request))
             {
                 // Assert
-                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, url);
+                _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _isolatedEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
                 string actual = GetResponseHeader(response, "traceparent");
