@@ -6,23 +6,6 @@ Web API development in a breeze.
 
 ![Arcus](https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png)
 
-# Installation
-Easy to install it via NuGet:
-
-- **Security**
-
-```shell
-PM > Install-Package Arcus.WebApi.Security
-```
-
-- **Logging**
-
-```shell
-PM > Install-Package Arcus.WebApi.Logging
-```
-
-For a more thorough overview, we recommend reading our [documentation](#documentation).
-
 # Documentation
 All documentation can be found on [here](https://webapi.arcus-azure.net/).
 
