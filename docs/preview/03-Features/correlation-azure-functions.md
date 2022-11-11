@@ -72,6 +72,39 @@ public class MyHttpFunction
         CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
         return new OkObjectResult("This HTTP triggered function executed successfully.");
     }
+}
+```
+
+To use the old Hierarhical HTTP correlation, use the following:
+```csharp
+using Arcus.WebApi.Logging.Correlation;
+
+public class MyHttpFunction
+{
+    private readonly HttpCorrelation _httpCorrelation;
+
+    public MyHttpFunction(HttpCorrelation httpCorrelation)
+    {
+        _httpCorrelation = httpCorrelation;
+    }
+
+    [FunctionName("HTTP-Correlation-Example")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        ILogger log)
+    {
+        log.LogInformation("C# HTTP trigger function processed a request");
+        
+        if (!_httpCorrelation.TryHttpCorrelate(out string errorMessage))
+        {
+            return new BadRequestObjectResult(errorMessage);
+        }
+
+        // Easily access correlation information in your application.
+        CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
+        return new OkObjectResult("This HTTP triggered function executed successfully.");
+    }
+}
 ```
 
 > Note that the `HttpCorrelation` already has the registered `IHttpCorrelationInfoAccessor` embedded but nothing stops you from injecting the `IHtpCorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.
