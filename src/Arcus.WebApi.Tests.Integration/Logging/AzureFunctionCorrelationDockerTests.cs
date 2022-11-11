@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
@@ -90,9 +86,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task SendRequestInProcess_WithTransactionIdHeader_ResponseWithSameCorrelationHeader()
         {
             // Arrange
-            string expected = Guid.NewGuid().ToString();
+            string expected = BogusGenerator.Random.Hexadecimal(32, prefix: null);
             var request = new HttpRequestMessage(HttpMethod.Get, _inProcessEndpoint);
-            request.Headers.Add(TransactionIdHeaderName, expected);
+            request.Headers.Add("traceparent", $"00-{expected}-4c6893cc6c6cad10-00");
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", _inProcessEndpoint);
@@ -102,8 +98,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _inProcessEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+                string json = await response.Content.ReadAsStringAsync();
+                var correlationInfo = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "", OperationParentId = "" });
+                
                 string actual = GetResponseHeader(response, TransactionIdHeaderName);
                 Assert.Equal(expected, actual);
+                Assert.Equal(expected, correlationInfo.TransactionId);
             }
         }
 
@@ -137,8 +137,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         {
             // Arrange
             var request = new HttpRequestMessage(HttpMethod.Get, _inProcessEndpoint);
-            var expected = $"|{BogusGenerator.Random.Hexadecimal(16, prefix: null)}.";
-            request.Headers.Add("Request-Id", expected);
+            var expected = $"00-4b1c0c8d608f57db7bd0b13c88ef865e-{BogusGenerator.Random.Hexadecimal(16, prefix: null)}-00";
+            request.Headers.Add("traceparent", expected);
 
             // Act
             _logger.LogInformation("GET -> '{Uri}'", _inProcessEndpoint);
@@ -148,8 +148,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _inProcessEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
-                string actual = GetResponseHeader(response, "Request-Id");
-                Assert.Contains(expected, actual);
+                string actual = GetResponseHeader(response, "traceparent");
+                Assert.Equal(expected, actual);
             }
         }
 

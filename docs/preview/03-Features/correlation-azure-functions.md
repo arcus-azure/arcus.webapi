@@ -44,6 +44,7 @@ namespace MyHttpAzureFunction
 ```
 
 When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `IHttpCorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+This is how you use the W3C HTTP correlation in your application:
 
 ```csharp
 using Arcus.WebApi.Logging.Correlation;
@@ -62,19 +63,14 @@ public class MyHttpFunction
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
         ILogger log)
     {
-        log.LogInformation("C# HTTP trigger function processed a request.");
+        log.LogInformation("C# HTTP trigger function processed a request");
 
-        using (HttpCorrelationResult result = _httpCorrelation.CorrelateHttpRequest())
-        {
-            if (result.IsSuccess)
-            {
-                 // Easily access correlation information in your application
-                 CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
-                 return new OkObjectResult("This HTTP triggered function executed successfully.");
-            }
+        // Easily set the correlation information to the response if you want to expose it.
+        _httpCorrelation.AddCorrelationResponseHeaders(req.HttpContext);
 
-            return new BadRequestObjectResult(result.ErrorMessage);
-        }
+         // Easily access correlation information in your application.
+        CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
+        return new OkObjectResult("This HTTP triggered function executed successfully.");
     }
 ```
 
