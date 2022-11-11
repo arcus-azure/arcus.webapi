@@ -96,7 +96,6 @@ namespace Microsoft.Extensions.DependencyInjection
 
             if (options.Format is HttpCorrelationFormat.Hierarchical)
             {
-                
                 services.AddHttpContextAccessor();
                 services.AddSingleton<IHttpCorrelationInfoAccessor>(serviceProvider =>
                 {
