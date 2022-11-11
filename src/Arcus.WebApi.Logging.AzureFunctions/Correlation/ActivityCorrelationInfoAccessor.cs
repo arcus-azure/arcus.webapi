@@ -9,7 +9,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
     /// Represents an <see cref="IHttpCorrelationInfoAccessor"/> implementation that solely retrieves the correlation information from the <see cref="Activity.Current"/>.
     /// Mostly used for places where the Application Insights is baked in and there is no way to hook in custom Arcus functionality.
     /// </summary>
-    internal class ActivityCorrelationInfoAccessor : IHttpCorrelationInfoAccessor
+    internal class ActivityCorrelationInfoAccessor : IHttpCorrelationInfoAccessor, ICorrelationInfoAccessor
     {
         /// <summary>
         /// Gets the current correlation information initialized in this context.

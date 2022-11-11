@@ -76,36 +76,39 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
 
+            IServiceCollection services = builder.Services;
+
             var options = new HttpCorrelationInfoOptions();
             configureOptions?.Invoke(options);
 
             if (options.Format is HttpCorrelationFormat.W3C)
             {
-                builder.Services.AddSingleton<IHttpCorrelationInfoAccessor, ActivityCorrelationInfoAccessor>();
-                builder.Services.AddSingleton(serviceProvider =>
+                services.AddSingleton<IHttpCorrelationInfoAccessor, ActivityCorrelationInfoAccessor>();
+                services.AddSingleton(serviceProvider =>
                 {
                     var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                     var logger = serviceProvider.GetService<ILogger<AzureFunctionsInProcessHttpCorrelation>>();
                     return new AzureFunctionsInProcessHttpCorrelation(options, correlationInfoAccessor, logger);
                 });
 
-                builder.Services.AddLogging(logging => logging.AddApplicationInsightsWebJobs());
+                services.AddLogging(logging => logging.AddApplicationInsightsWebJobs());
             }
 
             if (options.Format is HttpCorrelationFormat.Hierarchical)
             {
-                IServiceCollection services = builder.Services;
+                
                 services.AddHttpContextAccessor();
                 services.AddSingleton<IHttpCorrelationInfoAccessor>(serviceProvider =>
                 {
                     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                     return new HttpCorrelationInfoAccessor(httpContextAccessor);
                 });
-                services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
-                services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             }
 
-            return builder.Services;
+            services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+
+            return services;
         }
     }
 }
