@@ -127,8 +127,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _isolatedEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+                string json = await response.Content.ReadAsStringAsync();
+                var correlationInfo = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "", OperationParentId = "" });
+
                 string actual = GetResponseHeader(response, TransactionIdHeaderName);
                 Assert.Equal(expected, actual);
+                Assert.Equal(expected, correlationInfo.TransactionId);
             }
         }
 
@@ -173,8 +177,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 _logger.LogInformation("{StatusCode} <- {Uri}", response.StatusCode, _isolatedEndpoint);
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
 
+                string json = await response.Content.ReadAsStringAsync();
+                var correlationInfo = JsonConvert.DeserializeAnonymousType(json, new { TransactionId = "", OperationId = "", OperationParentId = "" });
+
                 string actual = GetResponseHeader(response, "traceparent");
                 Assert.Contains(expected, actual);
+                Assert.Equal(expected, correlationInfo.OperationParentId);
             }
         }
 
