@@ -58,7 +58,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         public HttpRequestBuilder WithHeader(string headerName, object headerValue)
         {
             Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Requires a non-blank header name to add the header to the HTTP request builder instance");
-            _headers.Add(new KeyValuePair<string, string>(headerName, headerValue.ToString()));
+            _headers.Add(new KeyValuePair<string, string>(headerName, headerValue?.ToString()));
 
             return this;
         }

@@ -10,11 +10,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class CorrelationInfoUpstreamServiceOptions
     {
-#if !NETSTANDARD
-        private string _headerName = HeaderNames.TraceParent;
-#else
-        private string _headerName = "traceparent";
-#endif
+        private string _headerName = HttpCorrelationProperties.UpstreamServiceHeaderName;
         private Func<string> _generateId = () => Guid.NewGuid().ToString();
 
         /// <summary>
@@ -51,6 +47,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <summary>
         /// Gets or sets the request header name where te operation parent ID is located (default: <c>"Request-Id"</c>).
         /// </summary>
+        /// <remarks>
+        ///     Currently only used when the <see cref="HttpCorrelationInfoOptions.Format"/> is set to <see cref="HttpCorrelationFormat.Hierarchical"/>.
+        /// </remarks>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="value"/> is blank.</exception>
         public string HeaderName
         {
@@ -74,39 +73,8 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _generateId;
             set
             {
-                Guard.NotNull<Func<string>>(value, nameof (value), "Requires a function to generate the operation parent ID");
+                Guard.NotNull(value, nameof (value), "Requires a function to generate the operation parent ID");
                 _generateId = value;
-            }
-        }
-
-        internal void SetHeaderNameByFormat(HttpCorrelationFormat format)
-        {
-            bool headerNameIsCustom = _headerName != "traceparent" && _headerName != "Request-Id";
-            if (headerNameIsCustom)
-            {
-                return;
-            }
-
-            switch (format)
-            {
-#if !NETSTANDARD
-
-                case HttpCorrelationFormat.W3C:
-                    _headerName = HeaderNames.TraceParent;
-                    break;
-                case HttpCorrelationFormat.Hierarchical:
-                    _headerName = HeaderNames.RequestId;
-                    break; 
-#else
-                case HttpCorrelationFormat.W3C:
-                    _headerName = "traceparent";
-                    break;
-                case HttpCorrelationFormat.Hierarchical:
-                    _headerName = "Request-Id";
-                    break;
-#endif
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(format), format, "Cannot set upstream header name because of an unknown HTTP correlation format");
             }
         }
     }

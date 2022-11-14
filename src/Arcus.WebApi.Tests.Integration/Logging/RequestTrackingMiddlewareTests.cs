@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Logging;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Tests.Integration.Controllers;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
@@ -726,7 +727,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             {
                 var request = HttpRequestBuilder
                     .Get(HealthController.GetRoute)
-                    .WithHeader(headerName, headerValue);
+                    .WithHeader(headerName, headerValue)
+                    .WithHeader(HttpCorrelationProperties.UpstreamServiceHeaderName, null);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -763,6 +765,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 var request = HttpRequestBuilder
                     .Post(route)
                     .WithHeader(headerName, headerValue)
+                    .WithHeader(HttpCorrelationProperties.UpstreamServiceHeaderName, null)
                     .WithJsonText(requestBody);
 
                 using (HttpResponseMessage response = await server.SendAsync(request))

@@ -1,6 +1,10 @@
 ﻿using System;
 using System.Diagnostics;
+using Arcus.Observability.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.DataContracts;
+using Microsoft.ApplicationInsights.Extensibility;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -10,6 +14,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// </summary>
     public class HttpCorrelationResult : IDisposable
     {
+        private readonly TelemetryClient _telemetryClient;
+        private readonly IOperationHolder<RequestTelemetry> _operationHolder;
+
         private HttpCorrelationResult(bool isSuccess, string requestId, string errorMessage)
         {
             Guard.For(() => isSuccess && errorMessage != null, new ArgumentException("Cannot create a successful HTTP correlation result with an error user message", nameof(errorMessage)));
@@ -18,6 +25,19 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             RequestId = requestId;
             ErrorMessage = errorMessage;
             IsSuccess = isSuccess;
+        }
+
+        private HttpCorrelationResult(
+            CorrelationInfo correlationInfo,
+            IOperationHolder<RequestTelemetry> operationHolder,
+            TelemetryClient client,
+            string traceParent)
+        {
+            _telemetryClient = client;
+            _operationHolder = operationHolder;
+            CorrelationInfo = correlationInfo;
+            RequestId = traceParent;
+            IsSuccess = true;
         }
 
         /// <summary>
@@ -37,6 +57,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// Gets the value indicating whether or not this result represents a successful HTTP correlation on the current HTTP request.
         /// </summary>
         public bool IsSuccess { get; }
+
+        /// <summary>
+        /// Gets the determined HTTP correlation for this result.
+        /// </summary>
+        public CorrelationInfo CorrelationInfo { get; }
 
         /// <summary>
         /// Creates an <see cref="HttpCorrelationResult"/> representing a successful HTTP correlation on the current HTTP request.
@@ -62,6 +87,47 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         }
 
         /// <summary>
+        /// Creates an <see cref="HttpCorrelationResult"/> representing a succeeded W3C HTTP correlation on the current HTTP request.
+        /// </summary>
+        /// <param name="client">The used telemetry client to automatically track built-in Microsoft dependencies.</param>
+        /// <param name="transactionId">The retrieved transaction ID from the 'traceparent'.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="client"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="transactionId"/> is blank.</exception>
+        public static HttpCorrelationResult Success(TelemetryClient client, string transactionId)
+        {
+            Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+            Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
+
+            return Success(client, transactionId, operationParentId: null, traceParent: null);
+        }
+
+        /// <summary>
+        /// Creates an <see cref="HttpCorrelationResult"/> representing a succeeded W3C HTTP correlation on the current HTTP request.
+        /// </summary>
+        /// <param name="client">The used telemetry client to automatically track built-in Microsoft dependencies.</param>
+        /// <param name="transactionId">The retrieved transaction ID from the 'traceparent'.</param>
+        /// <param name="operationParentId">The retrieved operation parent ID from the 'traceparent'.</param>
+        /// <param name="traceParent">The original 'traceparent' value of the HTTP request.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="client"/> is <c>null</c>.</exception>
+        /// <exception cref="ArgumentException">
+        ///     Thrown when the <paramref name="transactionId"/>, <paramref name="operationParentId"/>, or the <paramref name="traceParent"/> is blank.
+        /// </exception>
+        public static HttpCorrelationResult Success(TelemetryClient client, string transactionId, string operationParentId, string traceParent)
+        {
+            Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+            Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
+
+            var telemetry = new RequestTelemetry();
+            telemetry.Context.Operation.Id = transactionId;
+            telemetry.Context.Operation.ParentId = operationParentId;
+
+            IOperationHolder<RequestTelemetry> operationHolder = client.StartOperation(telemetry);
+            var correlationInfo = new CorrelationInfo(telemetry.Id, transactionId, operationParentId);
+
+            return new HttpCorrelationResult(correlationInfo, operationHolder, client, traceParent);
+        }
+
+        /// <summary>
         /// Performs application-defined tasks associated with freeing, releasing, or resetting unmanaged resources.
         /// </summary>
         public void Dispose()
@@ -70,6 +136,18 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             if (activity != null && activity.OperationName == "ActivityCreatedByHostingDiagnosticListener")
             {
                 activity.Stop();
+            }
+
+            if (_telemetryClient != null)
+            {
+                _telemetryClient.TelemetryConfiguration.DisableTelemetry = true;
+            }
+
+            _operationHolder?.Dispose();
+
+            if (_telemetryClient != null)
+            {
+                _telemetryClient.TelemetryConfiguration.DisableTelemetry = false;
             }
         }
     }

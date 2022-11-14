@@ -1,6 +1,7 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Serilog.Enrichers;
+using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
@@ -29,16 +30,15 @@ namespace Serilog.Configuration
             Guard.NotNull(enrichmentConfiguration, nameof(enrichmentConfiguration), "Requires a Serilog logger enrichment configuration to register the HTTP correlation as enrichment");
             Guard.NotNull(serviceProvider, nameof(serviceProvider), "Requires a service provider to retrieve the HTTP correlation from the registered services when enriching the Serilog with the HTTP correlation");
 
-            var httpContextAccessor = serviceProvider.GetService<IHttpContextAccessor>();
-            if (httpContextAccessor is null)
+            var correlationInfoAccessor = serviceProvider.GetService<IHttpCorrelationInfoAccessor>();
+            if (correlationInfoAccessor is null)
             {
                 throw new InvalidOperationException(
-                    $"Cannot register the HTTP correlation as a Serilog enrichment because no {nameof(IHttpContextAccessor)} was available in the registered services," 
+                    $"Cannot register the HTTP correlation as a Serilog enrichment because no {nameof(IHttpCorrelationInfoAccessor)} was available in the registered services," 
                     + "please make sure to call 'services.AddHttpCorrelation()' when configuring the services. " 
                     + "For more information on HTTP correlation, see the official documentation: https://webapi.arcus-azure.net/features/correlation");
             }
 
-            var correlationInfoAccessor = new HttpCorrelationInfoAccessor(httpContextAccessor);
             return enrichmentConfiguration.WithCorrelationInfo(correlationInfoAccessor);
         }
     }

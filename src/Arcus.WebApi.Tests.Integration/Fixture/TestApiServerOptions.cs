@@ -31,7 +31,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// </summary>
         public TestApiServerOptions()
         {
-            Url = $"http://localhost:{_bogusGenerator.Random.Int(4000, 4999)}/";
+            Url = $"http://localhost:{_bogusGenerator.Random.Int(2000, 4999)}/";
         }
         
         /// <summary>

@@ -1,8 +1,15 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
+using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
+using Microsoft.ApplicationInsights;
+using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -36,7 +43,27 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Guard.NotNull(builder, nameof(builder), "Requires a functions host builder instance to add the HTTP correlation services");
 
-            return builder.Services.AddHttpCorrelation(configureOptions);
+            IServiceCollection services = builder.Services;
+            services.AddHttpContextAccessor();
+            services.AddCorrelation(
+                serviceProvider => (HttpCorrelationInfoAccessor) serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>(),
+                configureOptions);
+            services.AddScoped<IHttpCorrelationInfoAccessor>(serviceProvider =>
+            {
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                return new HttpCorrelationInfoAccessor(httpContextAccessor);
+            });
+            services.AddScoped(serviceProvider =>
+            {
+                var options = serviceProvider.GetRequiredService<IOptions<CorrelationInfoOptions>>();
+                var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
+                var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
+                
+                return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
+            });
+
+            return services;
         }
 
         /// <summary>
@@ -49,7 +76,38 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
 
-            return builder.Services.AddHttpCorrelation(configureOptions);
+            IServiceCollection services = builder.Services;
+
+            var options = new HttpCorrelationInfoOptions();
+            configureOptions?.Invoke(options);
+
+            if (options.Format is HttpCorrelationFormat.W3C)
+            {
+                services.AddSingleton<IHttpCorrelationInfoAccessor, ActivityCorrelationInfoAccessor>();
+                services.AddSingleton(serviceProvider =>
+                {
+                    var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
+                    var logger = serviceProvider.GetService<ILogger<AzureFunctionsInProcessHttpCorrelation>>();
+                    return new AzureFunctionsInProcessHttpCorrelation(options, correlationInfoAccessor, logger);
+                });
+
+                services.AddLogging(logging => logging.AddApplicationInsightsWebJobs());
+            }
+
+            if (options.Format is HttpCorrelationFormat.Hierarchical)
+            {
+                services.AddHttpContextAccessor();
+                services.AddSingleton<IHttpCorrelationInfoAccessor>(serviceProvider =>
+                {
+                    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                    return new HttpCorrelationInfoAccessor(httpContextAccessor);
+                });
+            }
+
+            services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+            services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
+
+            return services;
         }
     }
 }

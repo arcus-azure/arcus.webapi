@@ -1,7 +1,5 @@
-using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
-using Arcus.WebApi.Logging.Core.Correlation;
-using Arcus.WebApi.Logging.Correlation;
+using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Azure.WebJobs.Extensions.Http;
@@ -13,16 +11,15 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
 {
     public class HttpTriggerFunction
     {
-        private readonly HttpCorrelation _correlationService;
-        private readonly ILogger<HttpTriggerFunction> _logger;
+        private readonly AzureFunctionsInProcessHttpCorrelation _correlationService;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="HttpTriggerFunction"/> class.
         /// </summary>
-        public HttpTriggerFunction(HttpCorrelation correlationService, ILogger<HttpTriggerFunction> logger)
+        public HttpTriggerFunction(
+            AzureFunctionsInProcessHttpCorrelation correlationService)
         {
             _correlationService = correlationService;
-            _logger = logger;
         }
         
         [FunctionName("HttpTriggerFunction")]
@@ -30,21 +27,13 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
             [HttpTrigger(AuthorizationLevel.Anonymous, "get", "post", Route = null)] HttpRequest req,
             ILogger log)
         {
-            using (HttpCorrelationResult result = _correlationService.CorrelateHttpRequest())
-            {
-                if (result.IsSuccess)
-                {
-                    CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
-                    _logger.LogInformation("Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]", correlationInfo.OperationId, correlationInfo.TransactionId);
+            _correlationService.AddCorrelationResponseHeaders(req.HttpContext);
 
-                    string json = JsonConvert.SerializeObject(correlationInfo);
-                    return new OkObjectResult(json);
-                }
-                else
-                {
-                    return new BadRequestObjectResult(result.ErrorMessage);
-                }
-            }
+            CorrelationInfo correlationInfo = _correlationService.GetCorrelationInfo();
+            log.LogInformation("Gets the HTTP correlation: [OperationId={OperationId}, TransactionId={TransactionId}]", correlationInfo.OperationId, correlationInfo.TransactionId);
+
+            string json = JsonConvert.SerializeObject(correlationInfo);
+            return new OkObjectResult(json);
         }
     }
 }

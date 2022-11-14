@@ -24,14 +24,15 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Arcus.WebApi.Logging.Core\Arcus.WebApi.Logging.Core.csproj" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="[2.6.0,3.0.0)" />
+    <PackageReference Include="Arcus.Observability.Telemetry.AzureFunctions" Version="[2.6.0,3.0.0)" />
+    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.1.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="1.6.0" />
+    <PackageReference Include="Microsoft.Azure.WebJobs.Logging.ApplicationInsights" Version="3.0.33" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="[2.6.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Telemetry.AzureFunctions" Version="[2.6.0,3.0.0)" />
-    <PackageReference Include="Microsoft.Azure.Functions.Extensions" Version="1.0.0" />
-    <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="1.6.0" />
+    <ProjectReference Include="..\Arcus.WebApi.Logging.Core\Arcus.WebApi.Logging.Core.csproj" />
   </ItemGroup>
 
 </Project>

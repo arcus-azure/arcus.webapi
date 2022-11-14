@@ -44,7 +44,38 @@ namespace MyHttpAzureFunction
 ```
 
 When this addition is added, you can use the `HttpCorrelation` inside your function to call the correlation functionality and use the `IHttpCorrelationInfoAccessor` (like before) to have access to the `CorrelationInfo` of the HTTP request.
+This is how you use the W3C HTTP correlation in your application:
 
+```csharp
+using Arcus.WebApi.Logging.Correlation;
+
+public class MyHttpFunction
+{
+    private readonly AzureFunctionsInProcessHttpCorrelation _httpCorrelation;
+
+    public MyHttpFunction(AzureFunctionsInProcessHttpCorrelation httpCorrelation)
+    {
+        _httpCorrelation = httpCorrelation;
+    }
+
+    [FunctionName("HTTP-Correlation-Example")]
+    public async Task<IActionResult> Run(
+        [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
+        ILogger log)
+    {
+        log.LogInformation("C# HTTP trigger function processed a request");
+
+        // Easily set the correlation information to the response if you want to expose it.
+        _httpCorrelation.AddCorrelationResponseHeaders(req.HttpContext);
+
+         // Easily access correlation information in your application.
+        CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
+        return new OkObjectResult("This HTTP triggered function executed successfully.");
+    }
+}
+```
+
+To use the old Hierarhical HTTP correlation, use the following:
 ```csharp
 using Arcus.WebApi.Logging.Correlation;
 
@@ -62,17 +93,18 @@ public class MyHttpFunction
         [HttpTrigger(AuthorizationLevel.Function, "get", "post", Route = null)] HttpRequest req,
         ILogger log)
     {
-        if (_httpCorrelation.TryHttpCorrelate(out string errorMessage))
+        log.LogInformation("C# HTTP trigger function processed a request");
+        
+        if (!_httpCorrelation.TryHttpCorrelate(out string errorMessage))
         {
-            log.LogInformation("C# HTTP trigger function processed a request.");
-
-            // Easily access correlation information in your application
-            CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
-            return new OkObjectResult("This HTTP triggered function executed successfully.");
+            return new BadRequestObjectResult(errorMessage);
         }
 
-        return new BadRequestObjectResult(errorMessage);
+        // Easily access correlation information in your application.
+        CorrelationInfo correlationInfo = _httpCorrelation.GetCorrelationInfo();
+        return new OkObjectResult("This HTTP triggered function executed successfully.");
     }
+}
 ```
 
 > Note that the `HttpCorrelation` already has the registered `IHttpCorrelationInfoAccessor` embedded but nothing stops you from injecting the `IHtpCorrelationInfoAccessor` yourself and use that one. Behind the scenes, both instances will be the same.

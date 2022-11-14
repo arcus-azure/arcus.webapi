@@ -48,7 +48,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             return new TestHttpRequestData(
                 new Uri(BogusGenerator.Internet.UrlWithPath()),
                 BogusGenerator.PickRandom<HttpMethod>().ToString(),
-                Stream.Null,
+                new MemoryStream(),
                 new HttpHeadersCollection(),
                 context);
         }
