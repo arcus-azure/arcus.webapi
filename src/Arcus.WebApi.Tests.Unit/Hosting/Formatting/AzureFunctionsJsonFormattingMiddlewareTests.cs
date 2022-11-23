@@ -131,7 +131,6 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
-        
         [Fact]
         public async Task Request_WithJsonAllowHeaderWithExtension_ReturnsOk()
         {
