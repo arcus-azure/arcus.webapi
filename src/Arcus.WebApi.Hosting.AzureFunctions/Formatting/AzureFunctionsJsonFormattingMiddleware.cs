@@ -80,7 +80,7 @@ namespace Arcus.WebApi.Hosting.AzureFunctions.Formatting
         {
             if (request.Headers.TryGetValues("Accept", out IEnumerable<string> headerValues))
             {
-                if (headerValues.Any(value => value == "application/json" || value == "*/*"))
+                if (headerValues.Any(value => value?.Contains("application/json") is true || value?.Contains("*/*") is true))
                 {
                     return true;
                 }

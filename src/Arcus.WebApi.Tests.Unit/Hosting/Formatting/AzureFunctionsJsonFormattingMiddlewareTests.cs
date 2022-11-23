@@ -131,6 +131,43 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
             Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         }
 
+        
+        [Fact]
+        public async Task Request_WithJsonAllowHeaderWithExtension_ReturnsOk()
+        {
+            // Arrange
+            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var context = TestFunctionContext.Create(req =>
+            {
+                req.Headers.TryAddWithoutValidation("allow", "application/json, q=4");
+            });
+
+            // Act
+            await middleware.Invoke(context, CreateOkResponse);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
+        [Fact]
+        public async Task Request_WithAllAllowHeaderWithExtension_ReturnsOk()
+        {
+            // Arrange
+            var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var context = TestFunctionContext.Create(req =>
+            {
+                req.Headers.TryAddWithoutValidation("allow", "q=0.8, */*");
+            });
+
+            // Act
+            await middleware.Invoke(context, CreateOkResponse);
+
+            // Assert
+            HttpResponseData response = context.GetHttpResponseData();
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        }
+
         private static async Task CreateOkResponse(FunctionContext context)
         {
             HttpRequestData request = await context.GetHttpRequestDataAsync();
