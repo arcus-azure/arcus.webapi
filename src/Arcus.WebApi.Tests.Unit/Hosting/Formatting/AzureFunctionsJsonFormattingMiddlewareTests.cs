@@ -2,8 +2,8 @@
 using System.Text;
 using System.Threading.Tasks;
 using Arcus.WebApi.Hosting.AzureFunctions.Formatting;
-using Arcus.WebApi.Logging.AzureFunctions;
 using Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions;
+using Bogus;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Xunit;
@@ -12,6 +12,8 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
 {
     public class AzureFunctionsJsonFormattingMiddlewareTests
     {
+        private static readonly Faker BogusGenerator = new Faker();
+
         [Fact]
         public async Task Request_WithoutJsonFormattingHeaders_ReturnsFailure()
         {
@@ -136,9 +138,10 @@ namespace Arcus.WebApi.Tests.Unit.Hosting.Formatting
         {
             // Arrange
             var middleware = new AzureFunctionsJsonFormattingMiddleware();
+            var weight = BogusGenerator.Random.Double();
             var context = TestFunctionContext.Create(req =>
             {
-                req.Headers.TryAddWithoutValidation("allow", "application/json, q=4");
+                req.Headers.TryAddWithoutValidation("allow", $"application/json, q={weight}");
             });
 
             // Act
