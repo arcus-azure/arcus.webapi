@@ -8,8 +8,10 @@ using Arcus.WebApi.Tests.Core;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
+using Microsoft.ApplicationInsights.Channel;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
+using Microsoft.ApplicationInsights.Extensibility.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
@@ -35,8 +37,59 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         }
 
         [Fact]
+        public async Task Correlate_WithSingleArcusApi_Succeeds()
+        {
+            // Arrange
+            var stockSpySink = new InMemoryApplicationInsightsTelemetryConverter();
+            var stockChannel = new InMemoryTelemetryChannel();
+            var arcusOptions = new TestApiServerOptions()
+                .ConfigureServices(services =>
+                {
+                    services.AddHttpCorrelation();
+                    services.Configure((TelemetryConfiguration config) => config.TelemetryChannel = stockChannel);
+                })
+                .Configure(app => app.UseHttpCorrelation()
+                                     .UseRequestTracking())
+                .ConfigureHost(builder =>
+                {
+                    builder.UseSerilog((ctx, provider, config) =>
+                    {
+                        config.Enrich.WithHttpCorrelationInfo(provider)
+                              .WriteTo.ApplicationInsights(stockSpySink);
+                    });
+                });
+
+            await using (var arcusApp = await TestApiServer.StartNewAsync(arcusOptions, _logger))
+            {
+                var request = 
+                    HttpRequestBuilder.Get(ArcusStockController.Route)
+                                      .WithHeader("traceparent", null);
+
+                using (HttpResponseMessage response = await arcusApp.SendAsync(request))
+                {
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                }
+            }
+
+            RequestTelemetry requestArcusEndpoint = AssertX.GetRequestFrom(stockSpySink.Telemetries, r => r.Url == new Uri(arcusOptions.Url + ArcusStockController.Route));
+            DependencyTelemetry dependViaArcusOnKeyVault = AssertX.GetDependencyFrom(stockSpySink.Telemetries, d => d.Type == "Azure key vault" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnSql = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "SQL" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnServiceBus = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "Azure Service Bus" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+            DependencyTelemetry dependViaMicrosoftOnEventHubs = AssertX.GetDependencyFrom(stockChannel.Telemetries, d => d.Type == "Queue Message | Azure Service Bus" && d.Context.Operation.Id == requestArcusEndpoint.Context.Operation.Id);
+
+            Assert.Equal(requestArcusEndpoint.Id, dependViaArcusOnKeyVault.Context.Operation.ParentId);
+            Assert.Equal(requestArcusEndpoint.Id, dependViaMicrosoftOnSql.Context.Operation.ParentId);
+            Assert.Equal(requestArcusEndpoint.Id, dependViaMicrosoftOnServiceBus.Context.Operation.ParentId);
+            Assert.Equal(requestArcusEndpoint.Id, dependViaMicrosoftOnEventHubs.Context.Operation.ParentId);
+            
+            var telemetries = new OperationTelemetry[] { requestArcusEndpoint, dependViaArcusOnKeyVault, dependViaMicrosoftOnSql, dependViaMicrosoftOnServiceBus, dependViaMicrosoftOnEventHubs };
+            Assert.All(telemetries, t => Assert.NotNull(t.Context.Operation.Id));
+        }
+
+        [Fact]
         public async Task Correlate_WithMicrosoftArcusCombinationOverTwoApis_Succeeds()
         {
+            // Arrange
             var stockSpySink = new InMemoryApplicationInsightsTelemetryConverter();
             var stockChannel = new InMemoryTelemetryChannel();
             var arcusOptions = new TestApiServerOptions()

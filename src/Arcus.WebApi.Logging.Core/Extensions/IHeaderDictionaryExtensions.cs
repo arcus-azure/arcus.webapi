@@ -25,7 +25,7 @@ namespace Microsoft.AspNetCore.Http
             StringValues traceParent = headers["traceparent"];
 #endif
 
-            if (traceParent == StringValues.Empty)
+            if (traceParent == StringValues.Empty || string.IsNullOrWhiteSpace(traceParent))
             {
                 return traceParent;
             }

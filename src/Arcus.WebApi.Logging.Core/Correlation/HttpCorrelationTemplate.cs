@@ -114,14 +114,15 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         protected virtual HttpCorrelationResult CorrelateW3CForNewParent(IHeaderDictionary requestHeaders)
         {
             Activity newActivity = CreateNewActivity(requestHeaders);
+
+            newActivity.Start();
+            Activity.Current = newActivity;
+
             string transactionId = newActivity.TraceId.ToHexString();
             Logger.LogTrace("Correlation transaction ID '{TransactionId}' generated for incoming HTTP request", transactionId);
 
             string operationId = newActivity.SpanId.ToHexString();
             Logger.LogTrace("Correlation operation ID '{OperationId}' generated for incoming HTTP request", operationId);
-
-            newActivity.Start();
-            Activity.Current = newActivity;
 
             _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
             return HttpCorrelationResult.Success(requestId: null);
@@ -205,7 +206,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
         private static bool IsTraceParentHeaderW3CCompliant(StringValues ids)
         {
-            if (ids == StringValues.Empty)
+            if (ids == StringValues.Empty || string.IsNullOrWhiteSpace(ids))
             {
                 return false;
             }
