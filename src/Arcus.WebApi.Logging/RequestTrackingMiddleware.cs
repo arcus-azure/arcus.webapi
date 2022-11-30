@@ -12,6 +12,7 @@ using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
+using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
 using Serilog.Context;
@@ -210,7 +211,26 @@ namespace Arcus.WebApi.Logging
             Dictionary<string, object> telemetryContext = CreateTelemetryContext(requestBody, responseBody, httpContext.Request.Headers, _logger);
             telemetryContext.Add("Body", "Request body is now available in 'RequestBody' dimension");
 
-            _logger.LogRequest(httpContext.Request, httpContext.Response, duration, telemetryContext);
+            var operationName = BuildOperationName(httpContext);
+
+            _logger.LogRequest(httpContext.Request, httpContext.Response, operationName, duration, telemetryContext);
+        }
+
+        private static string BuildOperationName(HttpContext httpContext)
+        {
+            string operationName = null;
+
+            if (EndpointHttpContextExtensions.GetEndpoint(httpContext) is RouteEndpoint re)
+            {
+                operationName = re.RoutePattern.RawText;
+            }
+
+            if (String.IsNullOrWhiteSpace(operationName))
+            {
+                operationName = httpContext.Request.Path;
+            }
+
+            return $"{httpContext.Request.Method} {operationName}";
         }
 
         private async Task<string> GetPotentialRequestBodyAsync(HttpContext httpContext, bool includeRequestBody)
