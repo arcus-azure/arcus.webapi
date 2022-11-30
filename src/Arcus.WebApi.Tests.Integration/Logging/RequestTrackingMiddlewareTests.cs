@@ -1056,7 +1056,6 @@ namespace Arcus.WebApi.Tests.Integration.Logging
         public async Task GetRequest_TracksRequest_CorrectOperationNameIsLogged()
         {
             // Arrange
-            
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
                 .Configure(app => app.UseRequestTracking())
