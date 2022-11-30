@@ -211,12 +211,12 @@ namespace Arcus.WebApi.Logging
             Dictionary<string, object> telemetryContext = CreateTelemetryContext(requestBody, responseBody, httpContext.Request.Headers, _logger);
             telemetryContext.Add("Body", "Request body is now available in 'RequestBody' dimension");
 
-            var operationName = BuildOperationName(httpContext);
+            var operationName = DetermineRequestOperationName(httpContext);
 
             _logger.LogRequest(httpContext.Request, httpContext.Response, operationName, duration, telemetryContext);
         }
 
-        private static string BuildOperationName(HttpContext httpContext)
+        private static string DetermineRequestOperationName(HttpContext httpContext)
         {
             string operationName = null;
 
