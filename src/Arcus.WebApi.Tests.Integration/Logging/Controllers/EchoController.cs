@@ -7,6 +7,11 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
     {
         public const string GetPostRoute = "echo";
 
+        public static string GetPostRouteWithRouteParameters(int deviceId)
+        {
+            return $"devices/{deviceId}/echo";
+        }
+
         [HttpGet]
         [Route(GetPostRoute)]
         public IActionResult Get()
@@ -17,6 +22,13 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
         [HttpPost]
         [Route(GetPostRoute)]
         public IActionResult Post([FromBody] string body)
+        {
+            return Ok(body);
+        }
+
+        [HttpPost]
+        [Route("devices/{deviceId}/echo")]
+        public IActionResult Post([FromRoute] int deviceId, [FromBody] string body)
         {
             return Ok(body);
         }

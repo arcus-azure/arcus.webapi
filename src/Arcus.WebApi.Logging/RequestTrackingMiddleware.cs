@@ -220,7 +220,7 @@ namespace Arcus.WebApi.Logging
         {
             string operationName = null;
 
-            if (EndpointHttpContextExtensions.GetEndpoint(httpContext) is RouteEndpoint re)
+            if (httpContext.Features.Get<Microsoft.AspNetCore.Http.Features.IEndpointFeature>()?.Endpoint is RouteEndpoint re)
             {
                 operationName = re.RoutePattern.RawText;
             }
