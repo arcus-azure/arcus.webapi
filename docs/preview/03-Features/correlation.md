@@ -49,6 +49,8 @@ These three things need to be added on both sides:
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
+using Serilog;
+using Serilog.Configuration;
 
 WebApplication builder = WebApplication.CreateBuilder();
 builder.Services.AddHttpCorrelation();
@@ -56,10 +58,9 @@ builder.Services.AddHttpClient("from-service-a-to-service-b");
 
 builder.Host.UseSerilog((context, serviceProvider, config) =>
 {
-    return new LoggerConfiguration()
-        .Enrich.WithHttpCorrelationInfo(serviceProvider)
-        .WriteTo.Console()
-        .CreateLogger();
+    config.Enrich.WithHttpCorrelationInfo(serviceProvider)
+          .WriteTo.Console()
+          .CreateLogger();
 });
 
 WebApplication app = builder.Build();
