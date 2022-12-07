@@ -26,7 +26,7 @@ The following list shows each step in the diagram:
 5. Service B responds to service A with the same information as the call to service B.
 6. The user receives both the **transaction ID** and **operation ID** in their final response.
 
-💡 This correlation is based on the `traceparent` HTTP request/response header, however.
+💡 This correlation is based on the `traceparent` HTTP request/response header.
 
 Additional [configuration](#configuration) is available to tweak this functionality.
 
@@ -42,9 +42,10 @@ PM > Install-Package Arcus.WebApi.Logging
 
 ## Usage
 To fully benefit from the Arcus' HTTP correlation functionality, both sending and receiving HTTP endpoints should be configured.
-
-### Sending side
-To make sure the correlation is added to the HTTP request, following additions have to be made.
+These three things need to be added on both sides:
+1. Adding HTTP correlation to application services with `services.AddHttpCorrelation()`.
+2. Adding HTTP correlation to application middleware with `app.UseHttpCorrelation()` and `app.UseRequestTracking()` ([more info on request tracking](logging.md)). 
+3. Adding HTTP correlation enricher to Serilog configuration with `Enrich.WithHttpCorrelationInfo(app.Services)` ([more info](#logging)).
 
 ```csharp
 using Microsoft.AspNetCore.Builder;
@@ -53,30 +54,34 @@ WebApplication builder = WebApplication.CreateBuilder();
 builder.Services.AddHttpCorrelation();
 builder.Services.AddHttpClient("from-service-a-to-service-b");
 
-WebApplication app = builder.Build();
-```
-
-### Receiving side
-To make sure the correlation is added to the HTTP response, following additions have to be made:
-
-```csharp
-using Microsoft.AspNetCore.Builder;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder();
-builder.Services.AddHttpCorrelation();
+builder.Host.UseSerilog((context, serviceProvider, config) =>
+{
+    return new LoggerConfiguration()
+        .Enrich.WithHttpCorrelationInfo(serviceProvider)
+        .WriteTo.Console()
+        .CreateLogger();
+});
 
 WebApplication app = builder.Build();
 app.UseHttpCorrelation();
+
+// ⚠ Because the correlation is based on <span>ASP.NET</span> Core middleware, it's recommended to place it before the `.UseRouting` call.
 app.UseRouting();
 app.UseRequestTracking();
 ```
 
-> ⚠ Because the correlation is based on <span>ASP.NET</span> Core middleware, it's recommended to place it before the `.UseRouting` call.
+> ⚡ The `UseRequestTracking` extension will make sure that the incoming HTTP request will be tracked as a 'request' in Application Insights (if configured).
+> For more information on HTTP request tracking, see [our dedicated feature documentation page](./logging.md);
+
+> ⚡ As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration as an [enricher](https://github.com/serilog/serilog/wiki/Enrichment). 
+> This adds the correlation information of the current request to the log event as a log property called `TransactionId`, `OperationId`, and `OperationParentId`.
+> **Example**
+> - `TransactionId`: `4b1c0c8d608f57db7bd0b13c88ef865e`
+> - `OperationId`: `4a3c1c8d`
+> - `OperationParentId`: `4c6893cc6c6cad10`
+
 
 > ⚡ To use HTTP correlation in Azure Functions, see [this dedicated page](correlation-azure-functions.md), as the configuration on the receiving is slightly different.
-
-The `UseRequestTracking` extension will make sure that the incoming HTTP request will be tracked as a 'request' in Application Insights (if configured).
-For more information on HTTP request tracking, see [our dedicated feature documentation page](./logging.md);
 
 ## Configuration
 The HTTP correlation can be configured with different options to work for your needs.
@@ -146,36 +151,4 @@ public class OrderController : ControllerBase
         _accessor.SetCorrelationInfo(correlation);
     }
 }
-```
-
-## Logging
-As an additional feature, we provide an extension to use the HTTP correlation directly in a [Serilog](https://serilog.net/) configuration as an [enricher](https://github.com/serilog/serilog/wiki/Enrichment). 
-This adds the correlation information of the current request to the log event as a log property called `TransactionId`, `OperationId`, and `OperationParentId`.
-
-**Example**
-
-- `TransactionId`: `4b1c0c8d608f57db7bd0b13c88ef865e`
-- `OperationId`: `4a3c1c8d`
-- `OperationParentId`: `4c6893cc6c6cad10`
-
-**Usage**
-The enricher requires access to the application services so it can get the correlation information.
-
-```csharp
-using Microsoft.AspNetCore.Builder;
-using Serilog;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder();
-builder.Host.UseSerilog((context, serviceProvider, config) =>
-{
-    return new LoggerConfiguration()
-        .Enrich.WithHttpCorrelationInfo(serviceProvider)
-        .WriteTo.Console()
-        .CreateLogger();
-});
-
-WebApplication app = builder.Build();
-app.UseHttpCorrelation();
-app.UseRouting();
-app.UseRequestTracking();
 ```
