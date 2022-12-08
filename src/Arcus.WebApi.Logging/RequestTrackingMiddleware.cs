@@ -1,21 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging.Core.RequestTracking;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Primitives;
-using Serilog.Context;
 
 namespace Arcus.WebApi.Logging
 {
@@ -218,14 +212,14 @@ namespace Arcus.WebApi.Logging
 
         private static string DetermineRequestOperationName(HttpContext httpContext)
         {
-            string operationName = null;
-
             if (httpContext.Features.Get<IEndpointFeature>()?.Endpoint is RouteEndpoint routingEndpoint)
             {
-                operationName = routingEndpoint.RoutePattern.RawText;
+                string operationName = routingEndpoint.RoutePattern.RawText;
+
+                return $"{httpContext.Request.Method} {operationName}";
             }
 
-            return $"{httpContext.Request.Method} {operationName}";
+            return null;
         }
 
         private async Task<string> GetPotentialRequestBodyAsync(HttpContext httpContext, bool includeRequestBody)
