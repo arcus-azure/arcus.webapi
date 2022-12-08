@@ -75,7 +75,7 @@ public class MyHttpFunction
 }
 ```
 
-To use the old Hierarhical HTTP correlation, use the following:
+To use the old Hierarchical HTTP correlation, use the following:
 ```csharp
 using Arcus.WebApi.Logging.Correlation;
 
