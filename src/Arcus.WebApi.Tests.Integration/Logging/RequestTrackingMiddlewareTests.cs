@@ -1088,8 +1088,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
-                    .Post(EchoController.GetPostRouteWithRouteParameters(deviceId: 17))
-                    .WithJsonText("echo");
+                    .Post(RequestOperationNameController.GetPostRouteWithRouteParameters(deviceId: 17))
+                    .WithJsonText("someBody");
 
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
