@@ -82,7 +82,7 @@ app.UseRequestTracking();
 > - `OperationParentId`: `4c6893cc6c6cad10`
 
 
-> ⚡ To use HTTP correlation in Azure Functions, see [this dedicated page](correlation-azure-functions.md), as the configuration on the receiving is slightly different.
+> ⚡ To use HTTP correlation in Azure Functions, see [this dedicated page](correlation-azure-functions.md), as the configuration on the receiving side is slightly different.
 
 ## Configuration
 The HTTP correlation can be configured with different options to work for your needs.
