@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
-using Arcus.Observability.Telemetry.Core;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.Core.Correlation;
@@ -14,9 +12,7 @@ using Arcus.WebApi.Tests.Integration.Logging.Controllers;
 using Arcus.WebApi.Tests.Integration.Logging.Fixture;
 using Bogus;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
-using Microsoft.Extensions.Logging;
 using Moq;
 using Serilog;
 using Serilog.Events;
@@ -74,7 +70,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     // Assert
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                 }
             }
@@ -103,7 +99,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
@@ -135,7 +131,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.DoesNotContain(headerName, eventContext);
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
@@ -176,7 +172,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
 
                     (string requestBodyKey, string requestBody) = Assert.Single(eventContext, item => item.Key == RequestBodyKey);
                     var actualTrackedRequestBody = JsonSerializer.Deserialize<Order>(requestBody.Replace("\\", ""));
@@ -222,7 +218,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.DoesNotContain(omittedHeaderName, eventContext);
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
@@ -254,7 +250,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.DoesNotContain(headerValue, eventContext);
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
@@ -285,7 +281,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.DoesNotContain(headerName, eventContext);
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
@@ -316,7 +312,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.Equal(requestBody, Assert.Contains(RequestBodyKey, eventContext));
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
@@ -351,7 +347,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     string partyRequestBody = Assert.Contains(RequestBodyKey, eventContext);
                     Assert.StartsWith(partyRequestBody, requestBody);
@@ -386,7 +382,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.Equal(requestBody, Assert.Contains(ResponseBodyKey, eventContext));
@@ -421,7 +417,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     string partlyResponseBody = Assert.Contains(ResponseBodyKey, eventContext);
@@ -458,7 +454,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.Equal(body, Assert.Contains(RequestBodyKey, eventContext));
                     Assert.Equal(body, Assert.Contains(ResponseBodyKey, eventContext));
@@ -495,7 +491,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     string partyRequestBody = Assert.Contains(RequestBodyKey, eventContext);
                     Assert.True(partyRequestBody.Length < requestBody.Length, "Only a part of the request body should be tracked");
@@ -532,7 +528,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    Assert.False(ContainsLoggedEventContext(spySink), "No event context should be logged when the skipped request tracking attribute is applied");
+                    Assert.False(spySink.HasRequestLogProperties(), "No event context should be logged when the skipped request tracking attribute is applied");
                 }
             }
         }
@@ -571,7 +567,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     string responseContents = await response.Content.ReadAsStringAsync();
                     Assert.Equal(ExcludeFilterRequestTrackingOnMethodController.ResponsePrefix + requestBody, responseContents);
 
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.True(includeRequestBody == (eventContext.TryGetValue(RequestBodyKey, out string actualRequestBody) && actualRequestBody == requestBody),
                         "Excluding the request body in the attribute filter should result that there's no request body in the logged telemetry context");
@@ -609,7 +605,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     // Assert
                     string responseContents = await response.Content.ReadAsStringAsync();
                     Assert.Equal(ExcludeFilterIgnoredWhileExcludedOnClassController.ResponsePrefix + requestBody, responseContents);
-                    Assert.False(ContainsLoggedEventContext(spySink), "No event context should be logged when the skipped request tracking attribute is applied");
+                    Assert.False(spySink.HasRequestLogProperties(), "No event context should be logged when the skipped request tracking attribute is applied");
                 }
             }
         }
@@ -642,7 +638,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     // Assert
                     string responseContents = await response.Content.ReadAsStringAsync();
                     Assert.Equal(ExcludeFilterUsedWhileExcludedOnClassController.ResponsePrefix + requestBody, responseContents);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.DoesNotContain(RequestBodyKey, eventContext);
                     Assert.DoesNotContain(ResponseBodyKey, eventContext);
@@ -672,7 +668,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    Assert.False(ContainsLoggedEventContext(spySink), "No event context should be logged when the omitted route is applied");
+                    Assert.False(spySink.HasRequestLogProperties(), "No event context should be logged when the omitted route is applied");
                 }
             }
         }
@@ -702,7 +698,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    Assert.False(ContainsLoggedEventContext(spySink), "No event context should be logged when the omitted route is applied");
+                    Assert.False(spySink.HasRequestLogProperties(), "No event context should be logged when the omitted route is applied");
                 }
             }
         }
@@ -734,7 +730,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                 }
             }
@@ -774,7 +770,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     Assert.Equal(trackedStatusCode, response.StatusCode);
                     string responseBody = await response.Content.ReadAsStringAsync();
                     Assert.Equal(requestBody.Replace("request", "response"), responseBody);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                     Assert.Equal(requestBody, Assert.Contains(RequestBodyKey, eventContext));
                     Assert.Equal(responseBody, Assert.Contains(ResponseBodyKey, eventContext));
@@ -812,7 +808,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(responseStatusCode, (int)response.StatusCode);
-                    Assert.False(ContainsLoggedEventContext(spySink),
+                    Assert.False(spySink.HasRequestLogProperties(),
                         "Should not contain logged event context when the status code is discarded from request tracking");
                 }
             }
@@ -853,7 +849,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal((HttpStatusCode)statusCode, response.StatusCode);
-                    Assert.False(ContainsLoggedEventContext(spySink),
+                    Assert.False(spySink.HasRequestLogProperties(),
                         "Should not contain logged event context when the status code is outside the configured range from request tracking");
                 }
             }
@@ -891,7 +887,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal((HttpStatusCode)statusCode, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                 }
             }
@@ -919,10 +915,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                     .WithHeader(headerName, headerValue)
                     .WithJsonText(((int)responseStatusCode).ToString());
 
-                using (HttpResponseMessage response = await server.SendAsync(request))
+                using (HttpResponseMessage _ = await server.SendAsync(request))
                 {
                     // Assert
-                    Assert.False(ContainsLoggedEventContext(spySink),
+                    Assert.False(spySink.HasRequestLogProperties(),
                         "Should not contain logged event context when the status code is outside the configured range from request tracking");
                 }
             }
@@ -953,7 +949,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(trackedStatusCode, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                 }
             }
@@ -985,7 +981,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal((HttpStatusCode)responseStatusCode, response.StatusCode);
-                    Assert.False(ContainsLoggedEventContext(spySink),
+                    Assert.False(spySink.HasRequestLogProperties(),
                         "Should not contain logged event context when the status code is outside the configured range from request tracking");
                 }
             }
@@ -1016,7 +1012,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     Assert.Equal((HttpStatusCode)responseStatusCode, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
                 }
             }
@@ -1045,7 +1041,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
                     Assert.Equal(responseStatusCode, response.StatusCode);
-                    IDictionary<string, string> eventContext = GetLoggedEventContext(spySink);
+                    IDictionary<string, string> eventContext = spySink.GetLoggedEventContext();
                     Assert.Equal(headerValue, Assert.Contains(headerName, eventContext));
 
                 }
@@ -1069,9 +1065,9 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> requestLogProperties = GetRequestLogProperties(spySink);
+                    var requestLogProperties = spySink.GetRequestLogProperties();
 
-                    Assert.Equal("GET echo", Assert.Contains(OperationNameKey, requestLogProperties));
+                    Assert.Equal("GET echo", Assert.Contains(OperationNameKey, requestLogProperties).ToDecentString());
                 }
             }
         }
@@ -1095,53 +1091,16 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    IDictionary<string, string> requestLogProperties = GetRequestLogProperties(spySink);
+                    var requestLogProperties = spySink.GetRequestLogProperties();
 
-                    Assert.Equal("POST devices/{deviceId}/echo", Assert.Contains(OperationNameKey, requestLogProperties));
+                    Assert.Equal("POST devices/{deviceId}/echo", Assert.Contains(OperationNameKey, requestLogProperties).ToDecentString());
                 }
             }
         }
 
-        private static bool ContainsLoggedEventContext(InMemorySink testSink)
-        {
-            IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties =
-                testSink.DequeueLogEvents()
-                        .SelectMany(ev => ev.Properties);
-
-            var eventContexts = properties.Where(prop => prop.Key == ContextProperties.RequestTracking.RequestLogEntry);
-            return eventContexts.Any();
-        }
-
-        private static IDictionary<string, string> GetLoggedEventContext(InMemorySink testSink)
-        {
-            IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties =
-                testSink.DequeueLogEvents()
-                        .SelectMany(ev => ev.Properties);
-
-            var logEntries = properties.Where(prop => prop.Key == ContextProperties.RequestTracking.RequestLogEntry);
-            (string key, LogEventPropertyValue logEntry) = Assert.Single(logEntries);
-            var requestLogEntry = Assert.IsType<StructureValue>(logEntry);
-
-            LogEventProperty eventContext =
-                Assert.Single(requestLogEntry.Properties, property => property.Name == ContextProperties.TelemetryContext);
-            var dictionaryValue = Assert.IsType<DictionaryValue>(eventContext.Value);
-
-            return dictionaryValue.Elements.ToDictionary(
-                item => item.Key.ToStringValue(),
-                item => item.Value.ToStringValue().Trim('\\', '\"', '[', ']'));
-        }
-
-        private static IDictionary<string, string> GetRequestLogProperties(InMemorySink testSink)
-        {
-            IEnumerable<KeyValuePair<string, LogEventPropertyValue>> properties =
-                testSink.DequeueLogEvents()
-                    .SelectMany(ev => ev.Properties);
-
-            var logEntries = properties.Where(prop => prop.Key == ContextProperties.RequestTracking.RequestLogEntry);
-            (string key, LogEventPropertyValue logEntry) = Assert.Single(logEntries);
-            var requestLogEntry = Assert.IsType<StructureValue>(logEntry);
-
-            return requestLogEntry.Properties.ToDictionary(item => item.Name, item => item.Value.ToDecentString());
-        }
+        //private static bool ContainsLoggedEventContext(InMemorySink testSink)
+        //{
+        //    return testSink.HasRequestLogProperties();
+        //}
     }
 }
