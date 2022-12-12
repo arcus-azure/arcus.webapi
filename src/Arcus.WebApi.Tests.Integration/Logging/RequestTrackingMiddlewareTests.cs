@@ -1065,7 +1065,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    var requestLogProperties = spySink.GetRequestLogProperties();
+                    IDictionary<string, LogEventPropertyValue> requestLogProperties = spySink.GetRequestLogProperties();
 
                     Assert.Equal("GET echo", Assert.Contains(OperationNameKey, requestLogProperties).ToDecentString());
                 }
