@@ -96,7 +96,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// </summary>
         /// <remarks>This is a non-accumulative method, multiple calls will override the request body, not append to it.</remarks>
         /// <param name="json">The JSON request body.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="text"/> is blank.</exception>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="json"/> is blank.</exception>
         public HttpRequestBuilder WithJsonBody(string json)
         {
             Guard.NotNullOrWhitespace(json, nameof(json), "Requires non-blank JSON request body to add the content to the HTTP request builder instance");
