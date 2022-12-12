@@ -1097,10 +1097,5 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 }
             }
         }
-
-        //private static bool ContainsLoggedEventContext(InMemorySink testSink)
-        //{
-        //    return testSink.HasRequestLogProperties();
-        //}
     }
 }
