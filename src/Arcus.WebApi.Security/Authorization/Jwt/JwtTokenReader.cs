@@ -31,30 +31,30 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// Initializes a new instance of the <see cref="JwtTokenReader"/> class.
         /// </summary>
         /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
-        /// <param name="applicationId">The Azure AD Application used as audience to validate against.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="applicationId"/> is blank.</exception>
-        public JwtTokenReader(string applicationId) : this(applicationId, NullLogger<JwtTokenReader>.Instance)
+        /// <param name="audience">The id of the intended audience for which this token must be validated against.</param>
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="audience"/> is blank.</exception>
+        public JwtTokenReader(string audience) : this(audience, NullLogger<JwtTokenReader>.Instance)
         {
-            Guard.NotNullOrWhitespace(applicationId, nameof(applicationId), "Requires an Azure AD application ID used as audience to validate against");
+            Guard.NotNullOrWhitespace(audience, nameof(audience), "Requires an audience to validate against");
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtTokenReader"/> class.
         /// </summary>
         /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
-        /// <param name="applicationId">The Azure AD Application used as audience to validate against.</param>
+        /// <param name="audience">The id of the intended audience for which this token must be validated against.</param>
         /// <param name="logger">The logger instance to write diagnostic messages when verifying the JWT token.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="applicationId"/> is blank.</exception>
-        public JwtTokenReader(string applicationId, ILogger<JwtTokenReader> logger) : this(new Dictionary<string, string> {{ JwtClaimTypes.Audience, applicationId}}, logger)
+        /// <exception cref="ArgumentException">Thrown when the <paramref name="audience"/> is blank.</exception>
+        public JwtTokenReader(string audience, ILogger<JwtTokenReader> logger) : this(new Dictionary<string, string> {{ JwtClaimTypes.Audience, audience}}, logger)
         {
-            Guard.NotNullOrWhitespace(applicationId, nameof(applicationId), "Requires an Azure AD application ID used as audience to validate against");
+            Guard.NotNullOrWhitespace(audience, nameof(audience), "Requires an audience to validate against");
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="JwtTokenReader"/> class.
         /// </summary>
         /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
-        /// <param name="claimCheck">Azure AD Application used as audience to validate against</param>
+        /// <param name="claimCheck">A dictionary that contains key/value pairs representing the JWT claims that must be checked.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="claimCheck"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
         public JwtTokenReader(IDictionary<string, string> claimCheck) : this(claimCheck, NullLogger<JwtTokenReader>.Instance)
@@ -65,7 +65,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// Initializes a new instance of the <see cref="JwtTokenReader"/> class.
         /// </summary>
         /// <remarks>Uses Microsoft OpenId connect discovery endpoint</remarks>
-        /// <param name="claimCheck">Azure AD Application used as audience to validate against</param>
+        /// <param name="claimCheck">A dictionary that contains key/value pairs representing the JWT claims that must be checked.</param>
         /// <param name="logger">The logger instance to write diagnostic messages when verifying the JWT token.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="claimCheck"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
