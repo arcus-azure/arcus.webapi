@@ -102,6 +102,14 @@ namespace Microsoft.Extensions.DependencyInjection
                     var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                     return new HttpCorrelationInfoAccessor(httpContextAccessor);
                 });
+                services.AddSingleton(serviceProvider =>
+                {
+                    var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
+                    var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
+                    var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
+                
+                    return new HttpCorrelation(Options.Options.Create(options), httpContextAccessor, correlationInfoAccessor, logger);
+                });
             }
 
             services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
