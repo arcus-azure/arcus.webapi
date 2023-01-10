@@ -114,12 +114,6 @@ builder.Services.AddHttpCorrelation(options =>
 
     // The header that will contain the operation ID in the HTTP response (default: X-Operation-Id).
     options.Operation.HeaderName = "X-MyOperation-Id";
-
-    // Configuration on operation parent ID request header (`traceparent`).
-    // ------------------------------------------------------------------
-
-    // The header that will contain the operation parent ID in the HTTP request (default: traceparent).
-    options.UpstreamService.HeaderName = "x-request-id";
 });
 ```
 
