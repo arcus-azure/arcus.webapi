@@ -29,7 +29,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<IHttpCorrelationInfoAccessor>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
-            Assert.NotNull(provider.GetService<AzureFunctionsHttpCorrelation>());
+            Assert.NotNull(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
             Assert.Null(provider.GetService<HttpCorrelation>());
         }
 
@@ -49,7 +49,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<IHttpCorrelationInfoAccessor>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
-            Assert.NotNull(provider.GetService<AzureFunctionsHttpCorrelation>());
+            Assert.NotNull(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
             Assert.Null(provider.GetService<HttpCorrelation>());
         }
 
@@ -69,7 +69,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<IHttpCorrelationInfoAccessor>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
-            Assert.NotNull(provider.GetService<AzureFunctionsHttpCorrelation>());
+            Assert.NotNull(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
             Assert.Null(provider.GetService<HttpCorrelation>());
         }
 
@@ -87,7 +87,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
             Assert.NotNull(provider.GetService<HttpCorrelation>());
-            Assert.Null(provider.GetService<AzureFunctionsHttpCorrelation>());
+            Assert.Null(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
         }
     } 
 }
