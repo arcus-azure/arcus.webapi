@@ -5,7 +5,9 @@ using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Moq;
 using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
@@ -18,6 +20,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddSingleton(Mock.Of<IHostingEnvironment>());
 
             // Act
             services.AddHttpCorrelation();
@@ -54,6 +57,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             // Arrange
             var services = new ServiceCollection();
+            services.AddSingleton(Mock.Of<IHostingEnvironment>());
 
             // Act
             services.AddHttpCorrelation((Action<HttpCorrelationInfoOptions>) null);

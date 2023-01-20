@@ -13,7 +13,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         public void GetTraceParent_WithAvailableHeaderValue_Succeeds()
         {
             // Arrange
-            string value = BogusGenerator.Random.String();
+            string value = BogusGenerator.Random.AlphaNumeric(100);
             var headers = new HeaderDictionary();
             headers["traceparent"] = value;
 
