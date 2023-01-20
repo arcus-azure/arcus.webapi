@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Arcus.WebApi.Security.Authentication.Certificates;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,6 +10,7 @@ namespace Microsoft.AspNetCore.Mvc.Filters
     /// <summary>
     /// Extensions on the <see cref="FilterCollection"/> related to authentication.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public static partial class FilterCollectionExtensions
     {
         /// <summary>

@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Primitives;
+﻿using System.Diagnostics.CodeAnalysis;
+using Microsoft.Extensions.Primitives;
 
 // ReSharper disable once CheckNamespace
 namespace System
@@ -6,6 +7,7 @@ namespace System
     /// <summary>
     /// Extensions on the <c>string</c> type, related to handling HTTP request header values.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     internal static class StringExtensions
     {
         /// <summary>

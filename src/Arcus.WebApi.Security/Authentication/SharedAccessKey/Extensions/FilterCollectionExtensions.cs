@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Arcus.Security.Core;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
 using GuardNet;
