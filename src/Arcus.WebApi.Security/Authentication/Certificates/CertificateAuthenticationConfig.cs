@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
@@ -13,7 +12,6 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// <summary>
     /// Representation of the configurable validation requirements on a <see cref="X509Certificate2"/>.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class CertificateAuthenticationConfig
     {
         private readonly IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)> _locationAndKeyByRequirement;

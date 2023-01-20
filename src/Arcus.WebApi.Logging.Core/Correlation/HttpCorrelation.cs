@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
@@ -17,6 +18,7 @@ namespace Arcus.WebApi.Logging.Correlation
     /// using the <see cref="ICorrelationInfoAccessor"/> to expose the result.
     /// </summary>
     /// <seealso cref="HttpCorrelationInfoAccessor"/>
+    [ExcludeFromCodeCoverage]
     public class HttpCorrelation : HttpCorrelationTemplate<HttpRequest, HttpResponse>, ICorrelationInfoAccessor
     {
         private readonly IHttpContextAccessor _httpContextAccessor;

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Linq;
@@ -19,7 +18,6 @@ namespace Arcus.WebApi.Security.Authorization
     /// <summary>
     /// Authorization filter to verify if the HTTP request has a valid JWT token .
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class JwtTokenAuthorizationFilter  : IAsyncAuthorizationFilter
     {
         private const string JwtPattern = "^(Bearer )?[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$";

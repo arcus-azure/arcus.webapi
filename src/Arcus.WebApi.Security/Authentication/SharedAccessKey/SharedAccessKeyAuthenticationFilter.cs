@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -24,7 +23,6 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     /// <remarks>
     ///     Please provide an <see cref="ISecretProvider"/> implementation in the configured services of the request.
     /// </remarks>
-    [ExcludeFromCodeCoverage]
     public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private readonly string _headerName, _queryParameterName, _secretName;

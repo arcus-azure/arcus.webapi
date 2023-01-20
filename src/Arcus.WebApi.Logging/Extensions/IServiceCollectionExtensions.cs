@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
@@ -35,6 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddHttpCorrelation) + " method overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
+        [ExcludeFromCodeCoverage]
         public static IServiceCollection AddHttpCorrelation(
             this IServiceCollection services, 
             Action<CorrelationInfoOptions> configureOptions)
