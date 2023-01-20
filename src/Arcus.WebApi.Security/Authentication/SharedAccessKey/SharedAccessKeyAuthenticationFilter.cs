@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
@@ -70,6 +71,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <returns>
         ///     A <see cref="T:System.Threading.Tasks.Task" /> that on completion indicates the filter has executed.
         /// </returns>
+        [ExcludeFromCodeCoverage]
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             Guard.NotNull(context, nameof(context));

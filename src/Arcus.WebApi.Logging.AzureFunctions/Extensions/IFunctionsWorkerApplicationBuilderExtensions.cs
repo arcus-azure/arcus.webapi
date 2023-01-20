@@ -38,7 +38,7 @@ namespace Microsoft.Extensions.Hosting
 
             return builder;
         }
-
+            
         /// <summary>
         /// Adds a middleware component that exposes the <see cref="FunctionContext"/> in a scoped service <see cref="IFunctionContextAccessor"/>.
         /// </summary>

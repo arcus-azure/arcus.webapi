@@ -28,7 +28,7 @@ jobs:
       uses: b3b00/coverlet-action@1.2.4
       with:
         testProject: 'src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj'
-        excludes: '[Arcus.WebApi.Tests.*]**'
+        excludes: '[Arcus.WebApi.Tests.*]**,[Arcus.WebApi.OpenApi.Extensions]*'
         threshold: 80
         output: 'coverage.xml'
         outputFormat: 'opencover'

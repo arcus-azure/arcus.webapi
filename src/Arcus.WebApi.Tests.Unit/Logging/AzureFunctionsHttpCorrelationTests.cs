@@ -634,7 +634,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
         {
             // Arrange
             var options = new HttpCorrelationInfoOptions();
-            IHttpContextAccessor contextAccessor = Mock.Of<IHttpContextAccessor>();
             ILogger<AzureFunctionsHttpCorrelation> logger = NullLogger<AzureFunctionsHttpCorrelation>.Instance;
             
             // Act / Assert

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Text.RegularExpressions;
 using System.Linq;
@@ -45,6 +46,7 @@ namespace Arcus.WebApi.Security.Authorization
         /// <returns>
         ///     A <see cref="T:System.Threading.Tasks.Task" /> that on completion indicates the filter has executed.
         /// </returns>
+        [ExcludeFromCodeCoverage]
         public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             Guard.NotNull(context, nameof(context));

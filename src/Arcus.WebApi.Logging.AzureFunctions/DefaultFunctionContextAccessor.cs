@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Threading;
 using Microsoft.Azure.Functions.Worker;
 
 namespace Arcus.WebApi.Logging.AzureFunctions
@@ -9,6 +10,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
     /// <remarks>
     ///     Inspired by <a href="https://github.com/dotnet/aspnetcore/blob/main/src/Http/Http/src/HttpContextAccessor.cs" />.
     /// </remarks>
+    [ExcludeFromCodeCoverage]
     public class DefaultFunctionContextAccessor : IFunctionContextAccessor
     {
         private static readonly AsyncLocal<FunctionContextHolder> FunctionContextCurrent = new AsyncLocal<FunctionContextHolder>();

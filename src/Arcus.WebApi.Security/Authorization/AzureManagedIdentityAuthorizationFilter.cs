@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
 using GuardNet;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Mvc.Filters;
 namespace Arcus.WebApi.Security.Authorization
 {
     [Obsolete("Renamed to " + nameof(JwtTokenAuthorizationFilter))]
+    [ExcludeFromCodeCoverage]
     public class AzureManagedIdentityAuthorizationFilter : IAsyncAuthorizationFilter
     {
         public const string DefaultHeaderName = "x-managed-identity-token";

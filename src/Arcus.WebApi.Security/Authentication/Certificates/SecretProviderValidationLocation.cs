@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
@@ -15,6 +16,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// Certificate location implementation to retrieve the expected <see cref="X509Certificate2"/> value from an <see cref="ISecretProvider"/>
     /// implementation that is configured on the request services pipeline.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     internal class SecretProviderValidationLocation : IX509ValidationLocation
     {
         /// <summary>

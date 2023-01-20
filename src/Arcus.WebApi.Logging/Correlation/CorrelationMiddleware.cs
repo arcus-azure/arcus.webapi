@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
@@ -10,6 +11,7 @@ namespace Arcus.WebApi.Logging.Correlation
     /// <summary>
     /// Correlate the incoming request with the outgoing response by using previously configured <see cref="HttpCorrelationInfoOptions"/>.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class CorrelationMiddleware
     {
         private readonly RequestDelegate _next;

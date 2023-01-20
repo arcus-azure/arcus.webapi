@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
@@ -10,6 +11,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
     /// Represents an <see cref="IHttpCorrelationInfoAccessor"/> implementation that gets and sets the <see cref="CorrelationInfo"/> in an Azure Functions environment
     /// with the <see cref="FunctionContext"/> model.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class AzureFunctionsHttpCorrelationInfoAccessor : IHttpCorrelationInfoAccessor
     {
         private readonly IFunctionContextAccessor _contextAccessor;
