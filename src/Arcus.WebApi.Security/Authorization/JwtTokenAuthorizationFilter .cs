@@ -19,6 +19,7 @@ namespace Arcus.WebApi.Security.Authorization
     /// <summary>
     /// Authorization filter to verify if the HTTP request has a valid JWT token .
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class JwtTokenAuthorizationFilter  : IAsyncAuthorizationFilter
     {
         private const string JwtPattern = "^(Bearer )?[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+\\.[A-Za-z0-9_-]+$";
@@ -46,7 +47,6 @@ namespace Arcus.WebApi.Security.Authorization
         /// <returns>
         ///     A <see cref="T:System.Threading.Tasks.Task" /> that on completion indicates the filter has executed.
         /// </returns>
-        [ExcludeFromCodeCoverage]
         public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             Guard.NotNull(context, nameof(context));

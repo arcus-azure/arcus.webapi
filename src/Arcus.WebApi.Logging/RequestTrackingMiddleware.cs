@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -16,6 +17,7 @@ namespace Arcus.WebApi.Logging
     /// <summary>
     /// Request tracing middleware component to log every incoming HTTP request.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class RequestTrackingMiddleware : RequestTrackingTemplate
     {
         private readonly RequestDelegate _next;

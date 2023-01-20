@@ -14,6 +14,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
     /// Represents an <see cref="HttpCorrelationTemplate{THttpRequest,THttpResponse}"/> implementation
     /// that extracts and sets HTTP correlation throughout Azure Functions (in-process) HTTP trigger applications.
     /// </summary>
+    [ExcludeFromCodeCoverage]
     public class AzureFunctionsInProcessHttpCorrelation
     {
         private readonly HttpCorrelationInfoOptions _options;
@@ -56,7 +57,6 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// </summary>
         /// <param name="httpContext">The current HTTP context to add the correlation response headers to.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="httpContext"/> is <c>null</c> or does not have a response present.</exception>
-        [ExcludeFromCodeCoverage]
         public void AddCorrelationResponseHeaders(HttpContext httpContext)
         {
             Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context to add the correlation information to the response headers");
@@ -86,14 +86,14 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
                 _logger.LogTrace("Prepare for the operation parent ID to be included in the response...");
                 httpContext.Response.OnStarting(() =>
                 {
-                    StringValues traceParnet = httpContext.Request.Headers.GetTraceParent();
-                    if (string.IsNullOrWhiteSpace(traceParnet))
+                    StringValues traceParent = httpContext.Request.Headers.GetTraceParent();
+                    if (string.IsNullOrWhiteSpace(traceParent))
                     {
                         _logger.LogTrace("No response header was added given no operation parent ID was found");
                     }
                     else
                     {
-                        AddResponseHeader(httpContext, "traceparent", traceParnet);
+                        AddResponseHeader(httpContext, "traceparent", traceParent);
                     }
 
                     return Task.CompletedTask;

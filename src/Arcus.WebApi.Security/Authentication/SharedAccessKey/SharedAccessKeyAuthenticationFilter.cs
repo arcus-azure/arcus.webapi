@@ -24,6 +24,7 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
     /// <remarks>
     ///     Please provide an <see cref="ISecretProvider"/> implementation in the configured services of the request.
     /// </remarks>
+    [ExcludeFromCodeCoverage]
     public class SharedAccessKeyAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private readonly string _headerName, _queryParameterName, _secretName;
@@ -71,7 +72,6 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <returns>
         ///     A <see cref="T:System.Threading.Tasks.Task" /> that on completion indicates the filter has executed.
         /// </returns>
-        [ExcludeFromCodeCoverage]
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
             Guard.NotNull(context, nameof(context));

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using System.Security.Cryptography.X509Certificates;
@@ -22,6 +23,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// <remarks>
     ///     Please make sure you register an <see cref="CertificateAuthenticationValidator"/> instance in the request services container (ex. in the Startup).
     /// </remarks>
+    [ExcludeFromCodeCoverage]
     public class CertificateAuthenticationFilter : IAsyncAuthorizationFilter
     {
         private const string HeaderName = "X-ARR-ClientCert";
