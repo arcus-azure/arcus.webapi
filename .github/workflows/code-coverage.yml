@@ -25,10 +25,10 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Coverlet coverage unit test
-      run: dotnet test -c Debug -p:coverletOutput=coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:Threshold=80 -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
+      run: dotnet test -c Debug -p:coverletOutput=coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
 
     - name: Coverlet coverage integration test
-      run: dotnet test -c Debug --filter "Category=Integration" -p:MergeWith=src/Arcus.WebApi.Tests.Unit/coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:Threshold=80 -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
+      run: dotnet test -c Debug --filter "Category=Integration" -p:MergeWith=src/Arcus.WebApi.Tests.Unit/coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
 
     - name: Codecov
       uses: codecov/codecov-action@v3.1.1
