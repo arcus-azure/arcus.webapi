@@ -24,11 +24,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Coverlet coverage unit test
-      run: dotnet test -c Debug -p:coverletOutput=coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
+    #- name: Coverlet coverage unit test
+    #  run: dotnet test -c Debug -p:coverletOutput=coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
 
-    - name: Coverlet coverage integration test
-      run: dotnet test -c Debug --filter "Category=Integration" -p:coverletOutput=coverage.xml -p:Threshold=80 -p:MergeWith=src/Arcus.WebApi.Tests.Unit/coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
+    #- name: Coverlet coverage integration test
+    #  run: dotnet test -c Debug --filter "Category=Integration" -p:coverletOutput=coverage.xml -p:Threshold=80 -p:MergeWith=src/Arcus.WebApi.Tests.Unit/coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
+
+    - uses: b3b00/coverlet-action@1.1.9
+      with:
+        testProject: 'src/Arcus.WebApi.sln --filter \"Category!=Docker\"'
+        output: 'coverage.xml'
+        outputFormat: 'opencover'
+        excludes: '[Arcus.WebApi.Tests.*]* \" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute'
+        threshold: 80
 
     - name: Codecov
       uses: codecov/codecov-action@v3.1.1
