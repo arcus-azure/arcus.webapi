@@ -31,7 +31,7 @@ jobs:
     #  run: dotnet test -c Debug --filter "Category=Integration" -p:coverletOutput=coverage.xml -p:Threshold=80 -p:MergeWith=src/Arcus.WebApi.Tests.Unit/coverage.xml -p:CollectCoverage=true -p:CoverletOutputFormat=opencover -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
 
     - name: Coverlet coverage test
-      run: dotnet test -c Debug --filter "Category!=Docker" -p:MergeWith=src/coverage.json -p:CoverletOutput=src/ -p:Threshold=80 -p:ThresholdStat=Total -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" src/Arcus.WebApi.sln
+      run: dotnet test -c Debug --filter "Category!=Docker" -p:MergeWith=src/coverage.json -p:CoverletOutput=src/ -p:Threshold=80 -p:ThresholdStat=Total -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*\" -m:1 src/Arcus.WebApi.sln
 
     - name: Codecov
       uses: codecov/codecov-action@v3.1.1
