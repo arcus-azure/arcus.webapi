@@ -33,9 +33,9 @@ jobs:
     - name: Coverlet coverage test
       uses: b3b00/coverlet-action@1.2.4
       with:
-        testProject: '--filter "Category!=Docker" src/Arcus.WebApi.sln'
+        testProject: 'src/Arcus.WebApi.sln'
         output: 'coverage.xml'
-        outputFormat: 'opencover'
+        outputFormat: 'opencover --filter "Category!=Docker"'
         excludes: '[Arcus.WebApi.Tests.*]*\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute'
         threshold: 80
 
