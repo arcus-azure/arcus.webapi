@@ -45,29 +45,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             _logger = new XunitTestLogger(outputWriter);
         }
-        
-        [Theory]
-        [InlineData(BypassOnMethodController.SharedAccessKeyRoute)]
-        [InlineData(BypassSharedAccessKeyController.BypassOverAuthenticationRoute)]
-        [InlineData(AllowAnonymousSharedAccessKeyController.Route)]
-        public async Task SharedAccessKeyAuthorizedRouteOnFilters_WithBypassAttributeOnMethod_SkipsAuthentication(string route)
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName)));
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(route);
-             
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                }
-            }
-        }
 
         [Theory]
         [InlineData(BypassOnMethodController.SharedAccessKeyRoute)]
@@ -82,7 +59,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(route);
-             
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -93,52 +70,21 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         }
 
         [Fact]
-        public async Task SharedAccessKeyAuthorizedRouteOnFilters_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
-        {
-            // Arrange
-            var spySink = new InMemorySink();
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services => 
-                    services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
-                            .AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName)))
-                .ConfigureHost(host => host.UseSerilog((context, config) => 
-                    config.WriteTo.Sink(spySink)));
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
-                
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
-                    Assert.DoesNotContain(logEvents, logEvent =>
-                    {
-                        string message = logEvent.RenderMessage();
-                        return message.Contains("EventType") && message.Contains("Security");
-                    });
-                }
-            }
-        }
-
-         [Fact]
         public async Task SharedAccessKeyAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthentication()
         {
             // Arrange
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => 
+                .ConfigureServices(services =>
                     services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
                             .AddControllers(opt => opt.AddSharedAccessKeyAuthenticationFilterOnHeader(HeaderName, SecretName)))
-                .ConfigureHost(host => host.UseSerilog((context, config) => 
+                .ConfigureHost(host => host.UseSerilog((context, config) =>
                     config.WriteTo.Sink(spySink)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(HealthController.GetRoute);
-                
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -150,44 +96,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         string message = logEvent.RenderMessage();
                         return message.Contains("EventType") && message.Contains("Security");
                     });
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task SharedAccessKeyAuthorizedRouteOnFilters_EmitsSecurityEventsWhenRequested_RunsAuthentication(bool emitsSecurityEvents)
-        {
-            // Arrange
-            var spySink = new InMemorySink();
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    services.AddSecretStore(stores => stores.AddInMemory(SecretName, $"secret-{Guid.NewGuid()}"))
-                            .AddMvc(opt => opt.Filters.AddSharedAccessKeyAuthenticationOnHeader(HeaderName, SecretName, authOptions =>
-                            {
-                                authOptions.EmitSecurityEvents = emitsSecurityEvents;
-                            }));
-                })
-                .ConfigureHost(host => host.UseSerilog((context, config) => 
-                    config.WriteTo.Sink(spySink)));
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
-                
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
-                    Assert.True(emitsSecurityEvents == logEvents.Any(logEvent =>
-                    {
-                        string message = logEvent.RenderMessage();
-                        return message.Contains("EventType") && message.Contains("Security");
-                    }));
                 }
             }
         }
@@ -208,13 +116,13 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 authOptions.EmitSecurityEvents = emitsSecurityEvents;
                             }));
                 })
-                .ConfigureHost(host => host.UseSerilog((context, config) => 
+                .ConfigureHost(host => host.UseSerilog((context, config) =>
                     config.WriteTo.Sink(spySink)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(HealthController.GetRoute);
-                
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -241,7 +149,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     services.AddSecretStore(stores =>
                     {
                         stores.AddProvider(
-                            new InMemoryVersionedSecretProvider(new Secret(secret1), new Secret(secret2)), 
+                            new InMemoryVersionedSecretProvider(new Secret(secret1), new Secret(secret2)),
                             opt => opt.AddVersionedSecret(SecretName, 2));
                     });
                     services.AddControllers(opt => opt.AddSharedAccessKeyAuthenticationFilterOnHeader(HeaderName, SecretName));
@@ -249,7 +157,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(HealthController.GetRoute)
                                       .WithHeader(HeaderName, secret2);
 
@@ -276,7 +184,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(HealthController.GetRoute)
                                       .WithHeader(HeaderName, secret2);
 
@@ -308,7 +216,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(HealthController.GetRoute)
                                       .WithHeader(HeaderName, secret2);
 
@@ -332,7 +240,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     services.AddSecretStore(stores =>
                     {
                         stores.AddProvider(
-                            new InMemoryVersionedSecretProvider(new Secret(secret1), new Secret(secret2)), 
+                            new InMemoryVersionedSecretProvider(new Secret(secret1), new Secret(secret2)),
                             opt => opt.AddVersionedSecret(SecretName, 2));
                     });
                     services.AddControllers(opt => opt.AddSharedAccessKeyAuthenticationFilterOnQuery(QueryParameterName, SecretName));
@@ -340,7 +248,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(HealthController.GetRoute)
                                       .WithParameter(QueryParameterName, secret2);
 
@@ -367,7 +275,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(HealthController.GetRoute)
                                       .WithParameter(QueryParameterName, secret2);
 
@@ -399,7 +307,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(HealthController.GetRoute)
                                       .WithParameter(QueryParameterName, secret2);
 
