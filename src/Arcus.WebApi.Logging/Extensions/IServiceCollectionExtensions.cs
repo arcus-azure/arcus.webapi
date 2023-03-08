@@ -36,7 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddHttpCorrelation) + " method overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
         public static IServiceCollection AddHttpCorrelation(
-            this IServiceCollection services, 
+            this IServiceCollection services,
             Action<CorrelationInfoOptions> configureOptions)
         {
             Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
@@ -56,7 +56,7 @@ namespace Microsoft.Extensions.DependencyInjection
                 var httpContextAccessor = serviceProvider.GetRequiredService<IHttpContextAccessor>();
                 var correlationInfoAccessor = serviceProvider.GetRequiredService<IHttpCorrelationInfoAccessor>();
                 var logger = serviceProvider.GetService<ILogger<HttpCorrelation>>();
-                
+
                 return new HttpCorrelation(options, httpContextAccessor, correlationInfoAccessor, logger);
             });
 
