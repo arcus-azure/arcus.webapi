@@ -1,0 +1,43 @@
+name: "CI build"
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - src/*
+  pull_request:
+    branches: [ main ]
+    paths:
+      - src/*
+      - .github/workflows/ci-build.yml
+  workflow_dispatch:
+    inputs:
+      package_version_manualTrigger:
+        description: 'NuGet package version of MyGet published packages'
+        type: 'string'
+        default: 'preview'
+
+env:
+  project: 'Arcus.WebApi'
+  dotnet_sdk_version: '6.0.100'
+  dotnet_sdk_versionbc: '3.1.201'
+
+jobs:
+  compile:
+    name: Compile
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        language: [ 'csharp' ]
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: |
+            $dotnet_sdk_version
+            $dotnet_sdk_versionbc
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - run: dotnet build src/$project.sln
+    
