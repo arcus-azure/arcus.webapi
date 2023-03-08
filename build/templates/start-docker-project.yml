@@ -1,6 +1,7 @@
 parameters:
   dockerProjectName: ''
   port: ''
+  envVars: {}
 
 steps:
   - bash: |
@@ -29,3 +30,4 @@ steps:
       imageName: '${{ parameters.dockerProjectName }}:$(Build.BuildId)'
       containerName: '${{ parameters.dockerProjectName }}'
       ports: '${{ parameters.port }}:80'
+      envVars: ${{ parameters.envVars }}

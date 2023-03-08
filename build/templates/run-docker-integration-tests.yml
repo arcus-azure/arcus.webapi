@@ -3,6 +3,8 @@ steps:
     parameters:
       dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
       port: '$(Arcus.AzureFunctions.InProcess.HttpPort)'
+      envVars: |
+        APPINSIGHTS_INSTRUMENTATIONKEY=$(Arcus.ApplicationInsights.InstrumentationKey)
   - template: start-docker-project.yml
     parameters:
       dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction.Isolated'
