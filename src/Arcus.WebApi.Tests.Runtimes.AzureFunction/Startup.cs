@@ -1,6 +1,7 @@
 ﻿using Arcus.WebApi.Tests.Runtimes.AzureFunction;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 [assembly: FunctionsStartup(typeof(Startup))]
 
@@ -14,7 +15,8 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
         /// <param name="builder">The instance to build the registered services inside the functions app.</param>
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.AddHttpCorrelation();
+            builder.AddHttpCorrelation()
+                   .AddLogging(logging => logging.AddApplicationInsightsWebJobs());
         }
     }
 }

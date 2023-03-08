@@ -90,8 +90,6 @@ namespace Microsoft.Extensions.DependencyInjection
                     var logger = serviceProvider.GetService<ILogger<AzureFunctionsInProcessHttpCorrelation>>();
                     return new AzureFunctionsInProcessHttpCorrelation(options, correlationInfoAccessor, logger);
                 });
-
-                services.AddLogging(logging => logging.AddApplicationInsightsWebJobs());
             }
 
             if (options.Format is HttpCorrelationFormat.Hierarchical)
