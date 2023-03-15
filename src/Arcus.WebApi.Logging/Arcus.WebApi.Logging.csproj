@@ -45,10 +45,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="[2.8.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Telemetry.AspNetCore" Version="[2.8.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Correlation" Version="[2.8.0,3.0.0)" />
-    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="[2.8.0,3.0.0)" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Core" Version="[2.6.0,3.0.0)" />
+    <PackageReference Include="Arcus.Observability.Telemetry.AspNetCore" Version="[2.6.0,3.0.0)" />
+    <PackageReference Include="Arcus.Observability.Correlation" Version="[2.6.0,3.0.0)" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Enrichers" Version="[2.6.0,3.0.0)" />
     <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
   </ItemGroup>
 
