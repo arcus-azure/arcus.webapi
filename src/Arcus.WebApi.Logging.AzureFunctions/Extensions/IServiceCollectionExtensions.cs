@@ -77,7 +77,7 @@ namespace Microsoft.Extensions.DependencyInjection
             Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
 
             IServiceCollection services = builder.Services;
-
+            
             var options = new HttpCorrelationInfoOptions();
             configureOptions?.Invoke(options);
 
@@ -90,6 +90,8 @@ namespace Microsoft.Extensions.DependencyInjection
                     var logger = serviceProvider.GetService<ILogger<AzureFunctionsInProcessHttpCorrelation>>();
                     return new AzureFunctionsInProcessHttpCorrelation(options, correlationInfoAccessor, logger);
                 });
+
+                services.AddLogging(logging => logging.AddApplicationInsightsWebJobs());
             }
 
             if (options.Format is HttpCorrelationFormat.Hierarchical)

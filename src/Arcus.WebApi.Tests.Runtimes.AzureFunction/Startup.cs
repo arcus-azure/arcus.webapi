@@ -15,8 +15,7 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction
         /// <param name="builder">The instance to build the registered services inside the functions app.</param>
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            builder.AddHttpCorrelation()
-                   .AddLogging(logging => logging.AddApplicationInsightsWebJobs());
+            builder.AddHttpCorrelation();
         }
     }
 }
