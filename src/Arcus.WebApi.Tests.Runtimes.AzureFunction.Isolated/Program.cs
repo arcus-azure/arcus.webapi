@@ -1,5 +1,4 @@
 using System.Text.Json.Serialization;
-using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Hosting;
 
 namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
