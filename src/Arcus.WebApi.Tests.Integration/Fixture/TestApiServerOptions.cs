@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using Bogus;
 using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -29,7 +31,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// </summary>
         public TestApiServerOptions()
         {
-            Url = $"http://localhost:{_bogusGenerator.Random.Int(4000, 4999)}/";
+            Url = $"http://localhost:{_bogusGenerator.Random.Int(2000, 4999)}/";
         }
         
         /// <summary>

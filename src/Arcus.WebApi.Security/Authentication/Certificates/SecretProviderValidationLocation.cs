@@ -7,6 +7,7 @@ using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates 
 {
@@ -36,19 +37,22 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             Guard.NotNullOrWhitespace(configurationKey, nameof(configurationKey), "Configured key cannot be blank");
             Guard.NotNull(services, nameof(services), "Registered services cannot be 'null'");
 
-            ISecretProvider userDefinedSecretProvider = 
-                services.GetService<ICachedSecretProvider>() 
-                ?? services.GetService<ISecretProvider>();
-
-            if (userDefinedSecretProvider == null)
+            var userDefinedSecretProvider = services.GetService<ISecretProvider>();
+            if (userDefinedSecretProvider is null)
             {
-                throw new KeyNotFoundException(
-                    $"No configured {nameof(ICachedSecretProvider)} or {nameof(ISecretProvider)} implementation found in the request service container. "
-                    + "Please configure such an implementation (ex. in the Startup) of your application");
+                throw new InvalidOperationException(
+                    "Cannot retrieve the certificate value to validate the HTTP request because no Arcus secret store was registered in the application," 
+                    + $"please register the secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the '{nameof(IHostBuilder)}' or with 'AddSecretStore' on the '{nameof(IServiceCollection)}'," 
+                    + "for more information on the Arcus secret store: https://security.arcus-azure.net/features/secret-store");
             }
 
             Task<string> getValueAsync = userDefinedSecretProvider.GetRawSecretAsync(configurationKey);
-            return getValueAsync == null ? null : await getValueAsync;
+            if (getValueAsync is null)
+            {
+                return null;
+            }
+
+            return await getValueAsync;
         }
     }
 }

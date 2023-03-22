@@ -2,6 +2,7 @@
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Reflection.Metadata;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
@@ -27,7 +28,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authorization
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class JwtTokenAuthorizationFilterTests
     {
         private readonly ILogger _logger;
@@ -56,15 +58,15 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                     {
                         TokenValidationParameters tokenValidationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
                         var reader = new JwtTokenReader(tokenValidationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                        services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader));
+                        services.AddControllers(opt => opt.AddJwtTokenAuthorizationFilter(jwt => jwt.JwtTokenReader = reader));
                     });
                 
                 await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
                     var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
-                        .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
+                                  .Get(HealthController.GetRoute)
+                                  .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await testApiServer.SendAsync(request))
@@ -83,9 +85,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
-                    services.AddMvc(opt =>
+                    services.AddControllers(opt =>
                     {
-                        opt.Filters.AddJwtTokenAuthorization(jwt => jwt.AddJwtTokenReader(serviceProvider => null));
+                        opt.AddJwtTokenAuthorizationFilter(jwt => jwt.AddJwtTokenReader(serviceProvider => null));
                     });
                 });
 
@@ -117,9 +119,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        services.AddMvc(opt =>
+                        services.AddControllers(opt =>
                         {
-                            opt.Filters.AddJwtTokenAuthorization(jwt => jwt.AddJwtTokenReader(serviceProvider => reader));
+                            opt.AddJwtTokenAuthorizationFilter(jwt => jwt.AddJwtTokenReader(serviceProvider => reader));
                         });
                     });
                 
@@ -147,9 +149,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
-                    services.AddMvc(opt =>
+                    services.AddControllers(opt =>
                     {
-                        opt.Filters.AddJwtTokenAuthorization(jwt => jwt.AddJwtTokenReader<IgnoredJwtTokenReader>());
+                        opt.AddJwtTokenAuthorizationFilter(jwt => jwt.AddJwtTokenReader<IgnoredJwtTokenReader>());
                     });
                 });
             
@@ -157,8 +159,8 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             {
                 var accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
                 var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
-                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
+                              .Get(HealthController.GetRoute)
+                              .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
@@ -185,9 +187,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        services.AddMvc(opt =>
+                        services.AddControllers(opt =>
                         {
-                            opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader);
+                            opt.AddJwtTokenAuthorizationFilter(jwt => jwt.JwtTokenReader = reader);
                         });
                     });
 
@@ -195,8 +197,8 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     var accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
                     var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
-                        .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
+                                  .Get(HealthController.GetRoute)
+                                  .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
 
                     // Act
                     using (HttpResponseMessage response = await testApiServer.SendAsync(request))
@@ -213,7 +215,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()));
+                .ConfigureServices(services => services.AddControllers(opt => opt.AddJwtTokenAuthorizationFilter()));
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -253,7 +255,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader));
+                        services.AddControllers(opt => opt.AddJwtTokenAuthorizationFilter(jwt => jwt.JwtTokenReader = reader));
                     });
 
                 await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
@@ -291,9 +293,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        services.AddMvc(opt =>
+                        services.AddControllers(opt =>
                         {
-                            opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader);
+                            opt.AddJwtTokenAuthorizationFilter(jwt => jwt.JwtTokenReader = reader);
                         });
                     });
 
@@ -319,7 +321,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()));
+                .ConfigureServices(services => services.AddControllers(opt => opt.AddJwtTokenAuthorizationFilter()));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -333,14 +335,14 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 }
             }
         }
-        
+
         [Fact]
         public async Task JwtAuthorizedRoute_DoesntEmitSecurityEventsByDefault_RunsAuthorization()
         {
             // Arrange
             var spySink = new InMemorySink();
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()))
+                .ConfigureServices(services => services.AddControllers(opt => opt.AddJwtTokenAuthorizationFilter()))
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
             
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -364,7 +366,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 }
             }
         }
-        
+
         [Theory]
         [InlineData(false)]
         [InlineData(true)]
@@ -375,7 +377,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
             var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
-                    services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.EmitSecurityEvents = emitSecurityEvents));
+                    services.AddMvc(opt => opt.AddJwtTokenAuthorizationFilter(jwt => jwt.EmitSecurityEvents = emitSecurityEvents));
                 })
                 .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
             

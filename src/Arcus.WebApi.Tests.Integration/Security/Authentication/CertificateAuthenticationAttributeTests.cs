@@ -17,12 +17,14 @@ using Serilog;
 using Serilog.Events;
 using Xunit;
 using Xunit.Abstractions;
+using static Arcus.WebApi.Security.Authentication.Certificates.X509ValidationLocation;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 // ReSharper disable AccessToDisposedClosure
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class CertificateAuthenticationAttributeTests
     {
         public const string SubjectKey = "subject", 
@@ -51,14 +53,8 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
-                                    .Build());
-
                         services.AddSecretStore(stores => stores.AddInMemory(SubjectKey, $"CN={actualSubject}"))
-                                .AddSingleton(certificateValidator);
+                                .AddCertificateAuthenticationValidation(auth => auth.WithSubject(SecretProvider, SubjectKey));
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -89,15 +85,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
-                                    .Build());
-
                         services.AddSecretStore(stores => stores.AddInMemory(SubjectKey, "CN=subject"))
                                 .AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator);
+                                .AddCertificateAuthenticationValidation(auth => auth.WithSubject(SecretProvider, SubjectKey));
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -135,15 +125,12 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
-                                    .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
-                                    .WithThumbprint(X509ValidationLocation.SecretProvider, ThumbprintKey)
-                                    .Build());
-
-                        services.AddSingleton(certificateValidator)
+                        services.AddCertificateAuthenticationValidation(auth =>
+                                {
+                                    auth.WithSubject(SecretProvider, SubjectKey)
+                                        .WithIssuer(SecretProvider, IssuerKey)
+                                        .WithThumbprint(SecretProvider, ThumbprintKey);
+                                })
                                 .AddClientCertificate(clientCertificate)
                                 .AddSecretStore(stores => stores.AddInMemory(new Dictionary<string, string>
                                 {
@@ -196,15 +183,12 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     }))
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.Configuration, SubjectKey)
-                                    .WithIssuer(X509ValidationLocation.Configuration, IssuerKey)
-                                    .WithThumbprint(X509ValidationLocation.Configuration, ThumbprintKey)
-                                    .Build());
-
-                        services.AddSingleton(certificateValidator)
+                        services.AddCertificateAuthenticationValidation(auth =>
+                                {
+                                    auth.WithSubject(Configuration, SubjectKey)
+                                        .WithIssuer(Configuration, IssuerKey)
+                                        .WithThumbprint(Configuration, ThumbprintKey);
+                                })
                                 .AddClientCertificate(clientCertificate);
                     });
 
@@ -249,17 +233,14 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     }))
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.Configuration, SubjectKey)
-                                    .WithIssuer(X509ValidationLocation.SecretProvider, IssuerKey)
-                                    .WithThumbprint(new StubX509ValidationLocation(clientCertificate.Thumbprint + thumbprintNoise), ThumbprintKey)
-                                    .Build());
-
                         services.AddSecretStore(stores => stores.AddInMemory(IssuerKey, "CN=issuer"))
                                 .AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator);
+                                .AddCertificateAuthenticationValidation(auth =>
+                                {
+                                    auth.WithSubject(Configuration, SubjectKey)
+                                        .WithIssuer(SecretProvider, IssuerKey)
+                                        .WithThumbprint(new StubX509ValidationLocation(clientCertificate.Thumbprint + thumbprintNoise), ThumbprintKey);
+                                });
                     });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
@@ -288,15 +269,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
-                                    .Build());
-
                         services.AddSecretStore(stores => stores.AddInMemory(SubjectKey, "CN=subject"))
                                 .AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator);
+                                .AddCertificateAuthenticationValidation(auth => auth.WithSubject(SecretProvider, SubjectKey));
                     })
                     .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 
@@ -330,15 +305,9 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(X509ValidationLocation.SecretProvider, SubjectKey)
-                                    .Build());
-
                         services.AddSecretStore(stores => stores.AddInMemory(SubjectKey, "CN=subject"))
                                 .AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator);
+                                .AddCertificateAuthenticationValidation(auth => auth.WithSubject(SecretProvider, SubjectKey));
                     })
                     .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
 

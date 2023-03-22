@@ -18,7 +18,8 @@ using Xunit.Abstractions;
 
 namespace Arcus.WebApi.Tests.Integration.OpenApi
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class AuthenticationOperationFilterTests
     {
         private readonly ILogger _logger;

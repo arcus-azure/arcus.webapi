@@ -9,11 +9,12 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Arcus.Testing.Logging" Version="0.1.0" />
-    <PackageReference Include="Bogus" Version="29.0.2" />
+    <PackageReference Include="Arcus.Testing.Logging" Version="0.4.0" />
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="1.6.0" />
+    <PackageReference Include="Microsoft.Azure.Functions.Worker.Grpc" Version="1.4.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
     <PackageReference Include="Microsoft.OpenApi.Readers" Version="1.1.4" />
     <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="2.2.4" />
@@ -25,14 +26,12 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\Arcus.WebApi.Hosting.AzureFunctions\Arcus.WebApi.Hosting.AzureFunctions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Hosting\Arcus.WebApi.Hosting.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Logging\Arcus.WebApi.Logging.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.OpenApi.Extensions\Arcus.WebApi.OpenApi.Extensions.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
     <ProjectReference Include="..\Arcus.WebApi.Tests.Core\Arcus.WebApi.Tests.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">
     <ProjectReference Include="..\Arcus.WebApi.Logging.AzureFunctions\Arcus.WebApi.Logging.AzureFunctions.csproj" />
   </ItemGroup>
 

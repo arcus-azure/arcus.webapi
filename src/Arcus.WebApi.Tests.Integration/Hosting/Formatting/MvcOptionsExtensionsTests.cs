@@ -16,7 +16,8 @@ using JsonSerializer = System.Text.Json.JsonSerializer;
 
 namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class MvcOptionsExtensionsTests
     {
         private readonly ILogger _logger;
@@ -41,7 +42,7 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
                     opt.InputFormatters.Add(new PlainTextInputFormatter());
                 }));
 
-            string sentence = BogusGenerator.Lorem.Sentence();
+            string sentence = string.Join(" ", BogusGenerator.Lorem.Words());
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder
@@ -71,7 +72,7 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
                     opt.OnlyAllowJsonFormatting();
                 }));
 
-            string sentence = BogusGenerator.Lorem.Sentence();
+            string sentence = string.Join(" ", BogusGenerator.Lorem.Words());
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder

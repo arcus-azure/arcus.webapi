@@ -6,7 +6,7 @@ using GuardNet;
 namespace Arcus.WebApi.Logging
 {
     /// <summary>
-    /// Represents an endpoint attribute that indicates which endpoints should be withhold from request tracking.
+    /// Specifies additional configuration for this endpoint during request tracking.
     /// </summary>
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class RequestTrackingAttribute : Attribute

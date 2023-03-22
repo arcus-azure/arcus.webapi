@@ -1,4 +1,5 @@
-﻿using Arcus.Observability.Correlation;
+﻿using System;
+using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
@@ -9,6 +10,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
     public class CorrelationController : ControllerBase
     {
         public const string GetRoute = "correlation",
+                            PostRoute = "correlation",
                             SetCorrelationRoute = "correlation/set";
 
         private readonly IHttpCorrelationInfoAccessor _correlationInfoAccessor;
@@ -31,9 +33,24 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Controllers
 
         [HttpPost]
         [Route(SetCorrelationRoute)]
-        public IActionResult Post([FromHeader(Name = "RequestId")] string operationId, [FromHeader(Name = "X-Transaction-ID")] string transactionId)
+        public IActionResult Post(
+            [FromHeader(Name = "X-Operation-ID")] string operationId, 
+            [FromHeader(Name = "X-Transaction-ID")] string transactionId,
+            [FromHeader(Name = "Request-Id")] string operationParentId)
         {
-            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId));
+            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo(operationId, transactionId, operationParentId));
+
+            string json = JsonConvert.SerializeObject(_correlationInfoAccessor.GetCorrelationInfo());
+            return Ok(json);
+        }
+
+        [HttpPost]
+        [Route(GetRoute)]
+        public IActionResult Post(
+            [FromHeader(Name = "RequestId")] string operationParentId, 
+            [FromHeader(Name = "X-Transaction-ID")] string transactionId)
+        {
+            _correlationInfoAccessor.SetCorrelationInfo(new CorrelationInfo($"operation-{Guid.NewGuid()}", transactionId, operationParentId));
 
             string json = JsonConvert.SerializeObject(_correlationInfoAccessor.GetCorrelationInfo());
             return Ok(json);

@@ -7,10 +7,10 @@
     <RepositoryType>Git</RepositoryType>
     <Description>Provides extensions that can be used when documenting an API using Swashbuckle.</Description>
     <Copyright>Copyright (c) Arcus</Copyright>
-    <PackageLicenseUrl>https://github.com/arcus-azure/arcus.webapi/blob/master/LICENSE</PackageLicenseUrl>
     <PackageProjectUrl>https://webapi.arcus-azure.net/</PackageProjectUrl>
     <RepositoryUrl>https://github.com/arcus-azure/arcus.webapi</RepositoryUrl>
-    <PackageIconUrl>https://raw.githubusercontent.com/arcus-azure/arcus/master/media/arcus.png</PackageIconUrl>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <PackageTags>Azure;WebAPI;App Services;Web App;Web;API;Open API</PackageTags>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
@@ -18,11 +18,12 @@
     <GenerateOpenApiDocuments>false</GenerateOpenApiDocuments>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
-    <NoWarn>NU5125;NU5048</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\..\README.md" Pack="true" PackagePath="\" />
+    <None Include="..\..\LICENSE" Pack="true" PackagePath="\" />
+    <None Include="..\..\docs\static\img\icon.png" Pack="true" PackagePath="\"/>
   </ItemGroup>
 
   <ItemGroup Condition="'$(TargetFramework)' == 'net6.0'">

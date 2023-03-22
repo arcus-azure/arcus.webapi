@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using GuardNet;
 using Microsoft.Extensions.Logging.Abstractions;
 
+// ReSharper disable once CheckNamespace
 namespace Arcus.WebApi.Logging
 {
     /// <summary>
@@ -63,30 +64,56 @@ namespace Arcus.WebApi.Logging
                 await _next(context);
             }
 #if NET6_0
-            catch (Microsoft.AspNetCore.Http.BadHttpRequestException ex) 
+            catch (Microsoft.AspNetCore.Http.BadHttpRequestException exception)
 #else
-            catch (Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException ex) 
+            catch (Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException exception)
 #endif
             {
                 // Catching the `BadHttpRequestException` and using the `.StatusCode` property allows us to interact with the built-in ASP.NET components.
                 // When the Kestrel maximum request body restriction is exceeded, for example, this kind of exception is thrown.
 
-                LogException(loggerFactory, ex);
-                context.Response.StatusCode = ex.StatusCode;
+                ILogger logger = CreateLogger(loggerFactory);
+                LogException(logger, exception);
+
+                WriteFailureToResponse(exception, (HttpStatusCode) exception.StatusCode, context);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                LogException(loggerFactory, ex);
-                context.Response.StatusCode = (int) HttpStatusCode.InternalServerError;
+                ILogger logger = CreateLogger(loggerFactory);
+                LogException(logger, exception);
+
+                WriteFailureToResponse(exception, HttpStatusCode.InternalServerError, context);
             }
         }
 
-        private void LogException(ILoggerFactory loggerFactory, Exception ex)
+        private ILogger CreateLogger(ILoggerFactory loggerFactory)
         {
             string categoryName = _getLoggingCategory() ?? String.Empty;
-            var logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
+            ILogger logger = loggerFactory.CreateLogger(categoryName) ?? NullLogger.Instance;
 
-            logger.LogCritical(ex, ex.Message);
+            return logger;
+        }
+
+        /// <summary>
+        /// Logs the caught <paramref name="exception"/> before the response it sent back.
+        /// </summary>
+        /// <param name="logger">The instance to track the caught <paramref name="exception"/>.</param>
+        /// <param name="exception">The caught exception during the application pipeline.</param>
+        protected virtual void LogException(ILogger logger, Exception exception)
+        {
+            logger.LogCritical(exception, exception.Message);
+        }
+
+        /// <summary>
+        /// Write the failure to the HTTP response based on the caught exception.
+        /// </summary>
+        /// <param name="exception">The caught exception during the application pipeline.</param>
+        /// <param name="defaultFailureStatusCode">The default HTTP status code for the failure that was determined by the caught <paramref name="exception"/>.</param>
+        /// <param name="context">The context instance for the current HTTP request.</param>
+        /// <returns>An HTTP status code that represents the <paramref name="exception"/>.</returns>
+        protected virtual void WriteFailureToResponse(Exception exception, HttpStatusCode defaultFailureStatusCode, HttpContext context)
+        {
+            context.Response.StatusCode = (int) defaultFailureStatusCode;
         }
     }
 }

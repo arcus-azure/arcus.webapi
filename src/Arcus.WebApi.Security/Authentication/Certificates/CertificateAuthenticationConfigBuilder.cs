@@ -11,14 +11,14 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
     /// </summary>
     public class CertificateAuthenticationConfigBuilder
     {
-        private readonly IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, ConfiguredKey configuredKey)> _locationAndKeyByRequirement;
+        private readonly IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)> _locationAndKeyByRequirement;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CertificateAuthenticationConfigBuilder"/> class.
         /// </summary>
         public CertificateAuthenticationConfigBuilder()
         {
-            _locationAndKeyByRequirement = new Dictionary<X509ValidationRequirement, (IX509ValidationLocation, ConfiguredKey)>();
+            _locationAndKeyByRequirement = new Dictionary<X509ValidationRequirement, (IX509ValidationLocation, string)>();
         }
 
         /// <summary>
@@ -114,7 +114,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             Guard.NotNullOrWhitespace(configuredKey, nameof(configuredKey), "Configured key cannot be blank");
 
             // Overwrites existing requirements.
-            _locationAndKeyByRequirement[requirement] = (location, new ConfiguredKey(configuredKey));
+            _locationAndKeyByRequirement[requirement] = (location, configuredKey);
             
             return this;
         }
@@ -137,6 +137,13 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// </summary>
         public CertificateAuthenticationConfig Build()
         {
+            if (_locationAndKeyByRequirement.Count <= 0)
+            {
+                throw new InvalidOperationException(
+                    "Cannot build up the certificate authentication validation because there's nothing configured to be validated on the client certificate, "
+                    + $"please configure the certificate validation requirements with methods like {nameof(WithThumbprint)}, {nameof(WithIssuer)}");
+            }
+
             return new CertificateAuthenticationConfig(_locationAndKeyByRequirement);
         }
     }

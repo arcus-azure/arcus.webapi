@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
+using Arcus.WebApi.Tests.Core;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
@@ -19,28 +20,24 @@ namespace Arcus.WebApi.Tests.Unit.Logging
     public class HttpCorrelationTests
     {
         [Theory]
-        [InlineData("|", ".")]
-        [InlineData("", ".")]
-        [InlineData("|", "")]
-        [InlineData("", "")]
-        [InlineData("|", ".other-id.")]
-        [InlineData("|", ".other-id")]
-        public void TryCorrelate_WithCorrectOperationParentId_SetsOperationIds(string prefix, string postfix)
+        [InlineData("|")]
+        [InlineData("|other-id.")]
+        public void TryCorrelate_WithCorrectOperationParentId_SetsOperationIds(string prefix)
         {
             // Arrange
-            var operationId = $"operation-{Guid.NewGuid()}";
-            string operationParentId = prefix + operationId + postfix;
+            var operationParentId = $"operation-{Guid.NewGuid()}";
+            string requestId = prefix + operationParentId;
             var headers = new Dictionary<string, StringValues>
             {
-                ["Request-Id"] = operationParentId
+                ["Request-Id"] = requestId
             };
 
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions());
+            var options = Options.Create(new HttpCorrelationInfoOptions { Format = HttpCorrelationFormat.Hierarchical });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act
@@ -50,7 +47,6 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.True(isCorrelated, errorMessage);
             Assert.Null(errorMessage);
             var correlationInfo = context.Features.Get<CorrelationInfo>();
-            Assert.Equal(operationId, correlationInfo.OperationId);
             Assert.Equal(operationParentId, correlationInfo.OperationParentId);
         }
 
@@ -60,7 +56,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Arrange
             var operationIdFromGeneration = $"operation-{Guid.NewGuid()}";
             var operationIdFromUpstream = $"operation-{Guid.NewGuid()}";
-            string operationParentId = $"|{operationIdFromUpstream}.";
+            string operationParentId = $"|{Guid.NewGuid()}.{operationIdFromUpstream}";
             var headers = new Dictionary<string, StringValues>
             {
                 ["Request-Id"] = operationParentId
@@ -69,12 +65,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions
+            var options = Options.Create(new CorrelationInfoOptions
             {
-                Operation = { GenerateId = () => operationIdFromGeneration },
-                UpstreamService = { ExtractFromRequest = false }
+                OperationParent =
+                {
+                    ExtractFromRequest = false,
+                    GenerateId = () => operationIdFromGeneration
+                }
             });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
@@ -85,39 +84,37 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.True(isCorrelated, errorMessage);
             Assert.Null(errorMessage);
             var correlationInfo = context.Features.Get<CorrelationInfo>();
-            Assert.NotEqual(operationIdFromUpstream, correlationInfo.OperationId);
-            Assert.Equal(operationIdFromGeneration, correlationInfo.OperationId);
-            Assert.Null(correlationInfo.OperationParentId);
+            Assert.NotEqual(operationIdFromUpstream, correlationInfo.OperationParentId);
+            Assert.Equal(operationIdFromGeneration, correlationInfo.OperationParentId);
         }
 
         [Theory]
-        [InlineData("||", "")]
-        [InlineData("|", "..")]
-        [InlineData(".", "|")]
-        [InlineData("|", ".other-id..")]
-        public void TryCorrelate_WithIncorrectOperationParentId_DoesntSetExpectedOperationId(string prefix, string postfix)
+        [InlineData("||")]
+        [InlineData("|..")]
+        [InlineData(".|")]
+        [InlineData("|.other-id..")]
+        public void TryCorrelate_WithIncorrectOperationParentId_DoesntSetExpectedOperationId(string prefix)
         {
             // Arrange
-            var operationId = $"operation-{Guid.NewGuid()}";
+            var operationParentId = $"operation-{Guid.NewGuid()}";
             var headers = new Dictionary<string, StringValues>
             {
-                ["Request-Id"] = prefix + operationId + postfix
+                ["Request-Id"] = prefix + operationParentId
             };
             
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions());
+            var options = Options.Create(new HttpCorrelationInfoOptions { Format = HttpCorrelationFormat.Hierarchical });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act / Assert
             Assert.True(correlation.TryHttpCorrelate(out string errorMessage), errorMessage);
             Assert.Null(errorMessage);
             var correlationInfo = context.Features.Get<CorrelationInfo>();
-            Assert.NotEqual(operationId, correlationInfo.OperationId);
-            Assert.Null(correlationInfo.OperationParentId);
+            Assert.NotEqual(operationParentId, correlationInfo.OperationParentId);
         }
 
         [Theory]
@@ -133,9 +130,9 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             HttpContext context = CreateHttpContext(headers);
             var contextAccessor = new Mock<IHttpContextAccessor>();
             contextAccessor.Setup(accessor => accessor.HttpContext).Returns(context);
-            var correlationAccessor = new DefaultCorrelationInfoAccessor();
+            var correlationAccessor = new HttpCorrelationInfoAccessor(contextAccessor.Object);
             
-            var options = Options.Create(new HttpCorrelationInfoOptions());
+            var options = Options.Create(new HttpCorrelationInfoOptions { Format = HttpCorrelationFormat.Hierarchical });
             var correlation = new HttpCorrelation(options, contextAccessor.Object, correlationAccessor, NullLogger<HttpCorrelation>.Instance);
             
             // Act / Assert

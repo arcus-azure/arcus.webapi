@@ -24,7 +24,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Arcus.WebApi.Tests.Integration.Security.Authentication
 {
-    [Collection("Integration")]
+    [Collection(Constants.TestCollections.Integration)]
+    [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class SharedAccessKeyAuthenticationAttributeTests
     {
         private const string HeaderName = "x-shared-access-key",
@@ -75,7 +76,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider(SecretName, secretValue)));
+                .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemoryCachedSecretProvider(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -151,7 +152,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider(SecretName, secretValue)));
+                .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemoryCachedSecretProvider(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
@@ -200,7 +201,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             // Arrange
             string secretValue = $"secret-{Guid.NewGuid()}";
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemorySecretProvider(SecretName, secretValue)));
+                .ConfigureServices(services => services.AddSingleton(secretProviderType, new InMemoryCachedSecretProvider(SecretName, secretValue)));
 
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {

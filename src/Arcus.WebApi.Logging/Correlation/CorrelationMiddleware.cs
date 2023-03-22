@@ -1,15 +1,14 @@
 using System;
 using System.Threading.Tasks;
-using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Serilog.Configuration;
 
 namespace Arcus.WebApi.Logging.Correlation 
 {
     /// <summary>
-    /// Correlate the incoming request with the outgoing response by using previously configured <see cref="CorrelationInfoOptions"/>.
+    /// Correlate the incoming request with the outgoing response by using previously configured <see cref="HttpCorrelationInfoOptions"/>.
     /// </summary>
     public class CorrelationMiddleware
     {
@@ -50,16 +49,19 @@ namespace Arcus.WebApi.Logging.Correlation
             Guard.For<ArgumentException>(() => httpContext.Response is null, "Requires a 'Response'");
             Guard.For<ArgumentException>(() => httpContext.Response.Headers is null, "Requires a 'Response' object with headers");
 
-            if (service.TryHttpCorrelate(out string errorMessage))
+            using (HttpCorrelationResult result = service.CorrelateHttpRequest())
             {
-                await _next(httpContext);
-            }
-            else
-            {
-                _logger.LogError("Unable to correlate the incoming request, returning 400 BadRequest (reason: {ErrorMessage})", errorMessage);
+                if (result.IsSuccess)
+                {
+                    await _next(httpContext);
+                }
+                else
+                {
+                    _logger.LogError("Unable to correlate the incoming request, returning 400 BadRequest (reason: {ErrorMessage})", result.ErrorMessage);
 
-                httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
-                await httpContext.Response.WriteAsync(errorMessage);
+                    httpContext.Response.StatusCode = StatusCodes.Status400BadRequest;
+                    await httpContext.Response.WriteAsync(result.ErrorMessage);
+                }
             }
         }
     }
