@@ -44,41 +44,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         }
 
         [Fact]
-        public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorizationOnFilters_ReturnsOk()
-        {
-            // Arrange
-            string issuer = _bogusGenerator.Internet.Url();
-            string authority = _bogusGenerator.Internet.Url();
-            string privateKey = GenerateRandomPrivateKey();
-
-            await using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_logger))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        TokenValidationParameters tokenValidationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
-                        var reader = new JwtTokenReader(tokenValidationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                        services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader));
-                    });
-                
-                await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
-                    var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
-                        .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                    // Act
-                    using (HttpResponseMessage response = await testApiServer.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    }
-                }
-            }
-        }
-
-        [Fact]
         public async Task GetHealthWithCorrectBearerToken_WithAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
@@ -114,32 +79,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         }
 
         [Fact]
-        public async Task GetHealthWithCorrectBearerToken_WithNullReaderAzureManagedIdentityAuthorizationOnFilters_ReturnsOk()
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    services.AddMvc(opt =>
-                    {
-                        opt.Filters.AddJwtTokenAuthorization(jwt => jwt.AddJwtTokenReader(serviceProvider => null));
-                    });
-                });
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(HealthController.GetRoute);
-                
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                }
-            }
-        }
-
-        [Fact]
         public async Task GetHealthWithCorrectBearerToken_WithNullReaderAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
@@ -161,44 +100,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task GetHealthWithCorrectBearerToken_WithLazyAzureManagedIdentityAuthorizationOnFilters_ReturnsOk()
-        {
-            // Arrange
-            string issuer = _bogusGenerator.Internet.Url();
-            string authority = _bogusGenerator.Internet.Url();
-            string privateKey = GenerateRandomPrivateKey();
-
-            await using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_logger))
-            {
-                TokenValidationParameters validationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
-                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddMvc(opt =>
-                        {
-                            opt.Filters.AddJwtTokenAuthorization(jwt => jwt.AddJwtTokenReader(serviceProvider => reader));
-                        });
-                    });
-                
-                await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
-                    var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
-                        .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                    // Act
-                    using (HttpResponseMessage response = await testApiServer.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    }
                 }
             }
         }
@@ -242,35 +143,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         }
 
         [Fact]
-        public async Task GetHealthWithCorrectBearerToken_WithInjectedAzureManagedIdentityAuthorizationOnFilters_ReturnsOk()
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    services.AddMvc(opt =>
-                    {
-                        opt.Filters.AddJwtTokenAuthorization(jwt => jwt.AddJwtTokenReader<IgnoredJwtTokenReader>());
-                    });
-                });
-            
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
-                var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
-                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                }
-            }
-        }
-
-        [Fact]
         public async Task GetHealthWithCorrectBearerToken_WithInjectedAzureManagedIdentityAuthorization_ReturnsOk()
         {
             // Arrange
@@ -295,45 +167,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task GetHealthWithIncorrectBearerToken_WithAzureManagedIdentityAuthorizationOnFilters_ReturnsUnauthorized()
-        {
-            // Arrange
-            string issuer = _bogusGenerator.Internet.Url();
-            string authority = _bogusGenerator.Internet.Url();
-            string privateKey = GenerateRandomPrivateKey();
-
-            await using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_logger))
-            {
-                TokenValidationParameters validationParameters = testOpenIdServer.GenerateTokenValidationParametersWithValidAudience(issuer, authority, privateKey);
-                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddMvc(opt =>
-                        {
-                            opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader);
-                        });
-                    });
-
-                await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}.{_bogusGenerator.Random.AlphaNumeric(40)}";
-                    var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
-                        .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                    // Act
-                    using (HttpResponseMessage response = await testApiServer.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
                 }
             }
         }
@@ -378,29 +211,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         }
 
         [Fact]
-        public async Task GetHealthWithIncorrectBase64BearerToken_WithAzureManagedIdentityAuthorizationOnFilters_ReturnsUnauthorized()
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()));
-            
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
-                var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
-                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                }
-            }
-        }
-
-        [Fact]
         public async Task GetHealthWithIncorrectBase64BearerToken_WithAzureManagedIdentityAuthorization_ReturnsUnauthorized()
         {
             // Arrange
@@ -419,48 +229,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                }
-            }
-        }
-
-        [Fact]
-        public async Task GetHealthWithCorrectBearerToken_WithIncorrectAzureManagedIdentityAuthorizationOnFilters_ReturnsUnauthorized()
-        {
-            // Arrange
-            string issuer = _bogusGenerator.Internet.Url();
-            string authority = _bogusGenerator.Internet.Url();
-            string privateKey = GenerateRandomPrivateKey();
-
-            await using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_logger))
-            {
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true
-                };
-
-                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader));
-                    });
-
-                await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    string accessToken = testOpenIdServer.RequestSecretToken(issuer, authority, privateKey, daysValid: 7);
-                    var request = HttpRequestBuilder
-                        .Get(HealthController.GetRoute)
-                        .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                    // Act
-                    using (HttpResponseMessage response = await testApiServer.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
                 }
             }
         }
@@ -496,44 +264,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                     var request = HttpRequestBuilder
                         .Get(HealthController.GetRoute)
                         .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                    // Act
-                    using (HttpResponseMessage response = await testApiServer.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task GetHealthWithoutBearerToken_WithIncorrectAzureManagedIdentityAuthorizationOnFilters_ReturnsUnauthorized()
-        {
-            // Arrange
-            await using (var testOpenIdServer = await TestOpenIdServer.StartNewAsync(_logger))
-            {
-                var validationParameters = new TokenValidationParameters
-                {
-                    ValidateAudience = false,
-                    ValidateIssuer = false,
-                    ValidateIssuerSigningKey = true,
-                    ValidateLifetime = true
-                };
-                var reader = new JwtTokenReader(validationParameters, testOpenIdServer.OpenIdAddressConfiguration);
-
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        services.AddMvc(opt =>
-                        {
-                            opt.Filters.AddJwtTokenAuthorization(jwt => jwt.JwtTokenReader = reader);
-                        });
-                    });
-
-                await using (var testApiServer = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(HealthController.GetRoute);
 
                     // Act
                     using (HttpResponseMessage response = await testApiServer.SendAsync(request))
@@ -587,29 +317,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
         [InlineData(BypassOnMethodController.JwtRoute)]
         [InlineData(BypassJwtTokenAuthorizationController.BypassOverAuthorizationRoute)]
         [InlineData(BypassOnMethodController.AllowAnonymousRoute)]
-        public async Task JwtAuthorizedRoute_WithBypassAttributeOnFilters_SkipsAuthorization(string route)
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()));
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(route);
-
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(BypassOnMethodController.JwtRoute)]
-        [InlineData(BypassJwtTokenAuthorizationController.BypassOverAuthorizationRoute)]
-        [InlineData(BypassOnMethodController.AllowAnonymousRoute)]
         public async Task JwtAuthorizedRoute_WithBypassAttribute_SkipsAuthorization(string route)
         {
             // Arrange
@@ -625,37 +332,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                 {
                     // Assert
                     Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                }
-            }
-        }
-        
-        [Fact]
-        public async Task JwtAuthorizedRoute_DoesntEmitSecurityEventsByDefaultOnFilters_RunsAuthorization()
-        {
-            // Arrange
-            var spySink = new InMemorySink();
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization()))
-                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
-            
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
-                var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
-                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
-                    Assert.DoesNotContain(logEvents, logEvent =>
-                    {
-                        string message = logEvent.RenderMessage();
-                        return message.Contains("EventType") && message.Contains("Security");
-                    });
                 }
             }
         }
@@ -687,42 +363,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authorization
                         string message = logEvent.RenderMessage();
                         return message.Contains("EventType") && message.Contains("Security");
                     });
-                }
-            }
-        }
-        
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task JwtAuthorizedRoute_EmitSecurityEventsWhenRequestedOnFilters_RunsAuthorization(bool emitSecurityEvents)
-        {
-            // Arrange
-            var spySink = new InMemorySink();
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    services.AddMvc(opt => opt.Filters.AddJwtTokenAuthorization(jwt => jwt.EmitSecurityEvents = emitSecurityEvents));
-                })
-                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
-            
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                string accessToken = $"Bearer {_bogusGenerator.Random.AlphaNumeric(10)}.{_bogusGenerator.Random.AlphaNumeric(50)}";
-                var request = HttpRequestBuilder
-                    .Get(HealthController.GetRoute)
-                    .WithHeader(JwtTokenAuthorizationOptions.DefaultHeaderName, accessToken);
-
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
-                    Assert.True(emitSecurityEvents == logEvents.Any(logEvent =>
-                    {
-                        string message = logEvent.RenderMessage();
-                        return message.Contains("EventType") && message.Contains("Security");
-                    }));
                 }
             }
         }

@@ -16,14 +16,6 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <summary>
         /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttribute"/> class.
         /// </summary>
-        /// <param name="secretName">The name of the request header which value must match the stored secret with the same name as the header.</param>
-        /// <exception cref="ArgumentException">Thrown when the <paramref name="secretName"/> is blank.</exception>
-        [Obsolete("We now support multiple ways to specify the authentication key, we recommend using our overload instead")]
-        public SharedAccessKeyAuthenticationAttribute(string secretName) : this(headerName: secretName, queryParameterName: null, secretName: secretName) { }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="SharedAccessKeyAuthenticationAttribute"/> class.
-        /// </summary>
         /// <remarks>
         ///     Requires the Arcus secret store to retrieve the shared access key while validating the HTTP request.
         ///     For more information on the secret store, see <a href="https://security.arcus-azure.net/features/secret-store" />.
