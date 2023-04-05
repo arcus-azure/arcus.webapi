@@ -9,7 +9,6 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Generic;
-using Microsoft.ApplicationInsights;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {

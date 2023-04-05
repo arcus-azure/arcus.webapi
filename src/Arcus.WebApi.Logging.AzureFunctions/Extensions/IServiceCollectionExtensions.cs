@@ -4,8 +4,6 @@ using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;

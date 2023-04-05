@@ -1,15 +1,10 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
@@ -27,11 +22,21 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <summary>
         /// Initializes a new instance of the <see cref="AzureFunctionsInProcessHttpCorrelation" /> class.
         /// </summary>
+        /// <param name="options">The HTTP correlation options to determine where the correlation information should be added to the HTTP response headers.</param>
+        /// <param name="correlationInfoAccessor">The HTTP correlation accessor instance to retrieve the current correlation information.</param>
+        /// <param name="logger">The logging instance to write diagnostic trace messages while adding the correlation information to the HTTP response headers.</param>
+        /// <exception cref="ArgumentNullException">
+        ///     Thrown when the <paramref name="options"/>, <paramref name="correlationInfoAccessor"/>, or the <paramref name="logger"/> is <c>null</c>.
+        /// </exception>
         public AzureFunctionsInProcessHttpCorrelation(
             HttpCorrelationInfoOptions options,
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger<AzureFunctionsInProcessHttpCorrelation> logger)
         {
+            Guard.NotNull(options, nameof(options), "Requires a set of HTTP correlation options to determine where the correlation information should be added to the HTTP response headers");
+            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a HTTP correlation accessor to retrieve the current correlation information");
+            Guard.NotNull(logger, nameof(logger), "Requires a logging instance to write diagnostic trace messages while adding the correlation information to the HTTP response headers");
+
             _options = options;
             _correlationInfoAccessor = correlationInfoAccessor;
             _logger = logger;
@@ -46,11 +51,15 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         }
 
         /// <summary>
-        /// 
+        /// Adds the current correlation information to the HTTP response headers.
         /// </summary>
-        /// <param name="httpContext"></param>
+        /// <param name="httpContext">The current HTTP context to add the correlation response headers to.</param>
+        /// <exception cref="ArgumentNullException">Thrown when the <paramref name="httpContext"/> is <c>null</c> or does not have a response present.</exception>
         public void AddCorrelationResponseHeaders(HttpContext httpContext)
         {
+            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context to add the correlation information to the response headers");
+            Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the HTTP context to add the correlation information to the response headers");
+
             if (_options.Operation.IncludeInResponse)
             {
                 _logger.LogTrace("Prepare for the operation ID to be included in the response...");
@@ -75,14 +84,14 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
                 _logger.LogTrace("Prepare for the operation parent ID to be included in the response...");
                 httpContext.Response.OnStarting(() =>
                 {
-                    StringValues traceParnet = httpContext.Request.Headers.GetTraceParent();
-                    if (string.IsNullOrWhiteSpace(traceParnet))
+                    StringValues traceParent = httpContext.Request.Headers.GetTraceParent();
+                    if (string.IsNullOrWhiteSpace(traceParent))
                     {
                         _logger.LogTrace("No response header was added given no operation parent ID was found");
                     }
                     else
                     {
-                        AddResponseHeader(httpContext, "traceparent", traceParnet);
+                        AddResponseHeader(httpContext, "traceparent", traceParent);
                     }
 
                     return Task.CompletedTask;

@@ -1,20 +1,38 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
+using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-#if NET6_0
 using Arcus.WebApi.Logging.Correlation;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection; 
-#endif
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
 using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Logging
 {
-#if NET6_0
     // ReSharper disable once InconsistentNaming
     public class IFunctionsHostBuilderTests
     {
+        [Fact]
+        public void AddHttpCorrelation_WithDefault_RegistersDedicatedCorrelation()
+        {
+            // Arrange
+            var services = new ServiceCollection();
+            var builder = new Mock<IFunctionsHostBuilder>();
+            builder.Setup(build => build.Services).Returns(services);
+
+            // Act
+            builder.Object.AddHttpCorrelation();
+
+            // Assert
+            IServiceProvider provider = services.BuildServiceProvider();
+            Assert.NotNull(provider.GetService<IHttpCorrelationInfoAccessor>());
+            Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
+            Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
+            Assert.NotNull(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
+            Assert.Null(provider.GetService<HttpCorrelation>());
+        }
+
         [Fact]
         public void AddHttpCorrelation_WithoutOptions_RegistersDedicatedCorrelation()
         {
@@ -31,6 +49,8 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<IHttpCorrelationInfoAccessor>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
+            Assert.NotNull(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
+            Assert.Null(provider.GetService<HttpCorrelation>());
         }
 
         [Fact]
@@ -49,6 +69,8 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             Assert.NotNull(provider.GetService<IHttpCorrelationInfoAccessor>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor<CorrelationInfo>>());
             Assert.NotNull(provider.GetService<ICorrelationInfoAccessor>());
+            Assert.NotNull(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
+            Assert.Null(provider.GetService<HttpCorrelation>());
         }
 
         [Fact]
@@ -65,7 +87,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();
             Assert.NotNull(provider.GetService<HttpCorrelation>());
+            Assert.Null(provider.GetService<AzureFunctionsInProcessHttpCorrelation>());
         }
     } 
-#endif
 }

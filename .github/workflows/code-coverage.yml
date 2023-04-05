@@ -1,0 +1,36 @@
+name: "Code Coverage"
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    # The branches below must be a subset of the branches above
+    branches: [ main ]
+
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [ 'csharp' ]
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Coverlet coverage unit test
+      run: dotnet test -c Debug -p:coverletOutput=coverage.json -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*,[Arcus.WebApi.Security]*,[Arcus.WebApi.OpenApi.Extensions]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
+  
+    - name: Coverlet coverage integration test
+      run: dotnet test -c Debug --filter "Category=Integration" -p:coverletOutput=src/ -p:MergeWith=src/coverage.json -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*,[Arcus.WebApi.Logging.AzureFunctions]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
+      if: always()
+
+    - name: Codecov
+      uses: codecov/codecov-action@v3.1.1
+      if: always()
