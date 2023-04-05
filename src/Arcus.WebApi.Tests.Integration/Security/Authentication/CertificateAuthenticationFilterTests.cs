@@ -45,42 +45,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         }
 
         [Fact]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationOnFilters_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
-        {
-            // Arrange
-            string subjectKey = "subject", subjectValue = $"subject-{Guid.NewGuid()}";
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithSubject("unrecognized-subject-name"))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator = 
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(SecretProvider, subjectKey)
-                                    .Build());
-
-                        services.AddSecretStore(stores => stores.AddInMemory(subjectKey, subjectValue))
-                                .AddSingleton(certificateValidator)
-                                .AddClientCertificate(clientCertificate)
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
-
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
-                }
-            }
-        }
-
-        [Fact]
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateSubjectNameDoesntMatch()
         {
             // Arrange
@@ -90,7 +54,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
-                        var certificateValidator = 
+                        var certificateValidator =
                             new CertificateAuthenticationValidator(
                                 new CertificateAuthenticationConfigBuilder()
                                     .WithSubject(SecretProvider, subjectKey)
@@ -148,49 +112,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         [Theory]
         [InlineData("", false)]
         [InlineData("thumbprint-noise", true)]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationOnFilters_ShouldFailWithUnauthorized_WhenClientCertificateThumbprintDoesntMatch(
-            string thumbprintNoise,
-            bool expected)
-        {
-            // Arrange
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.Create())
-            {
-                const string thumbprintKey = "thumbprint";
-                
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithThumbprint(SecretProvider, thumbprintKey)
-                                    .Build());
-                        
-                        services.AddSecretStore(stores => stores.AddInMemory(thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise))
-                                .AddSingleton(certificateValidator)
-                                .AddClientCertificate(clientCertificate)
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
-                
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.True(
-                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
-                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
-                    }
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("", false)]
-        [InlineData("thumbprint-noise", true)]
         public async Task AuthorizedRoute_WithCertificateAuthentication_ShouldFailWithUnauthorized_WhenClientCertificateThumbprintDoesntMatch(
             string thumbprintNoise,
             bool expected)
@@ -199,7 +120,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.Create())
             {
                 const string thumbprintKey = "thumbprint";
-                
+
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
@@ -208,13 +129,13 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 new CertificateAuthenticationConfigBuilder()
                                     .WithThumbprint(SecretProvider, thumbprintKey)
                                     .Build());
-                        
+
                         services.AddSecretStore(stores => stores.AddInMemory(thumbprintKey, clientCertificate.Thumbprint + thumbprintNoise))
                                 .AddSingleton(certificateValidator)
                                 .AddClientCertificate(clientCertificate)
                                 .AddControllers(opt => opt.AddCertificateAuthenticationFilter());
                     });
-                
+
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
@@ -242,7 +163,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.Create())
             {
                 const string thumbprintKey = "thumbprint";
-                
+
                 var options = new TestApiServerOptions()
                     .ConfigureServices(services =>
                     {
@@ -250,57 +171,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 .AddClientCertificate(clientCertificate)
                                 .AddControllers(opt => opt.AddCertificateAuthenticationFilter(auth => auth.WithThumbprint(SecretProvider, thumbprintKey)));
                     });
-                
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
 
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.True(
-                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
-                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
-                    }
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("known-subject", "known-issuername", false)]
-        [InlineData("unrecognizedSubjectName", "known-issuername", true)]
-        [InlineData("known-subject", "unrecognizedIssuerName", true)]
-        [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationViaSecretProviderOnFilters_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
-            string subjectValue,
-            string issuerValue,
-            bool expected)
-        {
-            // Arrange
-            const string subjectKey = "subject", issuerKey = "issuer";
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(SecretProvider, subjectKey)
-                                    .WithIssuer(SecretProvider, issuerKey)
-                                    .Build());
-
-                        services.AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator)
-                                .AddSecretStore(stores => stores.AddInMemory(new Dictionary<string, string>
-                                {
-                                    [subjectKey] = "CN=known-subject",
-                                    [issuerKey] = "CN=known-issuername"
-                                }))
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
-                
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
@@ -350,7 +221,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                 }))
                                 .AddControllers(opt => opt.AddCertificateAuthenticationFilter());
                     });
-                
+
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
@@ -396,56 +267,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                         .WithIssuer(SecretProvider, issuerKey);
                                 }));
                     });
-                
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.True(
-                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
-                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
-                    }
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("known-subject", "known-issuername", false)]
-        [InlineData("unrecognizedSubjectName", "known-issuername", true)]
-        [InlineData("known-subject", "unrecognizedIssuerName", true)]
-        [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationViaConfigurationOnFilters_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
-            string subjectValue,
-            string issuerValue,
-            bool expected)
-        {
-            // Arrange
-            const string subjectKey = "subject", issuerKey = "issuer";
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
-                    {
-                        new KeyValuePair<string, string>(subjectKey, "CN=known-subject"),
-                        new KeyValuePair<string, string>(issuerKey, "CN=known-issuername")
-                    }))
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(Configuration, subjectKey)
-                                    .WithIssuer(Configuration, issuerKey)
-                                    .Build());
-
-                        services.AddSingleton(certificateValidator)
-                                .AddClientCertificate(clientCertificate)
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
 
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
@@ -478,7 +299,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
                 var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
+                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new[]
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject"),
                         new KeyValuePair<string, string>(issuerKey, "CN=known-issuername")
@@ -528,7 +349,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
                 var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
+                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new[]
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject"),
                         new KeyValuePair<string, string>(issuerKey, "CN=known-issuername")
@@ -564,56 +385,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         [InlineData("unrecognizedSubjectName", "known-issuername", true)]
         [InlineData("known-subject", "unrecognizedIssuerName", true)]
         [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationViaConfigurationAndSecretProviderOnFilters_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
-            string subjectValue,
-            string issuerValue,
-            bool expected)
-        {
-            // Arrange
-            const string subjectKey = "subject", issuerKey = "issuer";
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
-                    {
-                        new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
-                    }))
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(Configuration, subjectKey)
-                                    .WithIssuer(SecretProvider, issuerKey)
-                                    .Build());
-
-                        services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=known-issuername"))
-                                .AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator)
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
-
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.True(
-                            (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
-                            $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
-                    }
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData("known-subject", "known-issuername", false)]
-        [InlineData("unrecognizedSubjectName", "known-issuername", true)]
-        [InlineData("known-subject", "unrecognizedIssuerName", true)]
-        [InlineData("unrecognizedSubjectName", "unrecognizedIssuerName", true)]
         public async Task AuthorizedRoute_WithCertificateAuthenticationViaConfigurationAndSecretProvider_ShouldFailWithUnauthorized_WhenAnyClientCertificateValidationDoesntSucceeds(
             string subjectValue,
             string issuerValue,
@@ -624,7 +395,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
                 var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
+                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new[]
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
                     }))
@@ -674,7 +445,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName(issuerValue, subjectValue))
             {
                 var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
+                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new[]
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
                     }))
@@ -701,38 +472,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                             (HttpStatusCode.Unauthorized == response.StatusCode) == expected,
                             $"Response HTTP status code {(expected ? "should" : "shouldn't")} be 'Unauthorized' but was '{response.StatusCode}'");
                     }
-                }
-            }
-        }
-
-        [Fact]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationOnFilters_ShouldFailOnInvalidBase64Format()
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    var certificateValidator =
-                        new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfigBuilder()
-                                .WithSubject(Configuration, "ignored-subject")
-                                .Build());
-
-                    services.AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                });
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder
-                    .Get(NoneAuthenticationController.GetRoute)
-                    .WithHeader("X-ARR-ClientCert", "something not even close to an client certificate export");
-
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
                 }
             }
         }
@@ -798,49 +537,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         }
 
         [Fact]
-        public async Task AuthorizedRoute_WithCertificateAuthenticationInHeaderOnFilters_ShouldSucceed()
-        {
-            // Arrange
-            const string subjectKey = "subject", issuerKey = "issuer";
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("known-issuername", "known-subject"))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
-                    {
-                        new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
-                    }))
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithSubject(Configuration, subjectKey)
-                                    .WithIssuer(SecretProvider, issuerKey)
-                                    .Build());
-                        
-                        services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=known-issuername"))
-                                .AddSingleton(certificateValidator)
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
-                
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    string base64String = Convert.ToBase64String(clientCertificate.Export(X509ContentType.Pkcs12), Base64FormattingOptions.None);
-                    var request = HttpRequestBuilder
-                        .Get(NoneAuthenticationController.GetRoute)
-                        .WithHeader("X-ARR-ClientCert", base64String);
-
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
-                }
-            }
-        }
-
-        [Fact]
         public async Task AuthorizedRoute_WithCertificateAuthenticationInHeader_ShouldSucceed()
         {
             // Arrange
@@ -848,7 +544,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("known-issuername", "known-subject"))
             {
                 var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
+                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new[]
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
                     }))
@@ -860,12 +556,12 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                     .WithSubject(Configuration, subjectKey)
                                     .WithIssuer(SecretProvider, issuerKey)
                                     .Build());
-                        
+
                         services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=known-issuername"))
                                 .AddSingleton(certificateValidator)
                                 .AddControllers(opt => opt.AddCertificateAuthenticationFilter());
                     });
-                
+
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     string base64String = Convert.ToBase64String(clientCertificate.Export(X509ContentType.Pkcs12), Base64FormattingOptions.None);
@@ -891,7 +587,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("known-issuername", "known-subject"))
             {
                 var options = new TestApiServerOptions()
-                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new []
+                    .ConfigureAppConfiguration(config => config.AddInMemoryCollection(new[]
                     {
                         new KeyValuePair<string, string>(subjectKey, "CN=known-subject")
                     }))
@@ -904,7 +600,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                                         .WithIssuer(SecretProvider, issuerKey);
                                 }));
                     });
-                
+
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     string base64String = Convert.ToBase64String(clientCertificate.Export(X509ContentType.Pkcs12), Base64FormattingOptions.None);
@@ -917,45 +613,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                     {
                         // Assert
                         Assert.NotEqual(HttpStatusCode.Unauthorized, response.StatusCode);
-                    }
-                }
-            }
-        }
-        
-        [Theory]
-        [InlineData(BypassOnMethodController.CertificateRoute)]
-        [InlineData(BypassCertificateController.BypassOverAuthenticationRoute)]
-        [InlineData(AllowAnonymousCertificateController.Route)]
-        public async Task CertificateAuthorizedRoute_WithBypassAttributeOnFilters_SkipsAuthentication(string route)
-        {
-            // Arrange
-            const string issuerKey = "issuer";
-            using (X509Certificate2 clientCertificate = SelfSignedCertificate.CreateWithIssuerAndSubjectName("issuer", "subject"))
-            {
-                var options = new TestApiServerOptions()
-                    .ConfigureServices(services =>
-                    {
-                        var certificateValidator =
-                            new CertificateAuthenticationValidator(
-                                new CertificateAuthenticationConfigBuilder()
-                                    .WithIssuer(SecretProvider, issuerKey)
-                                    .Build());
-
-                        services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
-                                .AddClientCertificate(clientCertificate)
-                                .AddSingleton(certificateValidator)
-                                .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                    });
-
-                await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-                {
-                    var request = HttpRequestBuilder.Get(route);
-                    
-                    // Act
-                    using (HttpResponseMessage response = await server.SendAsync(request))
-                    {
-                        // Assert
-                        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     }
                 }
             }
@@ -989,7 +646,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     var request = HttpRequestBuilder.Get(route);
-                    
+
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
                     {
@@ -1021,7 +678,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     var request = HttpRequestBuilder.Get(route);
-                    
+
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
                     {
@@ -1051,53 +708,13 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 await using (var server = await TestApiServer.StartNewAsync(options, _logger))
                 {
                     var request = HttpRequestBuilder.Get(BypassOnMethodController.CertificateRoute);
-                    
+
                     // Act
                     using (HttpResponseMessage response = await server.SendAsync(request))
                     {
                         // Assert
                         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
                     }
-                }
-            }
-        }
-        
-        [Fact]
-        public async Task CertificateAuthorizedRoute_DoesntEmitSecurityEventsByDefaultOnFilters_RunsAuthentication()
-        {
-            // Arrange
-            const string issuerKey = "issuer";
-            var spySink = new InMemorySink();
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    var certificateValidator =
-                        new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfigBuilder()
-                                .WithIssuer(SecretProvider, issuerKey)
-                                .Build());
-
-                    services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
-                            .AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.AddCertificateAuthentication());
-                })
-                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-                
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
-                    Assert.DoesNotContain(logEvents, logEvent =>
-                    {
-                        string message = logEvent.RenderMessage();
-                        return message.Contains("EventType") && message.Contains("Security");
-                    });
                 }
             }
         }
@@ -1126,7 +743,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-                
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -1159,7 +776,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-                
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -1171,51 +788,6 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                         string message = logEvent.RenderMessage();
                         return message.Contains("EventType") && message.Contains("Security");
                     });
-                }
-            }
-        }
-
-        [Theory]
-        [InlineData(false)]
-        [InlineData(true)]
-        public async Task CertificateAuthorizedRoute_EmitsSecurityEventsWhenRequestedOnFilters_RunsAuthentication(bool emitsSecurityEvents)
-        {
-            // Arrange
-            const string issuerKey = "issuer";
-            var spySink = new InMemorySink();
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services =>
-                {
-                    var certificateValidator =
-                        new CertificateAuthenticationValidator(
-                            new CertificateAuthenticationConfigBuilder()
-                                .WithIssuer(SecretProvider, issuerKey)
-                                .Build());
-
-                    services.AddSecretStore(stores => stores.AddInMemory(issuerKey, "CN=issuer"))
-                            .AddSingleton(certificateValidator)
-                            .AddMvc(opt => opt.Filters.AddCertificateAuthentication(authOptions =>
-                            {
-                                authOptions.EmitSecurityEvents = emitsSecurityEvents;
-                            }));
-                })
-                .ConfigureHost(host => host.UseSerilog((context, config) => config.WriteTo.Sink(spySink)));
-
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-                
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
-                    IEnumerable<LogEvent> logEvents = spySink.DequeueLogEvents();
-                    Assert.True(emitsSecurityEvents == logEvents.Any(logEvent =>
-                    {
-                        string message = logEvent.RenderMessage();
-                        return message.Contains("EventType") && message.Contains("Security");
-                    }));
                 }
             }
         }
@@ -1249,7 +821,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-                
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
@@ -1289,7 +861,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
                 var request = HttpRequestBuilder.Get(NoneAuthenticationController.GetRoute);
-                
+
                 // Act
                 using (HttpResponseMessage response = await server.SendAsync(request))
                 {
