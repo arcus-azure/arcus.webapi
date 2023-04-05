@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
@@ -14,7 +13,6 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
     /// Represents an <see cref="HttpCorrelationTemplate{THttpRequest,THttpResponse}"/> implementation
     /// that extracts and sets HTTP correlation throughout Azure Functions (in-process) HTTP trigger applications.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class AzureFunctionsInProcessHttpCorrelation
     {
         private readonly HttpCorrelationInfoOptions _options;

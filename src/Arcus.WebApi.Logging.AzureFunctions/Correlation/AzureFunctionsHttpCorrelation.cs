@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
@@ -18,7 +17,6 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
     /// Represents an <see cref="HttpCorrelationTemplate{THttpRequest,THttpResponse}"/> implementation
     /// that extracts and sets HTTP correlation throughout Azure Functions (isolated) HTTP trigger applications.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class AzureFunctionsHttpCorrelation : HttpCorrelationTemplate<HttpRequestData, HttpResponseData>
     {
         private readonly TelemetryClient _telemetryClient;

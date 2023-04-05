@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Net;
 using GuardNet;
@@ -9,7 +8,6 @@ namespace Arcus.WebApi.Logging
     /// <summary>
     /// Specifies additional configuration for this endpoint during request tracking.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     [AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = true)]
     public class RequestTrackingAttribute : Attribute
     {

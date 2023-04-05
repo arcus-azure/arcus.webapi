@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using Arcus.Observability.Correlation;
 using GuardNet;
 using Microsoft.ApplicationInsights;
@@ -13,7 +12,6 @@ namespace Arcus.WebApi.Logging.Core.Correlation
     /// Represents the result of the <see cref="HttpCorrelationTemplate{THttpRequest,THttpResponse}.TrySettingCorrelationFromRequest"/>
     /// whether the incoming HTTP request was successfully correlated into the application or not.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class HttpCorrelationResult : IDisposable
     {
         private readonly TelemetryClient _telemetryClient;

@@ -9,15 +9,12 @@ using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Microsoft.ApplicationInsights;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
     /// <summary>
     /// Represents a template for any HTTP-related systems to extract and set HTTP correlation throughout the application.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public abstract class HttpCorrelationTemplate<THttpRequest, THttpResponse> 
         where THttpRequest : class 
         where THttpResponse : class

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
-using Arcus.Observability.Telemetry.Serilog.Enrichers;
 using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
@@ -16,7 +14,6 @@ namespace Arcus.WebApi.Logging
     /// <remarks>
     ///     WARNING: Only use the version tracking for non-public endpoints otherwise the version information is leaked and it can be used for unintended malicious purposes.
     /// </remarks>
-    [ExcludeFromCodeCoverage]
     public class VersionTrackingMiddleware
     {
         private readonly IAppVersion _appVersion;

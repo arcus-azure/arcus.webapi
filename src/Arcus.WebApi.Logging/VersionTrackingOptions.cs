@@ -1,12 +1,10 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using GuardNet;
+﻿using GuardNet;
 
 namespace Arcus.WebApi.Logging
 {
     /// <summary>
     /// Represents the user-configurable options to control how the <see cref="VersionTrackingMiddleware"/> should track the current application version in the response.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class VersionTrackingOptions
     {
         private string _headerName = "X-Version";

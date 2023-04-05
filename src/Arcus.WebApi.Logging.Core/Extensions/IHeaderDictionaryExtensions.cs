@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using GuardNet;
 using Microsoft.Extensions.Primitives;
 
@@ -39,7 +38,6 @@ namespace Microsoft.AspNetCore.Http
         /// </summary>
         /// <param name="headers">The HTTP request headers where the 'tracestate' header is located.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="headers"/> is <c>null</c>.</exception>
-        [ExcludeFromCodeCoverage]
         internal static StringValues GetTraceState(this IHeaderDictionary headers)
         {
             Guard.NotNull(headers, nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'tracestate' header value");

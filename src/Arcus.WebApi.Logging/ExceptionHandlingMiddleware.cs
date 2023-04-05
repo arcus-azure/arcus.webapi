@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
@@ -13,7 +12,6 @@ namespace Arcus.WebApi.Logging
     /// <summary>
     /// Exception handling middleware that handles exceptions thrown further up the ASP.NET Core request pipeline.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class ExceptionHandlingMiddleware
     {
         private readonly RequestDelegate _next;

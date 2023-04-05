@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
@@ -10,7 +9,6 @@ namespace Microsoft.AspNetCore.Builder
     /// <summary>
     /// Extra extensions on the <see cref="IApplicationBuilder"/> for logging.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     // ReSharper disable once InconsistentNaming
     public static class IApplicationBuilderExtensions
     {

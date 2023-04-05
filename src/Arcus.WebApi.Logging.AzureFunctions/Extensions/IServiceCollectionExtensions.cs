@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Diagnostics.CodeAnalysis;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
 using GuardNet;
-using Microsoft.ApplicationInsights;
-using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -40,7 +37,6 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="configureOptions">The function to configure additional options how the correlation works.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddHttpCorrelation) + " method overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
-        [ExcludeFromCodeCoverage]
         public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder, Action<CorrelationInfoOptions> configureOptions)
         {
             Guard.NotNull(builder, nameof(builder), "Requires a functions host builder instance to add the HTTP correlation services");
