@@ -25,10 +25,10 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Coverlet coverage unit test
-      run: dotnet test -c Debug -p:coverletOutput=coverage.json -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:Threshold=80 -p:ThresholdStat=Total -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*,[Arcus.WebApi.Security]*,[Arcus.WebApi.OpenApi.Extensions]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
+      run: dotnet test -c Debug -p:coverletOutput=coverage.json -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*,[Arcus.WebApi.Security]*,[Arcus.WebApi.OpenApi.Extensions]*\" src/Arcus.WebApi.Tests.Unit/Arcus.WebApi.Tests.Unit.csproj
   
     - name: Coverlet coverage integration test
-      run: dotnet test -c Debug --filter "Category=Integration" -p:coverletOutput=src/ -p:Threshold=80 -p:MergeWith=src/coverage.json -p:Threshold=80 -p:ThresholdStat=Total -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*,[Arcus.WebApi.Logging.AzureFunctions]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
+      run: dotnet test -c Debug --filter "Category=Integration" -p:coverletOutput=src/ -p:Threshold=80 -p:MergeWith=src/coverage.json -p:CollectCoverage=true -p:CoverletOutputFormat=\"opencover,json\" -p:ExcludeByAttribute=\"Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute\" -p:Exclude=\"[Arcus.WebApi.Tests.*]*,[Arcus.WebApi.Logging.AzureFunctions]*\" src/Arcus.WebApi.Tests.Integration/Arcus.WebApi.Tests.Integration.csproj
       if: always()
 
     - name: Codecov
