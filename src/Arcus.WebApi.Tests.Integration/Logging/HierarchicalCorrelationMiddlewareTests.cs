@@ -449,7 +449,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
                 {
                     opt.Format = HttpCorrelationFormat.Hierarchical;
                     opt.UpstreamService.ExtractFromRequest = extractFromRequest;
-                    opt.UpstreamService.OperationParentIdHeaderName = operationParentIdHeaderName;
+                    opt.UpstreamService.HeaderName = operationParentIdHeaderName;
                 }))
                 .PreConfigure(app => app.UseHttpCorrelation());
 
