@@ -37,12 +37,10 @@ namespace Arcus.WebApi.Logging.Correlation
             IHttpContextAccessor httpContextAccessor,
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
-            : base(options?.Value ?? new HttpCorrelationInfoOptions(), correlationInfoAccessor, logger)
+            : base(options?.Value, correlationInfoAccessor, logger)
         {
             Guard.NotNull(httpContextAccessor, nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
             Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
-            
-            options ??= Options.Create(new HttpCorrelationInfoOptions());
             Guard.NotNull(options, nameof(options), "Requires a value in the set of options to configure the correlation process");
             Guard.NotNull(options.Value, nameof(options), "Requires a value in the set of options to configure the correlation process");
 
