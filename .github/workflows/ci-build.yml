@@ -34,7 +34,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Determine version
-        shell: pwsh
+        shell: powershell
         run: |
           $packageVersion = $env:GITHUB_RUN_ID
           if ('${{ github.event_name }}' -eq 'pull_request') {
