@@ -26,10 +26,6 @@ jobs:
   compile:
     name: Compile
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: true
-      matrix:
-        language: [ 'csharp' ]
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
@@ -55,7 +51,7 @@ jobs:
             $packageVersion = "$currentVersion-PR-$pullRequestNumber-$patch"
 
             if (${{ github.event.pull_request.head.repo.full_name != github.repository }}) {
-              Write-Host "{PACKAGE_VERSION}=$packageVersion" >> $env:GITHUB_ENV
+              echo "PACKAGE_VERSION=$packageVersion" >> $env:GITHUB_ENV
             }
           }
       - name: Build solution
