@@ -17,6 +17,10 @@ on:
   #       type: 'string'
   #       default: 'preview'
 
+permissions:
+  checks: write
+  pull-requests: write
+
 env:
   vm_image: ubuntu-latest
   project: Arcus.WebApi
@@ -77,10 +81,12 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Run unit tests
-        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "TestResults-${{ env.dotnet_sdk_version }}"
-      - name: Upload dotnet test results
-        uses: actions/upload-artifact@v3
+        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "test-results"
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
         with:
-          name: dotnet-results-${{ env.dotnet_sdk_version }}
-          path: TestResults-${{ env.dotnet_sdk_version }}
-        if: ${{ always() }}
+          files: |
+            test-results/**/*.xml
+            test-results/**/*.trx
+            test-results/**/*.json
