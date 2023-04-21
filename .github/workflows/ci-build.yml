@@ -77,4 +77,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Run unit tests
-        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }}
+        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "TestResults-${{ env.dotnet_sdk_version }}"
+      - name: Upload dotnet test results
+        uses: actions/upload-artifact@v3
+        with:
+          name: dotnet-results-${{ env.dotnet_sdk_version }}
+          path: TestResults-${{ env.dotnet_sdk_version }}
+        if: ${{ always() }}
