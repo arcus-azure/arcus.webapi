@@ -59,7 +59,7 @@ jobs:
           }
       - name: Build solution
         env:
-          PACKAGE_VERSION: ${{ steps.determineVersion.outputs.packageVersion  }}
+          PACKAGE_VERSION: 1.7.1-PR-15-4763577885
         run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.PACKAGE_VERSION }}
       - uses: actions/upload-artifact@v3
         with:
