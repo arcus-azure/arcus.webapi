@@ -1,4 +1,4 @@
-name: "CI build"
+name: CI build
 
 on:
   push:
@@ -10,17 +10,17 @@ on:
     paths:
       - src/*
       - .github/workflows/ci-build.yml
-  workflow_dispatch:
-    inputs:
-      package_version_manualTrigger:
-        description: 'NuGet package version of MyGet published packages'
-        type: 'string'
-        default: 'preview'
+  # workflow_dispatch:
+  #   inputs:
+  #     package_version_manualTrigger:
+  #       description: 'NuGet package version of MyGet published packages'
+  #       type: 'string'
+  #       default: 'preview'
 
 env:
-  project: 'Arcus.WebApi'
-  dotnet_sdk_version: '6.0.100'
-  dotnet_sdk_versionbc: '3.1.201'
+  project: Arcus.WebApi
+  dotnet_sdk_version: 6.0.100
+  dotnet_conf: Release
 
 jobs:
   compile:
@@ -36,8 +36,33 @@ jobs:
         with:
           dotnet-version: |
             $dotnet_sdk_version
-            $dotnet_sdk_versionbc
       - name: Checkout repository
         uses: actions/checkout@v2
-      - run: dotnet build src/$project.sln
+      - name: Determine version
+        shell: pwsh
+        run: |
+          $packageVersion = $env:GITHUB_RUN_ID
+          if (${{ github.event_name }} == 'pull_request') {
+            $nugetSearchUrl = "https://azuresearch-usnc.nuget.org/query?q=$(Project)&prerelease=false"
+            $response = Invoke-WebRequest $nugetSearchUrl
+            $json = ConvertFrom-Json $response.Content
+            $currentVersion = $json.data[0].version
+            if ($currentVersion -eq $null) {
+              $currentVersion = "0.1.0" 
+            }
+
+            $pullRequestNumber= $env:GITHUB_RUN_NUMBER
+            $patch = $env:GITHUB_RUN_ID
+            $packageVersion = "$currentVersion-PR-$pullRequestNumber-$patch"
+
+            if (${{ github.event.pull_request.head.repo.full_name != github.repository }}) {
+              Write-Host "{PACKAGE_VERSION}=$packageVersion" >> $GITHUB_ENV
+            }
+          }
+      - name: Build solution
+        run: dotnet build src/$project.sln --configuration $dotnet_conf --version-suffix $PACKAGE_VERSION
+      - uses: actions/upload-artifact@v3
+        with:
+          name: Build
+          path: '**/?(bin|obj)/**'
     
