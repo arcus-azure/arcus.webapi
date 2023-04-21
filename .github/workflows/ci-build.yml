@@ -53,6 +53,7 @@ jobs:
 
             echo ::set-output name=packageVersion::$( $packageVersion)
             Write-Host "packageVersion=$($packageVersion)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+            Write-Output "packageVersion=$($packageVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             # if ('${{ github.event.pull_request.head.repo.full_name }}' -ne 'github.repository') {
             #   echo ::set-output name=packageVersion::$( $packageVersion)
             #   Write-Host "packageVersion=$($packageVersion)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
@@ -60,7 +61,7 @@ jobs:
           }
       - name: Build solution
         env:
-          PACKAGE_VERSION: ${{ env.packageVersion }}
+          PACKAGE_VERSION: ${{ steps.determineVersion.outputs.packageVersion }}
         run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.PACKAGE_VERSION }}
       - uses: actions/upload-artifact@v3
         with:
