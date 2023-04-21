@@ -54,12 +54,12 @@ jobs:
             echo $packageVersion
             if (${{ github.event.pull_request.head.repo.full_name != github.repository }}) {
               echo ::set-output name=packageVersion::$( $packageVersion)
-              Write-Output "packageVersion=$($packageVersion)" Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              Write-Output "packageVersion=$($packageVersion)" Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
             }
           }
       - name: Build solution
         env:
-          PACKAGE_VERSION: 1.7.1-PR-15-4763577885
+          PACKAGE_VERSION: ${{ env.packageVersion }}
         run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.PACKAGE_VERSION }}
       - uses: actions/upload-artifact@v3
         with:
