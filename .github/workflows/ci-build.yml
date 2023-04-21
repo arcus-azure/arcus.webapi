@@ -42,7 +42,7 @@ jobs:
         run: |
           $packageVersion = $env:GITHUB_RUN_ID
           if ('${{ github.event_name }}' -eq 'pull_request') {
-            $nugetSearchUrl = "https://azuresearch-usnc.nuget.org/query?q=$(Project)&prerelease=false"
+            $nugetSearchUrl = "https://azuresearch-usnc.nuget.org/query?q=${{ env.project }}&prerelease=false"
             $response = Invoke-WebRequest $nugetSearchUrl
             $json = ConvertFrom-Json $response.Content
             $currentVersion = $json.data[0].version
