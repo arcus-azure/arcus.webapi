@@ -83,6 +83,7 @@ jobs:
         uses: phoenix-actions/test-reporting@v12
         if: always()
         with:
+          name: Unit tests
           path: test-results/**/*.trx
           reporter: dotnet-trx
 
@@ -103,5 +104,6 @@ jobs:
         uses: phoenix-actions/test-reporting@v12
         if: always()
         with:
+          name: Self-contained integration tests
           path: test-results/**/*.trx
           reporter: dotnet-trx
