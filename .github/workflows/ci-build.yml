@@ -41,7 +41,7 @@ jobs:
         shell: pwsh
         run: |
           $packageVersion = $env:GITHUB_RUN_ID
-          if (${{ github.event_name }} == 'pull_request') {
+          if ('${{ github.event_name }}' == 'pull_request') {
             $nugetSearchUrl = "https://azuresearch-usnc.nuget.org/query?q=$(Project)&prerelease=false"
             $response = Invoke-WebRequest $nugetSearchUrl
             $json = ConvertFrom-Json $response.Content
