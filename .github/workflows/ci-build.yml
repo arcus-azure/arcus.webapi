@@ -34,7 +34,8 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Determine version
-        shell: powershell
+        id: determineVersion
+        shell: pwsh
         run: |
           $packageVersion = $env:GITHUB_RUN_ID
           if ('${{ github.event_name }}' -eq 'pull_request') {
@@ -52,11 +53,11 @@ jobs:
 
             echo $packageVersion
             if (${{ github.event.pull_request.head.repo.full_name != github.repository }}) {
-              echo "PACKAGE_VERSION=$packageVersion" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+              Write-Output "packageVersion=$packageVersion" >> $Env:GITHUB_OUTPUT
             }
           }
       - name: Build solution
-        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.PACKAGE_VERSION }}
+        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ steps.determineVersion.outputs.packageVersion }}
       - uses: actions/upload-artifact@v3
         with:
           name: Build
