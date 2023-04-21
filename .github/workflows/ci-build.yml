@@ -77,4 +77,4 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Run unit tests
-        run: dotnet test src/**/${{ env.project }}.csproj --configuration ${{ env.dotnet_conf }}
+        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }}
