@@ -70,6 +70,9 @@ jobs:
     needs: Compile
     name: Unit tests
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
@@ -78,19 +81,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Run unit tests
-        run: dotnet test src/${{ env.project }}.Tests.Unit/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "test-results"
+        run: dotnet test src/${{ env.project }}.Tests.Unit/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger "trx;LogFileName=TestResults.trx" --results-directory "test-results"
       - name: Test Reporting
         uses: phoenix-actions/test-reporting@v12
         if: always()
         with:
           name: Unit tests
-          path: test-results/**/*.trx
+          path: test-results/TestResults.trx
           reporter: dotnet-trx
 
   self-contained-integration-tests:
     needs: Compile
     name: Self-contained integration tests
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
@@ -99,11 +105,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v3
       - name: Run integration tests
-        run: dotnet test src/${{ env.project }}.Tests.Integration/${{ env.project }}.Tests.Integration.csproj --filter "Category=Integration" --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "test-results"
+        run: dotnet test src/${{ env.project }}.Tests.Integration/${{ env.project }}.Tests.Integration.csproj --filter "Category=Integration" --configuration ${{ env.dotnet_conf }} --logger "trx;LogFileName=TestResults.trx" --results-directory "test-results"
       - name: Test Reporting
         uses: phoenix-actions/test-reporting@v12
         if: always()
         with:
           name: Self-contained integration tests
-          path: test-results/**/*.trx
+          path: test-results/TestResults.trx
           reporter: dotnet-trx
