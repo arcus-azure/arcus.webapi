@@ -79,15 +79,12 @@ jobs:
         uses: actions/checkout@v3
       - name: Run unit tests
         run: dotnet test src/${{ env.project }}.Tests.Unit/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "test-results"
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+      - name: Test Reporting
+        uses: phoenix-actions/test-reporting@v12
         if: always()
         with:
-          report_individual_runs: true
-          files: |
-            test-results/**/*.xml
-            test-results/**/*.trx
-            test-results/**/*.json
+          path: test-results/**/*.trx
+          reporter: dotnet-trx
 
   self-contained-integration-tests:
     needs: Compile
@@ -102,12 +99,9 @@ jobs:
         uses: actions/checkout@v3
       - name: Run integration tests
         run: dotnet test src/${{ env.project }}.Tests.Integration/${{ env.project }}.Tests.Integration.csproj --filter "Category=Integration" --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "test-results"
-      - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+      - name: Test Reporting
+        uses: phoenix-actions/test-reporting@v12
         if: always()
         with:
-          report_individual_runs: true
-          files: |
-            test-results/**/*.xml
-            test-results/**/*.trx
-            test-results/**/*.json
+          path: test-results/**/*.trx
+          reporter: dotnet-trx
