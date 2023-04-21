@@ -18,7 +18,7 @@ on:
   #       default: 'preview'
 
 env:
-  vm-image: ubuntu-latest
+  vm_image: ubuntu-latest
   project: Arcus.WebApi
   dotnet_sdk_version: 6.0.100
   dotnet_conf: Release
@@ -26,7 +26,7 @@ env:
 jobs:
   compile:
     name: Compile
-    runs-on: ${{ env.vm-image }}
+    runs-on: ${{ env.vm_image }}
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
@@ -68,7 +68,7 @@ jobs:
   unit-tests:
     needs: Compile
     name: Unit tests
-    runs-on: ${{ env.vm-image }}
+    runs-on: ${{ env.vm_image }}
     steps:
       - name: Setup dotnet
         uses: actions/setup-dotnet@v3
