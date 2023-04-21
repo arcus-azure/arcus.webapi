@@ -37,7 +37,7 @@ jobs:
         with:
           dotnet-version: ${{ env.dotnet_sdk_version }}
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
       - name: Determine version
         id: determineVersion
         shell: pwsh
@@ -67,7 +67,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: Build
-          path: '**/(bin|obj)?/**/*'
+          path: '**/*.dll'
 
   unit-tests:
     needs: Compile
@@ -78,10 +78,13 @@ jobs:
         uses: actions/setup-dotnet@v3
         with:
           dotnet-version: ${{ env.dotnet_sdk_version }}
-      - name: Checkout repository
-        uses: actions/checkout@v2
+      # - name: Checkout repository
+      #   uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: Build
       - name: Run unit tests
-        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger trx --results-directory "test-results"
+        run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --no-build --logger trx --results-directory "test-results"
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
