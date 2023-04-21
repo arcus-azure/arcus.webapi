@@ -58,6 +58,7 @@ jobs:
 
             if ('${{ github.event.pull_request.head.repo.full_name }}' -ne 'github.repository') {
               Write-Output "packageVersion=$($packageVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              Write-Output "versionArg=--version-suffix $($packageVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
             }
           }
       - name: Build solution
@@ -67,7 +68,7 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: Build
-          path: '**/*.dll'
+          path: '**/bin/**/*.dll'
 
   unit-tests:
     needs: Compile
@@ -85,6 +86,31 @@ jobs:
           name: Build
       - name: Run unit tests
         run: dotnet test src/**/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --no-build --logger trx --results-directory "test-results"
+      - name: Publish Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: |
+            test-results/**/*.xml
+            test-results/**/*.trx
+            test-results/**/*.json
+
+  self-contained-integration-tests:
+    needs: Compile
+    name: Self-contained integration tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.dotnet_sdk_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - uses: actions/download-artifact@v3
+        with:
+          name: Build
+      - name: Run integration tests
+        run: dotnet test src/**/${{ env.project }}.Tests.Integration.csproj --filter Category=Integration --configuration ${{ env.dotnet_conf }} --no-build --logger trx --results-directory "test-results"
       - name: Publish Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
