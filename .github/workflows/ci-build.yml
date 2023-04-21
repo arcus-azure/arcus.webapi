@@ -52,12 +52,13 @@ jobs:
             $packageVersion = "$currentVersion-PR-$pullRequestNumber-$patch"
 
             if ('${{ github.event.pull_request.head.repo.full_name }}' -ne 'github.repository') {
-              echo ::set-output name=packageVersion::$( $packageVersion)
               Write-Host "packageVersion=$($packageVersion)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
             }
           }
       - name: Build solution
-        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.packageVersion }}
+        env:
+          PACKAGE_VERSION: ${{ env.packageVersion }}
+        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.PACKAGE_VERSION }}
       - uses: actions/upload-artifact@v3
         with:
           name: Build
