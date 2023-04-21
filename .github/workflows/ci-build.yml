@@ -57,7 +57,9 @@ jobs:
             }
           }
       - name: Build solution
-        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ steps.determineVersion.outputs.packageVersion }}
+        env:
+          PACKAGE_VERSION: ${{ steps.determineVersion.outputs.packageVersion  }}
+        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix $env:PACKAGE_VERSION
       - uses: actions/upload-artifact@v3
         with:
           name: Build
