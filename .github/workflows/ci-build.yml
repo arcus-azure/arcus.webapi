@@ -83,6 +83,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
+          report_individual_runs: true
           files: |
             test-results/**/*.xml
             test-results/**/*.trx
@@ -105,6 +106,7 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
+          report_individual_runs: true
           files: |
             test-results/**/*.xml
             test-results/**/*.trx
