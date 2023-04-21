@@ -55,7 +55,7 @@ jobs:
             $packageVersion = "$currentVersion-PR-$pullRequestNumber-$patch"
 
             if (${{ github.event.pull_request.head.repo.full_name != github.repository }}) {
-              Write-Host "{PACKAGE_VERSION}=$packageVersion" >> $GITHUB_ENV
+              Write-Host "{PACKAGE_VERSION}=$packageVersion" >> $env:GITHUB_ENV
             }
           }
       - name: Build solution
