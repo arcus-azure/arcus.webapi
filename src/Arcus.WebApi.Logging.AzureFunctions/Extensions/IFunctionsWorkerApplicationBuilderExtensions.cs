@@ -60,7 +60,8 @@ namespace Microsoft.Extensions.Hosting
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
 
-            builder.AddApplicationInsights();
+            builder.Services.AddApplicationInsightsTelemetryWorkerService();
+            builder.Services.ConfigureFunctionsApplicationInsights();
 
             builder.Services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             builder.Services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
