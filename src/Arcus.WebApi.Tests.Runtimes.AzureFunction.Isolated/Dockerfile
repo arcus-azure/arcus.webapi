@@ -4,7 +4,7 @@ FROM mcr.microsoft.com/azure-functions/dotnet-isolated:4-dotnet-isolated6.0 AS b
 WORKDIR /home/site/wwwroot
 EXPOSE 80
 
-FROM mcr.microsoft.com/dotnet/sdk:6.0.400-bullseye-slim AS build
+FROM mcr.microsoft.com/dotnet/sdk:7.0.203-bullseye-slim AS build
 WORKDIR /src
 COPY ["Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated/Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated.csproj", "Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated/"]
 RUN dotnet restore "Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated/Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated.csproj"
