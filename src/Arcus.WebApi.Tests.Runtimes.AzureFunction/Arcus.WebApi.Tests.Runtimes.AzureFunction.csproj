@@ -4,7 +4,6 @@
     <AzureFunctionsVersion>v4</AzureFunctionsVersion>
     <DockerFastModeProjectMountDirectory>/home/site/wwwroot</DockerFastModeProjectMountDirectory>
     <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
-    <Isolated>false</Isolated>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Sdk.Functions" Version="4.2.0" />
