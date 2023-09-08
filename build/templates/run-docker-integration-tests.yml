@@ -1,4 +1,9 @@
 steps:
+  - task: UseDotNet@2
+    displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
+    inputs:
+      packageType: 'sdk'
+      version: '$(DotNet.Sdk.VersionBC)'
   - template: start-docker-project.yml
     parameters:
       dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
