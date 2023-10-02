@@ -63,7 +63,7 @@ namespace Arcus.WebApi.Logging
             {
                 await _next(context);
             }
-#if NET6_0
+#if !NETSTANDARD2_1
             catch (Microsoft.AspNetCore.Http.BadHttpRequestException exception)
 #else
             catch (Microsoft.AspNetCore.Server.Kestrel.Core.BadHttpRequestException exception)
