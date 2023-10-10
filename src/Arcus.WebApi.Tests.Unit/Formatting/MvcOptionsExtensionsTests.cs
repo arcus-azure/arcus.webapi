@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using System.Text.Json;
 using Bogus;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Formatters;
@@ -35,35 +34,6 @@ namespace Arcus.WebApi.Tests.Unit.Formatting
             // Assert
             Assert.All(options.InputFormatters, formatter => Assert.IsType<SystemTextJsonInputFormatter>(formatter));
             Assert.Empty(options.OutputFormatters);
-        }
-
-        [Fact]
-        public void ConfigureJsonFormatting_WithOptions_ConfiguresFormatters()
-        {
-            // Arrange
-            var options = new MvcOptions();
-            IEnumerable<SystemTextJsonInputFormatter> inputFormatters = 
-                CreateRandomSubset(new SystemTextJsonInputFormatter(new JsonOptions(), NullLogger<SystemTextJsonInputFormatter>.Instance));
-            Assert.All(inputFormatters, formatter => options.InputFormatters.Add(formatter));
-            IEnumerable<SystemTextJsonOutputFormatter> outputFormatters = 
-                CreateRandomSubset(new SystemTextJsonOutputFormatter(new JsonSerializerOptions()));
-            Assert.All(outputFormatters, formatter => options.OutputFormatters.Add(formatter));
-            bool allowTrailingCommas = BogusGenerator.Random.Bool();
-
-            // Act
-            options.ConfigureJsonFormatting(opt => opt.AllowTrailingCommas = allowTrailingCommas);
-
-            // Assert
-            Assert.All(options.InputFormatters, formatter =>
-            {
-                var jsonFormatter = Assert.IsType<SystemTextJsonInputFormatter>(formatter);
-                Assert.Equal(allowTrailingCommas, jsonFormatter.SerializerOptions.AllowTrailingCommas);
-            });
-            Assert.All(options.OutputFormatters, formatter =>
-            {
-                var jsonFormatter = Assert.IsType<SystemTextJsonOutputFormatter>(formatter);
-                Assert.Equal(allowTrailingCommas, jsonFormatter.SerializerOptions.AllowTrailingCommas);
-            });
         }
 
         private static IEnumerable<T> CreateRandomSubset<T>(params T[] formatters)

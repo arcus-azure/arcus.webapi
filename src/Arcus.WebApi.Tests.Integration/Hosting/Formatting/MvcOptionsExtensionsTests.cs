@@ -129,10 +129,7 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(mvcOptions =>
-                {
-                    mvcOptions.ConfigureJsonFormatting(jsonOptions => { });
-                }));
+                .ConfigureServices(services => services.AddMvc());
 
             var country = new Country
             {
@@ -164,10 +161,11 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
         {
             // Arrange
             var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc(mvcOptions =>
+                .ConfigureServices(services =>
                 {
-                    mvcOptions.ConfigureJsonFormatting(jsonOptions => jsonOptions.Converters.Add(new JsonStringEnumConverter()));
-                }));
+                    services.AddMvc()
+                            .AddJsonOptions(opt => opt.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+                });
 
             var country = new Country
             {
