@@ -34,3 +34,53 @@ using Microsoft.Extensions.Hosting;
     })
     .Build();
 ```
+
+## Configure JSON format
+We have provided an extension that will allow you to configure a [`JsonObjectSerializer`](https://learn.microsoft.com/en-us/dotnet/api/azure.core.serialization.jsonobjectserializer?view=azure-dotnet) which will be registered in the application services. This JSON serializer can be injected in your Azure Function implementation so that incoming and outgoing models are handled the same way, across multiple functions.
+This makes the JSON formatting more centralized and easier to maintain.
+
+Following example shows you how you can configure these options:
+
+```csharp
+using System.Text.Json;
+using Microsoft.Extensions.Hosting;
+
+IHost host = new HostBuilder()
+    .ConfigureFunctionsWorkerDefaults(builder =>
+    {
+        builder.ConfigureJsonFormatting(options =>
+        {
+            options.Converters.Add(new JsonStringEnumConverter());
+        });
+    })
+    .Build();
+```
+
+After that, the `JsonObjectSerializer` can be injected in your function for deserialization/serialization of incoming/outgoing models:
+
+```csharp
+using Azure.Core.Serialization;
+using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
+
+public class OrderFunction
+{
+    private readonly JsonObjectSerializer _jsonSerializer;
+
+    public OrderFunction(JsonObjectSerializer jsonSerializer)
+    {
+        _jsonSerializer = jsonSerializer;
+    }
+
+    [Function("order-processing")]
+    public async Task<HttpResponseData> Run(
+        [HttpTrigger(AuthorizationLevel.Anonymous, "post")] HttpRequestData request)
+    {
+        var order = await request.ReadFromJsonAsync<Order>(_jsonSerializer);
+
+        HttpResponseData response = request.CreateResponse();
+        await response.WriteAsJsonAsync(order, _jsonSerializer);
+        return response;
+    }
+}
+```
