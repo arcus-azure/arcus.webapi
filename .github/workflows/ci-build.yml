@@ -1,0 +1,115 @@
+name: CI build
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - src/*
+  pull_request:
+    branches: [ main ]
+    paths:
+      - src/*
+      - .github/workflows/ci-build.yml
+  # workflow_dispatch:
+  #   inputs:
+  #     package_version_manualTrigger:
+  #       description: 'NuGet package version of MyGet published packages'
+  #       type: 'string'
+  #       default: 'preview'
+
+permissions:
+  checks: write
+  pull-requests: write
+
+env:
+  vm_image: ubuntu-latest
+  project: Arcus.WebApi
+  dotnet_sdk_version: 6.0.100
+  dotnet_conf: Release
+
+jobs:
+  compile:
+    name: Compile
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.dotnet_sdk_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Determine version
+        id: determineVersion
+        shell: pwsh
+        run: |
+          $packageVersion = $env:GITHUB_RUN_ID
+          if ('${{ github.event_name }}' -eq 'pull_request') {
+            $nugetSearchUrl = "https://azuresearch-usnc.nuget.org/query?q=${{ env.project }}&prerelease=false"
+            $response = Invoke-WebRequest $nugetSearchUrl
+            $json = ConvertFrom-Json $response.Content
+            $currentVersion = $json.data[0].version
+            if ($currentVersion -eq $null) {
+              $currentVersion = "0.1.0" 
+            }
+
+            $pullRequestNumber= $env:GITHUB_RUN_NUMBER
+            $patch = $env:GITHUB_RUN_ID
+            $packageVersion = "$currentVersion-PR-$pullRequestNumber-$patch"
+
+            if ('${{ github.event.pull_request.head.repo.full_name }}' -ne 'github.repository') {
+              Write-Output "packageVersion=$($packageVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+              Write-Output "versionArg=--version-suffix $($packageVersion)" | Out-File -FilePath $env:GITHUB_OUTPUT -Encoding utf8 -Append
+            }
+          }
+      - name: Build solution
+        env:
+          PACKAGE_VERSION: ${{ steps.determineVersion.outputs.packageVersion }}
+        run: dotnet build src/${{ env.project }}.sln --configuration ${{ env.dotnet_conf }} --version-suffix ${{ env.PACKAGE_VERSION }}
+
+  unit-tests:
+    needs: Compile
+    name: Unit tests
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.dotnet_sdk_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Run unit tests
+        run: dotnet test src/${{ env.project }}.Tests.Unit/${{ env.project }}.Tests.Unit.csproj --configuration ${{ env.dotnet_conf }} --logger "trx;LogFileName=TestResults.trx" --results-directory "test-results"
+      - name: Test Reporting
+        uses: phoenix-actions/test-reporting@v12
+        if: always()
+        with:
+          name: Unit tests
+          path: test-results/TestResults.trx
+          reporter: dotnet-trx
+
+  self-contained-integration-tests:
+    needs: Compile
+    name: Self-contained integration tests
+    runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: write
+    steps:
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.dotnet_sdk_version }}
+      - name: Checkout repository
+        uses: actions/checkout@v3
+      - name: Run integration tests
+        run: dotnet test src/${{ env.project }}.Tests.Integration/${{ env.project }}.Tests.Integration.csproj --filter "Category=Integration" --configuration ${{ env.dotnet_conf }} --logger "trx;LogFileName=TestResults.trx" --results-directory "test-results"
+      - name: Test Reporting
+        uses: phoenix-actions/test-reporting@v12
+        if: always()
+        with:
+          name: Self-contained integration tests
+          path: test-results/TestResults.trx
+          reporter: dotnet-trx
