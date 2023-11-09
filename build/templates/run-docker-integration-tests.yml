@@ -1,9 +1,15 @@
 steps:
   - task: UseDotNet@2
-    displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
+    displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
     inputs:
       packageType: 'sdk'
       version: '$(DotNet.Sdk.Version)'
+      includePreviewVersions: true
+  - task: UseDotNet@2
+    displayName: 'Import .NET Core SDK ($(DotNet.Sdk.VersionBC))'
+    inputs:
+      packageType: 'sdk'
+      version: '$(DotNet.Sdk.VersionBC)'
       includePreviewVersions: true
   - template: start-docker-project.yml
     parameters:
