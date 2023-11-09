@@ -36,7 +36,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             HttpClient.DefaultRequestHeaders.Remove("traceparent");
         }
 
-        [Fact]
+        [Fact(Skip = ".NET 8 not available yet for Azure Functions in-process")]
         public async Task SendRequestInProcess_WithoutCorrelationHeaders_ResponseWithCorrelationHeadersAndCorrelationAccess()
         {
             // Act
@@ -82,7 +82,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
         }
 
-        [Fact]
+        [Fact(Skip = ".NET 8 not available yet for Azure Functions in-process")]
         public async Task SendRequestInProcess_WithTransactionIdHeader_ResponseWithSameCorrelationHeader()
         {
             // Arrange
@@ -136,7 +136,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging
             }
         }
 
-        [Fact]
+        [Fact(Skip = ".NET 8 not available yet for Azure Functions in-process")]
         public async Task SendRequestInProcess_WithRequestIdHeader_ResponseWithSameRequestIdHeader()
         {
             // Arrange

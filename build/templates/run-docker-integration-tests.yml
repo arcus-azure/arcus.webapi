@@ -20,14 +20,15 @@ steps:
       includePreviewVersions: true
       projectName: '$(Project).Tests.Integration'
       category: 'Docker'
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: |
-        docker logs $(Project).Tests.Runtimes.AzureFunction
-      failOnStderr: true
-    displayName: Show $(Project).Tests.Runtimes.AzureFunction logs
-    condition: always()
+  # .NET 8 not available yet for Azure Functions in-process
+  # - task: Bash@3
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       docker logs $(Project).Tests.Runtimes.AzureFunction
+  #     failOnStderr: true
+  #   displayName: Show $(Project).Tests.Runtimes.AzureFunction logs
+  #   condition: always()
   - task: Bash@3
     inputs:
       targetType: 'inline'
