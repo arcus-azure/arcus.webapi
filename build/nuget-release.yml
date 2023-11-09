@@ -37,8 +37,8 @@ stages:
           - template: build/build-solution.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              version: $(Build.BuildNumber)
               includePreviewVersions: true
+              version: $(Build.BuildNumber)
           - task: CopyFiles@2
             displayName: 'Copy build artifacts'
             inputs:
@@ -73,8 +73,8 @@ stages:
           - template: test/run-unit-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-              projectName: '$(Project).Tests.Unit'
               includePreviewVersions: true
+              projectName: '$(Project).Tests.Unit'
 
   - stage: DockerIntegrationTests
     displayName: Integration Tests
@@ -111,9 +111,9 @@ stages:
           - template: test/run-integration-tests.yml@templates
             parameters:
               dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+              includePreviewVersions: true
               projectName: '$(Project).Tests.Integration'
               category: 'Integration'
-              includePreviewVersions: true
 
   - stage: Release
     displayName: 'Release to NuGet.org'
