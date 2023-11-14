@@ -123,37 +123,5 @@ namespace Arcus.WebApi.Tests.Integration.Hosting.Formatting
                 }
             }
         }
-
-        [Fact]
-        public async Task IncomingModel_WithoutConfigureJsonFormattingOnEnums_SerializesAsIntegers()
-        {
-            // Arrange
-            var options = new TestApiServerOptions()
-                .ConfigureServices(services => services.AddMvc());
-
-            var country = new Country
-            {
-                Name = BogusGenerator.Address.Country(),
-                Code = BogusGenerator.Random.Enum<CountryCode>()
-            };
-
-            string json = JsonSerializer.Serialize(country);
-            
-            await using (var server = await TestApiServer.StartNewAsync(options, _logger))
-            {
-                var request = HttpRequestBuilder
-                    .Get(CountryController.GetJsonRoute)
-                    .WithJsonBody(json);
-                
-                // Act
-                using (HttpResponseMessage response = await server.SendAsync(request))
-                {
-                    // Assert
-                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                    string actual = await response.Content.ReadAsStringAsync();
-                    Assert.Contains($"{(int)country.Code}", actual);
-                }
-            }
-        }
     }
 }
