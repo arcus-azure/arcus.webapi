@@ -30,25 +30,3 @@ builder.Services.AddControllers(mvcOptions =>
     mvcOptions.OnlyAllowJsonFormatting();
 });
 ```
-
-## Configure JSON format
-We have provided an extension that will allow you to configure the input and output JSON formatting in one go. This means that any options you configure in this extension will automatically apply to the incoming model as well as the outgoing model. This makes the JSON formatting more streamlined and easier to maintain.
-
-Following example shows you how you can configure these options:
-
-```csharp
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Mvc;
-
-WebApplicationBuilder builder = WebApplication.CreateBuilder();
-
-builder.Services.AddControllers(mvcOptions =>
-{
-    mvcOptions.ConfigureJsonFormatting(jsonOptions =>
-    {
-        jsonOptions.Converters.Add(new JsonStringEnumConverter());
-    });
-});
-```
-

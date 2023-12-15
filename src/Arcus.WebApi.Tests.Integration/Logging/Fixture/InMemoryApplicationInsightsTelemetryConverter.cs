@@ -6,7 +6,7 @@ using System.Linq;
 using Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights.Converters;
 using Microsoft.ApplicationInsights.Channel;
 using Serilog.Events;
-using Serilog.Sinks.ApplicationInsights.Sinks.ApplicationInsights.TelemetryConverters;
+using Serilog.Sinks.ApplicationInsights.TelemetryConverters;
 
 namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
 {

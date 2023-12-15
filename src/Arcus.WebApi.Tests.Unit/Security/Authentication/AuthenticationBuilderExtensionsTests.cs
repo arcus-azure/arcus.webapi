@@ -22,6 +22,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             services.AddSingleton(Mock.Of<ISystemClock>());
             services.AddSingleton(UrlEncoder.Default);
             services.AddSecretStore(stores => stores.AddInMemory());
+            services.AddSingleton(Mock.Of<TimeProvider>());
             var builder = new AuthenticationBuilder(services);
             
             // Act
@@ -47,6 +48,7 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             services.AddLogging();
             services.AddSingleton(Mock.Of<ISystemClock>());
             services.AddSingleton(UrlEncoder.Default);
+            services.AddSingleton(Mock.Of<TimeProvider>());
             var builder = new AuthenticationBuilder(services);
             
             // Act

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.Json;
 using GuardNet;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.Extensions.DependencyInjection;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Mvc
@@ -35,18 +36,19 @@ namespace Microsoft.AspNetCore.Mvc
 
             return options;
         }
-        
+
         /// <summary>
         /// Configure the MVC JSON formatters for both receiving and sending.
         /// </summary>
         /// <param name="options">The MVC options where the JSON formatters will be configured.</param>
         /// <param name="configureOptions">The function to configure the input and output JSON formatters in the MVC <paramref name="options"/>.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> or <paramref name="configureOptions"/> is <c>null</c>.</exception>
+        [Obsolete("Use the " + nameof(MvcCoreMvcBuilderExtensions) + "." + nameof(MvcCoreMvcBuilderExtensions.AddJsonOptions) + " instead to configure the JSON formatters")]
         public static MvcOptions ConfigureJsonFormatting(this MvcOptions options, Action<JsonSerializerOptions> configureOptions)
         {
             Guard.NotNull(options, nameof(options), "Requires MVC options to configure the JSON formatters");
             Guard.NotNull(configureOptions, nameof(configureOptions), "Requires a function to configure the JSON formatters in the MVC options");
-            
+
             SystemTextJsonInputFormatter[] onlyJsonInputFormatters = 
                 options.InputFormatters.OfType<SystemTextJsonInputFormatter>()
                        .ToArray();
