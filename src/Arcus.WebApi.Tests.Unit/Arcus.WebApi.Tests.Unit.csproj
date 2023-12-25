@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   
   <PropertyGroup>
-    <TargetFrameworks>net6.0;netcoreapp3.1</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <DocumentationFile>Arcus.WebApi.Tests.Unit.Open-Api.xml</DocumentationFile>
@@ -9,8 +9,17 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="Arcus.Testing.Logging" Version="0.4.0" />
+    <PackageReference Include="Arcus.Testing.Logging" Version="0.5.0" />
+    <PackageReference Include="Arcus.Testing.Security.Providers.InMemory" Version="0.5.0" />
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="3.2.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="3.0.0" />
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Grpc" Version="1.4.1" />

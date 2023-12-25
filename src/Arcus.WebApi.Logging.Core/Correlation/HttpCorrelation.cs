@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
-using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -38,119 +37,17 @@ namespace Arcus.WebApi.Logging.Correlation
             IHttpContextAccessor httpContextAccessor,
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger<HttpCorrelation> logger)
-#pragma warning disable CS0618 // Until we can remove the other constructor.
-            : this(options, httpContextAccessor, (ICorrelationInfoAccessor<CorrelationInfo>) correlationInfoAccessor, logger)
-#pragma warning restore CS0618
+            : base(options?.Value, correlationInfoAccessor, logger)
         {
-        }
-        
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
-        /// </summary>
-        /// <param name="options">The options controlling how the correlation should happen.</param>
-        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
-        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
-        /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
-        /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
-        [Obsolete("Use the constructor overload with the " + nameof(IHttpCorrelationInfoAccessor) + " instead")]
-        public HttpCorrelation(
-            IOptions<HttpCorrelationInfoOptions> options,
-            IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
-            ILogger<HttpCorrelation> logger)
-            : base(options?.Value, new HttpCorrelationInfoAccessorProxy(correlationInfoAccessor), logger)
-        {
-            Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
             Guard.NotNull(httpContextAccessor, nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
             Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
-            Guard.NotNull(options.Value, nameof(options.Value), "Requires a value in the set of options to configure the correlation process");
+            Guard.NotNull(options, nameof(options), "Requires a value in the set of options to configure the correlation process");
+            Guard.NotNull(options.Value, nameof(options), "Requires a value in the set of options to configure the correlation process");
 
             _httpContextAccessor = httpContextAccessor;
             _options = options.Value;
             _correlationInfoAccessor = correlationInfoAccessor;
             _logger = logger ?? NullLogger<HttpCorrelation>.Instance;
-        }
-
-        private class HttpCorrelationInfoAccessorProxy : IHttpCorrelationInfoAccessor
-        {
-            private readonly ICorrelationInfoAccessor<CorrelationInfo> _accessor;
-
-            public HttpCorrelationInfoAccessorProxy(ICorrelationInfoAccessor<CorrelationInfo> accessor)
-            {
-                Guard.NotNull(accessor, nameof(accessor), "Requires a correlation info instance to set and retrieve the correlation information");
-                _accessor = accessor;
-            }
-
-            public CorrelationInfo GetCorrelationInfo()
-            {
-                return _accessor.GetCorrelationInfo();
-            }
-
-            public void SetCorrelationInfo(CorrelationInfo correlationInfo)
-            {
-                _accessor.SetCorrelationInfo(correlationInfo);
-            }
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the <see cref="HttpCorrelation"/> class.
-        /// </summary>
-        /// <param name="options">The options controlling how the correlation should happen.</param>
-        /// <param name="correlationInfoAccessor">The instance to set and retrieve the <see cref="CorrelationInfo"/> instance.</param>
-        /// <param name="logger">The logger to trace diagnostic messages during the correlation.</param>
-        /// <param name="httpContextAccessor">The instance to have access to the current HTTP context.</param>
-        /// <exception cref="ArgumentNullException">When any of the parameters are <c>null</c>.</exception>
-        /// <exception cref="ArgumentException">When the <paramref name="options"/> doesn't contain a non-<c>null</c> <see cref="IOptions{TOptions}.Value"/></exception>
-        [Obsolete("Use the constructor overload with the " + nameof(HttpCorrelationInfoOptions) + " instead")]
-        public HttpCorrelation(
-            IOptions<CorrelationInfoOptions> options,
-            IHttpContextAccessor httpContextAccessor,
-            ICorrelationInfoAccessor<CorrelationInfo> correlationInfoAccessor,
-            ILogger<HttpCorrelation> logger)
-            : this(Microsoft.Extensions.Options.Options.Create(CreateHttpCorrelationOptions(options?.Value)), httpContextAccessor, correlationInfoAccessor, logger)
-        {
-        }
-
-        [Obsolete]
-        private static HttpCorrelationInfoOptions CreateHttpCorrelationOptions(CorrelationInfoOptions options)
-        {
-            if (options is null)
-            {
-                return new HttpCorrelationInfoOptions();
-            }
-
-            var httpOptions = new HttpCorrelationInfoOptions
-            {
-                Format = HttpCorrelationFormat.Hierarchical,
-                Operation =
-                {
-                    GenerateId = options.Operation.GenerateId,
-                    IncludeInResponse = options.Operation.IncludeInResponse
-                },
-                Transaction =
-                {
-                    GenerateId = options.Transaction.GenerateId,
-                    HeaderName = options.Transaction.HeaderName,
-                    IncludeInResponse = options.Transaction.IncludeInResponse,
-                    AllowInRequest = options.Transaction.AllowInRequest,
-                    GenerateWhenNotSpecified = options.Transaction.GenerateWhenNotSpecified
-                },
-                UpstreamService =
-                {
-                    GenerateId = options.OperationParent.GenerateId,
-                    ExtractFromRequest = options.OperationParent.ExtractFromRequest,
-                    HeaderName = options.OperationParent.OperationParentIdHeaderName
-                } 
-            };
-
-            var oldDefaultOperationIdHeader = "RequestId";
-            if (options.Operation.HeaderName != oldDefaultOperationIdHeader)
-            {
-                httpOptions.Operation.HeaderName = options.Operation.HeaderName;
-            }
-
-            return httpOptions;
         }
 
         /// <summary>
@@ -170,41 +67,6 @@ namespace Arcus.WebApi.Logging.Correlation
         {
             Guard.NotNull(correlationInfo, nameof(correlationInfo));
             _correlationInfoAccessor.SetCorrelationInfo(correlationInfo);
-        }
-
-        /// <summary>
-        /// Correlate the current HTTP request according to the previously configured <see cref="CorrelationInfoOptions"/>;
-        /// returning an <paramref name="errorMessage"/> when the correlation failed.
-        /// </summary>
-        /// <param name="errorMessage">The failure message that describes why the correlation of the HTTP request wasn't successful.</param>
-        /// <returns>
-        ///     <para>[true] when the HTTP request was successfully correlated and the HTTP response was altered accordingly;</para>
-        ///     <para>[false] there was a problem with the correlation, describing the failure in the <paramref name="errorMessage"/>.</para>
-        /// </returns>
-        /// <exception cref="ArgumentNullException">Thrown when the given <see cref="HttpContext"/> is not available to correlate the request with the response.</exception>
-        /// <exception cref="ArgumentException">Thrown when the given <see cref="HttpContext"/> doesn't have any response headers to set the correlation headers.</exception>
-        [Obsolete("Use the " + nameof(CorrelateHttpRequest) + " instead which let's you decide the current scope of the received HTTP request in which additional dependencies should be tracked")]
-        public bool TryHttpCorrelate(out string errorMessage)
-        {
-            HttpContext httpContext = _httpContextAccessor.HttpContext;
-
-            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context from the HTTP context accessor to start correlating the HTTP request");
-            Guard.For<ArgumentException>(() => httpContext.Response is null, "Requires a 'Response'");
-            Guard.For<ArgumentException>(() => httpContext.Response.Headers is null, "Requires a 'Response' object with headers");
-
-            using (HttpCorrelationResult result = TrySettingCorrelationFromRequest(httpContext.Request, httpContext.TraceIdentifier))
-            {
-                if (result.IsSuccess)
-                {
-                    AddCorrelationResponseHeaders(httpContext, result.RequestId);
-                
-                    errorMessage = null;
-                    return true;
-                }
-
-                errorMessage = result.ErrorMessage;
-                return false;
-            }
         }
 
         /// <summary>

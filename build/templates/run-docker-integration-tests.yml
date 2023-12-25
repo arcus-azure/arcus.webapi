@@ -1,10 +1,15 @@
 steps:
-  - template: start-docker-project.yml
-    parameters:
-      dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
-      port: '$(Arcus.AzureFunctions.InProcess.HttpPort)'
-      envVars: |
-        APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=$(Arcus.ApplicationInsights.InstrumentationKey)
+  - task: UseDotNet@2
+    displayName: 'Import .NET Core SDK ($(DotNet.Sdk.Version))'
+    inputs:
+      packageType: 'sdk'
+      version: '$(DotNet.Sdk.Version)'
+      includePreviewVersions: true
+  # .NET 8 not available yet for Azure Functions in-process
+  # - template: start-docker-project.yml
+  #   parameters:
+  #     dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction'
+  #     port: '$(Arcus.AzureFunctions.InProcess.HttpPort)'
   - template: start-docker-project.yml
     parameters:
       dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction.Isolated'
@@ -14,16 +19,18 @@ steps:
   - template: test/run-integration-tests.yml@templates
     parameters:
       dotnetSdkVersion: '$(DotNet.Sdk.Version)'
+      includePreviewVersions: true
       projectName: '$(Project).Tests.Integration'
       category: 'Docker'
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: |
-        docker logs $(Project).Tests.Runtimes.AzureFunction
-      failOnStderr: true
-    displayName: Show $(Project).Tests.Runtimes.AzureFunction logs
-    condition: always()
+  # .NET 8 not available yet for Azure Functions in-process
+  # - task: Bash@3
+  #   inputs:
+  #     targetType: 'inline'
+  #     script: |
+  #       docker logs $(Project).Tests.Runtimes.AzureFunction
+  #     failOnStderr: true
+  #   displayName: Show $(Project).Tests.Runtimes.AzureFunction logs
+  #   condition: always()
   - task: Bash@3
     inputs:
       targetType: 'inline'

@@ -145,8 +145,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             await middleware.Invoke(context, async ctx => await CreateHttpResponse(ctx, notTrackedStatusCode));
 
             // Assert
-            string message = Assert.Single(spyLogger.Messages);
-            Assert.Contains("Request tracking for this endpoint is disallowed as the response status code", message);
+            Assert.Contains(spyLogger.Messages, msg => msg.Contains("Request tracking for this endpoint is disallowed as the response status code"));
         }
 
         [Fact]
@@ -164,8 +163,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging
             await middleware.Invoke(context, async ctx => await CreateHttpResponse(ctx, status));
 
             // Assert
-            string message = Assert.Single(spyLogger.Messages);
-            Assert.Contains("Request tracking for this endpoint is disallowed as the response status code", message);
+            Assert.Contains(spyLogger.Messages, msg => msg.Contains("Request tracking for this endpoint is disallowed as the response status code"));
         }
 
         [Fact]

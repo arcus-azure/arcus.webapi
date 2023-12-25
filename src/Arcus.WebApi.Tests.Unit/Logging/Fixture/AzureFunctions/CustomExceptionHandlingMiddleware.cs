@@ -13,6 +13,13 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
         /// <summary>
         /// Initializes a new instance of the <see cref="CustomExceptionHandlingMiddleware" /> class.
         /// </summary>
+        public CustomExceptionHandlingMiddleware()
+        {
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CustomExceptionHandlingMiddleware" /> class.
+        /// </summary>
         public CustomExceptionHandlingMiddleware(HttpStatusCode statusCode)
         {
             _statusCode = statusCode;

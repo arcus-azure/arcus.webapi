@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <OpenApiGenerateDocuments>false</OpenApiGenerateDocuments>
     <GenerateProgramFile>true</GenerateProgramFile>
@@ -19,13 +19,21 @@
   </ItemGroup>
  
   <ItemGroup>
-    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights" Version="2.6.0" />
+    <PackageReference Include="Arcus.Observability.Telemetry.Serilog.Sinks.ApplicationInsights" Version="3.0.0-preview-1-net8.0" />
     <PackageReference Include="Arcus.Testing.Logging" Version="0.4.0" />
     <PackageReference Include="Arcus.Testing.Security.Providers.InMemory" Version="0.4.0" />
     <PackageReference Include="Azure.Messaging.EventHubs" Version="5.7.3" />
     <PackageReference Include="Azure.Messaging.ServiceBus" Version="7.11.0" />
     <PackageReference Include="Bogus" Version="29.0.2" />
     <PackageReference Include="BouncyCastle.NetCoreSdk" Version="1.9.0.1" />
+    <PackageReference Include="coverlet.collector" Version="3.2.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.msbuild" Version="3.2.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="IdentityServer4" Version="4.1.1" />
     <PackageReference Include="Microsoft.Data.SqlClient" Version="5.0.1" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.3.0" />
