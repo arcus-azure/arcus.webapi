@@ -12,7 +12,7 @@ using Microsoft.Extensions.Options;
 namespace Arcus.WebApi.Logging.Correlation
 {
     /// <summary>
-    /// Provides the functionality to correlate HTTP requests and responses according to configured <see cref="CorrelationInfoOptions"/>,
+    /// Provides the functionality to correlate HTTP requests and responses according to configured <see cref="HttpCorrelationInfoOptions"/>,
     /// using the <see cref="ICorrelationInfoAccessor"/> to expose the result.
     /// </summary>
     /// <seealso cref="HttpCorrelationInfoAccessor"/>
@@ -70,7 +70,7 @@ namespace Arcus.WebApi.Logging.Correlation
         }
 
         /// <summary>
-        /// Correlate the current HTTP request according to the previously configured <see cref="CorrelationInfoOptions"/>;
+        /// Correlate the current HTTP request according to the previously configured <see cref="HttpCorrelationInfoOptions"/>;
         /// returning an <see cref="HttpCorrelationResult"/> which acts as the current scope in which additional dependencies should be tracked.
         /// </summary>
         /// <exception cref="ArgumentNullException">Thrown when the given <see cref="HttpContext"/> is not available to correlate the request with the response.</exception>
