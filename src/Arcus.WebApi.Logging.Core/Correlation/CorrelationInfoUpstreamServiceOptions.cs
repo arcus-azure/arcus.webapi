@@ -6,7 +6,7 @@ using Microsoft.Net.Http.Headers;
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
     /// <summary>
-    /// Correlation options specific to the upstream services, used in the <see cref="CorrelationInfoOptions"/>.
+    /// Correlation options specific to the upstream services, used in the <see cref="HttpCorrelationInfoOptions"/>.
     /// </summary>
     public class CorrelationInfoUpstreamServiceOptions
     {

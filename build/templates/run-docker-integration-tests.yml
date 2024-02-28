@@ -4,7 +4,7 @@ steps:
     inputs:
       packageType: 'sdk'
       version: '$(DotNet.Sdk.Version)'
-      includePreviewVersions: true
+      includePreviewVersions: $(DotNet.Sdk.IncludePreviewVersions)
   # .NET 8 not available yet for Azure Functions in-process
   # - template: start-docker-project.yml
   #   parameters:
@@ -19,7 +19,7 @@ steps:
   - template: test/run-integration-tests.yml@templates
     parameters:
       dotnetSdkVersion: '$(DotNet.Sdk.Version)'
-      includePreviewVersions: true
+      includePreviewVersions: $(DotNet.Sdk.IncludePreviewVersions)
       projectName: '$(Project).Tests.Integration'
       category: 'Docker'
   # .NET 8 not available yet for Azure Functions in-process

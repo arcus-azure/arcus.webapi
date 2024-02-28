@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Microsoft.Extensions.Logging;
-using Microsoft.Rest;
 using Xunit;
 using Xunit.Abstractions;
 
