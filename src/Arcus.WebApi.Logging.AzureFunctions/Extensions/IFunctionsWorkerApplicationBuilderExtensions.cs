@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Net;
 using Arcus.Observability.Correlation;
-using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.AzureFunctions;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
@@ -10,7 +7,6 @@ using Arcus.WebApi.Logging.Core.Correlation;
 using GuardNet;
 using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -64,11 +60,8 @@ namespace Microsoft.Extensions.Hosting
         {
             Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
 
-            builder.Services.AddLogging(logging =>
-            {
-                logging.AddApplicationInsightsWebJobs()
-                       .RemoveMicrosoftApplicationInsightsLoggerProvider();
-            });
+            builder.Services.AddApplicationInsightsTelemetryWorkerService();
+            builder.Services.ConfigureFunctionsApplicationInsights();
 
             builder.Services.AddSingleton<ICorrelationInfoAccessor<CorrelationInfo>>(provider => provider.GetRequiredService<IHttpCorrelationInfoAccessor>());
             builder.Services.AddSingleton(provider => (ICorrelationInfoAccessor) provider.GetRequiredService<IHttpCorrelationInfoAccessor>());

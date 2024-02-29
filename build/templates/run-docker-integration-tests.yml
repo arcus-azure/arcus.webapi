@@ -14,6 +14,8 @@ steps:
     parameters:
       dockerProjectName: '$(Project).Tests.Runtimes.AzureFunction.Isolated'
       port: '$(Arcus.AzureFunctions.Isolated.HttpPort)'
+      envVars: |
+        APPLICATIONINSIGHTS_CONNECTION_STRING=InstrumentationKey=$(Arcus.ApplicationInsights.InstrumentationKey)
   - template: test/run-integration-tests.yml@templates
     parameters:
       dotnetSdkVersion: '$(DotNet.Sdk.Version)'
