@@ -7,7 +7,7 @@ This user guide will walk through the process of adding shared access key authen
 
 ## Terminology
 To fully understand this user guide, some terminology is required:
-* **Shared access key**: a single secret that's being used as the authentication mechanism of many API endpoints. Using a single secret means that there's also a single authorization level.
+* **Shared access key**: a single secret that's being used as the authentication mechanism of many API endpoints. Using a single secret means that there is also a single authorization level.
 * **Arcus secret store**: central place where the application retrieve its secrets ([more info](https://security.arcus-azure.net/features/secret-store)).
 
 ## Sample application
