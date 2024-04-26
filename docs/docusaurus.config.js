@@ -70,29 +70,12 @@ module.exports = {
       {
         docs: {
           sidebarPath: require.resolve('./sidebars.js'),
-          routeBasePath: "/",
+          routeBasePath: '/',
           path: 'preview',
           sidebarCollapsible: false,
           // Please change this to your repo.
-          editUrl:
-            'https://github.com/arcus-azure/arcus.webapi/edit/master/docs',
-          includeCurrentVersion:process.env.CONTEXT !== 'production',
-          sidebarItemsGenerator: async function ({
-                                                   defaultSidebarItemsGenerator,
-                                                   ...args
-                                                 }) {
-            const sidebarItems = await defaultSidebarItemsGenerator(args);
-            const capitalizeLabels = (items) => {
-              return items?.map(item => ({
-                ...item,
-                label: item.label?.charAt(0).toUpperCase() + item.label?.slice(1),
-                items: item.items ? capitalizeLabels(item.items) : null
-              }));
-            }
-
-            return capitalizeLabels(sidebarItems)
-          }
-
+          editUrl: 'https://github.com/arcus-azure/arcus.webapi/edit/master/docs',
+          includeCurrentVersion: process.env.CONTEXT !== 'production',
         },
         theme: {
           customCss: require.resolve('./src/css/custom.css'),
@@ -100,7 +83,5 @@ module.exports = {
       },
     ],
   ],
-  stylesheets: [
-    'https://fonts.googleapis.com/css2?family=Bitter:wght@700&family=Inter:wght@400;500&display=swap',
-  ],
+  stylesheets: ['https://fonts.googleapis.com/css2?family=Bitter:wght@700&family=Inter:wght@400;500&display=swap'],
 };
