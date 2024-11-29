@@ -1,6 +1,5 @@
 ﻿using System;
 using Arcus.WebApi.Hosting.AzureFunctions.Formatting;
-using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 
 // ReSharper disable once CheckNamespace
@@ -20,7 +19,10 @@ namespace Microsoft.Extensions.Hosting
         public static IFunctionsWorkerApplicationBuilder UseOnlyJsonFormatting(
             this IFunctionsWorkerApplicationBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the JSON formatting middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the JSON formatting middleware");
+            }
 
             builder.UseMiddleware<AzureFunctionsJsonFormattingMiddleware>();
             return builder;

@@ -21,9 +21,10 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="filter"/> is outside the range of the enumeration.</exception>
         public RequestTrackingAttribute(Exclude filter)
         {
-            Guard.For<ArgumentOutOfRangeException>(
-                () => !Enum.IsDefined(typeof(Exclude), filter) || filter is Exclude.None,
-                $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed");
+            if (!Enum.IsDefined(typeof(Exclude), filter) || filter is Exclude.None)
+            {
+                throw new ArgumentOutOfRangeException(nameof(filter), $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed",);
+            }
 
             Filter = filter;
         }
@@ -44,8 +45,10 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentException">Thrown when the <paramref name="trackedStatusCode"/> is outside the expected range (100-599).</exception>
         public RequestTrackingAttribute(int trackedStatusCode)
         {
-            Guard.NotLessThan(trackedStatusCode, 100, nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to not be less than 100");
-            Guard.NotGreaterThan(trackedStatusCode, 599, nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to not be greater than 599");
+            if (trackedStatusCode < 100 || trackedStatusCode > 599)
+            {
+                throw new ArgumentOutOfRangeException(nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to be within the range of 100-599");
+            }
             
             StatusCodeRange = new StatusCodeRange(trackedStatusCode);
         }

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Text.Json;
 using Azure.Core.Serialization;
-using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -24,8 +23,14 @@ namespace Microsoft.Extensions.Hosting
             this IFunctionsWorkerApplicationBuilder builder,
             Action<JsonSerializerOptions> configureOptions)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires an Azure Functions application builder instance to add the JSON serializer to the application services");
-            Guard.NotNull(configureOptions, nameof(configureOptions), "Requires a function to configure the JSON serialization options to add the JSON serializer to the application services");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires an Azure Functions application builder instance to add the JSON serializer to the application services");
+            }
+            if (configureOptions is null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions), "Requires a function to configure the JSON serialization options to add the JSON serializer to the application services");
+            }
 
             var options = new JsonSerializerOptions();
             configureOptions(options);

@@ -3,7 +3,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
-using GuardNet;
 using Microsoft.Extensions.Logging.Abstractions;
 
 // ReSharper disable once CheckNamespace
@@ -45,11 +44,8 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentNullException">When the <paramref name="getLoggingCategory"/> is <c>null</c>.</exception>
         public ExceptionHandlingMiddleware(RequestDelegate next, Func<string> getLoggingCategory)
         {
-            Guard.NotNull(next, nameof(next), "The next request delegate in the application request pipeline cannot be null");
-            Guard.NotNull(getLoggingCategory, nameof(getLoggingCategory), "The retrieval of the logging category function cannot be null");
-
-            _next = next;
-            _getLoggingCategory = getLoggingCategory;
+            _next = next ?? throw new ArgumentNullException(nameof(next), "The next request delegate in the application request pipeline cannot be null");
+            _getLoggingCategory = getLoggingCategory ?? throw new ArgumentNullException(nameof(getLoggingCategory), "The retrieval of the logging category function cannot be null");
         }
 
         /// <summary>
