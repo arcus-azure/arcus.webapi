@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Core;
-using GuardNet;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
