@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,7 +24,10 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         protected RequestTrackingTemplate(RequestTrackingOptions options)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
+            if (options is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(options), message: "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
+            }
             Options = options;
         }
 
@@ -182,7 +184,10 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="body"/> is <c>null</c>.</exception>
         protected async Task<string> GetBodyAsync(Stream body, int? maxLength, string targetName, ILogger logger)
         {
-            Guard.NotNull(body, nameof(body), $"Requires a streamed body to read the string representation of the {targetName}");
+            if (body is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(body), message: $"Requires a streamed body to read the string representation of the {targetName}");
+            }
             logger = logger ?? NullLogger.Instance;
 
             logger.LogTrace("Prepare for {Target} body to be tracked...", targetName);

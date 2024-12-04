@@ -5,7 +5,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Primitives;
 using System.Text.RegularExpressions;
 using Arcus.Observability.Correlation;
-using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using System.Collections.Generic;
@@ -38,11 +37,8 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger logger)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of options to configure the correlation process");
-            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
-
-            _options = options;
-            _correlationInfoAccessor = correlationInfoAccessor;
+            _options = options ?? throw new ArgumentNullException(paramName: nameof(options), message: "Requires a set of options to configure the correlation process"); ;
+            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(paramName: nameof(correlationInfoAccessor), message: "Requires a correlation info instance to set and retrieve the correlation information");
             Logger = logger ?? NullLogger.Instance;
         }
 
@@ -68,7 +64,10 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is <c>null</c>.</exception>
         public HttpCorrelationResult TrySettingCorrelationFromRequest(THttpRequest request, string traceIdentifier)
         {
-            Guard.NotNull(request, nameof(request), "Requires a HTTP request to determine the HTTP correlation of the application");
+            if (request is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(request), message: "Requires a HTTP request to determine the HTTP correlation of the application");
+            }
 
             IHeaderDictionary requestHeaders = GetRequestHeaders(request);
             if (requestHeaders is null)
@@ -405,8 +404,14 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="response"/> or <paramref name="result"/> is <c>null</c>.</exception>
         public void SetCorrelationHeadersInResponse(THttpResponse response, HttpCorrelationResult result)
         {
-            Guard.NotNull(response, nameof(response), "Requires a HTTP response to set the HTTP correlation headers");
-            Guard.NotNull(result, nameof(result), "Requires a HTTP correlation result to determine to set the HTTP correlation headers in the HTTP request");
+            if (response is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(response), message: "Requires a HTTP response to set the HTTP correlation headers");
+            }
+            if (result is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(result), message: "Requires a HTTP correlation result to determine to set the HTTP correlation headers in the HTTP request");
+            }
 
             string requestId = result.RequestId;
             CorrelationInfo correlationInfo = _correlationInfoAccessor.GetCorrelationInfo();
