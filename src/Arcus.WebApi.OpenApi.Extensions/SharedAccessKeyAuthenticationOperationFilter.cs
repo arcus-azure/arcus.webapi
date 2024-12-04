@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.SharedAccessKey;
-using GuardNet;
 #if !NETSTANDARD2_1
 using System;
 using Microsoft.OpenApi.Models;
 #else
+using System;
 using Swashbuckle.AspNetCore.Swagger;
 #endif
 using Swashbuckle.AspNetCore.SwaggerGen;
@@ -34,10 +34,14 @@ namespace Arcus.WebApi.OpenApi.Extensions
             string securitySchemeName = DefaultSecuritySchemeName,
             SecuritySchemeType securitySchemeType = SecuritySchemeType.ApiKey)
         {
-            Guard.NotNullOrWhitespace(securitySchemeName, nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
-            Guard.For<ArgumentException>(
-                () => !Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType), 
-                "Requires a security scheme type for the Shared Access Key authentication that is within the bounds of the enumeration");
+            if (string.IsNullOrWhiteSpace(securitySchemeName))
+            {
+                throw new ArgumentNullException(paramName: nameof(securitySchemeName), message: "Requires a name for the Shared Access Key security scheme");
+            }
+            if (!Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType))
+            {
+                throw new ArgumentException(message: "Requires a security scheme type for the Shared Access Key authentication that is within the bounds of the enumeration", paramName: nameof(securitySchemeType));
+            }
 
             _securitySchemeName = securitySchemeName;
             _securitySchemeType = securitySchemeType;
@@ -49,7 +53,10 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// <param name="securitySchemeName">The name of the security scheme. Default value is <c>"sharedaccesskey"</c>.</param>
         public SharedAccessKeyAuthenticationOperationFilter(string securitySchemeName)
         {
-            Guard.NotNullOrWhitespace(securitySchemeName, nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
+            if (string.IsNullOrWhiteSpace(securitySchemeName))
+            {
+                throw new ArgumentNullException(paramName: nameof(securitySchemeName), message: "Requires a name for the Shared Access Key security scheme");
+            }
 
             _securitySchemeName = securitySchemeName;
         }
