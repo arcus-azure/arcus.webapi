@@ -1,6 +1,5 @@
 ﻿using System;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using GuardNet;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.Extensions.DependencyInjection
@@ -33,8 +32,14 @@ namespace Microsoft.Extensions.DependencyInjection
             this IServiceCollection services,
             Action<CertificateAuthenticationConfigBuilder> configureAuthentication)
         {
-            Guard.NotNull(services, nameof(services), "Requires a set of application services to register the certificate authentication validator");
-            Guard.NotNull(configureAuthentication, nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Requires a set of application services to register the certificate authentication validator");
+            }
+            if (configureAuthentication is null)
+            {
+                throw new ArgumentNullException(nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
+            }
 
             var builder = new CertificateAuthenticationConfigBuilder();
             configureAuthentication(builder);

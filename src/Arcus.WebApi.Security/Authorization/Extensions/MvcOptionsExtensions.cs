@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authorization;
-using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 
 // ReSharper disable once CheckNamespace
@@ -20,7 +19,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         public static MvcOptions AddJwtTokenAuthorizationFilter(this MvcOptions options)
         {
-            Guard.NotNull(options, nameof(options), "Requires a filter collection to add the JWT token authorization filter");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
+            }
 
             return AddJwtTokenAuthorizationFilter(options, configureOptions: null);
         }
@@ -35,7 +37,10 @@ namespace Microsoft.Extensions.DependencyInjection
             this MvcOptions options, 
             Action<JwtTokenAuthorizationOptions> configureOptions)
         {
-            Guard.NotNull(options, nameof(options), "Requires a filter collection to add the JWT token authorization filter");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
+            }
 
             var authOptions= new JwtTokenAuthorizationOptions();
             configureOptions?.Invoke(authOptions);
@@ -54,11 +59,22 @@ namespace Microsoft.Extensions.DependencyInjection
             this MvcOptions options,
             IDictionary<string, string> claimCheck)
         {
-            Guard.NotNull(options, nameof(options), "Requires a filter collection to add the JWT token authorization filter");
-            Guard.NotNull(claimCheck, nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
-            Guard.NotAny(claimCheck, nameof(claimCheck), "Requires at least one entry in the set of claim checks to verify the claims in the request JWT");
-            Guard.For<ArgumentException>(() => claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)), 
-                "Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
+            }
+            if (claimCheck is null)
+            {
+                throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
+            }
+            if (!claimCheck.Any())
+            {
+                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
+            }
+            if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
+            {
+                throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+            }
 
             return AddJwtTokenAuthorizationFilter(options, configureOptions: null, claimCheck: claimCheck);
         }
@@ -76,11 +92,22 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<JwtTokenAuthorizationOptions> configureOptions, 
             IDictionary<string, string> claimCheck)
         {
-            Guard.NotNull(options, nameof(options), "Requires a filter collection to add the JWT token authorization filter");
-            Guard.NotNull(claimCheck, nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
-            Guard.NotAny(claimCheck, nameof(claimCheck), "Requires at least one entry in the set of claim checks to verify the claims in the request JWT");
-            Guard.For<ArgumentException>(() => claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)), 
-                "Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
+            }
+            if (claimCheck is null)
+            {
+                throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
+            }
+            if (!claimCheck.Any())
+            {
+                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
+            }
+            if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
+            {
+                throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+            }
 
             var authOptions = new JwtTokenAuthorizationOptions(claimCheck);
             configureOptions?.Invoke(authOptions);

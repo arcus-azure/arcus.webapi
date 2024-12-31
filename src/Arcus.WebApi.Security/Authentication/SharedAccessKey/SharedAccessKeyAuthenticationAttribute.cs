@@ -1,6 +1,5 @@
 ﻿using System;
 using Arcus.Security.Core;
-using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
@@ -28,10 +27,14 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         public SharedAccessKeyAuthenticationAttribute(string secretName, string headerName = null, string queryParameterName = null) 
             : base(typeof(SharedAccessKeyAuthenticationFilter))
         {
-            Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Secret name cannot be blank");
-            Guard.For<ArgumentException>(
-                () => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), 
-                "Requires either a non-blank header name or query parameter name");
+            if (string.IsNullOrWhiteSpace(secretName))
+            {
+                throw new ArgumentException(" Secret name cannot be blank", nameof(secretName));
+            }
+            if (string.IsNullOrWhiteSpace(headerName) && string.IsNullOrWhiteSpace(queryParameterName))
+            {
+                throw new ArgumentException("Requires either a non-blank header name or query parameter name");
+            }
 
             _options = new SharedAccessKeyAuthenticationOptions();
             Arguments = new object[] { headerName?? String.Empty, queryParameterName?? String.Empty, secretName, _options };

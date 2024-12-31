@@ -5,7 +5,6 @@ using System.Text.RegularExpressions;
 using System.Linq;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authorization.Jwt;
-using GuardNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
@@ -32,8 +31,10 @@ namespace Arcus.WebApi.Security.Authorization
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="authorizationOptions"/> is <c>null</c>.</exception>
         public JwtTokenAuthorizationFilter(JwtTokenAuthorizationOptions authorizationOptions)
         {
-            Guard.NotNull(authorizationOptions, nameof(authorizationOptions), 
-                "Requires a set of options to configure how the JWT authorization filter should authorize requests");
+            if (authorizationOptions is null)
+            {
+                throw new ArgumentNullException(nameof(authorizationOptions), "Requires a set of options to configure how the JWT authorization filter should authorize requests");
+            }
 
             _authorizationOptions = authorizationOptions;
         }
@@ -47,11 +48,26 @@ namespace Arcus.WebApi.Security.Authorization
         /// </returns>
         public virtual async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
-            Guard.NotNull(context, nameof(context));
-            Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
-            Guard.For<ArgumentException>(() => context.HttpContext.Request is null, "Invalid action context given without any HTTP request");
-            Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers is null, "Invalid action context given without any HTTP request headers");
-            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+            if (context.HttpContext is null)
+            {
+                throw new ArgumentNullException(nameof(context.HttpContext));
+            }
+            if (context.HttpContext.Request is null)
+            {
+                throw new ArgumentNullException(nameof(context), "INvalid action context given without any HTTP request");
+            }
+            if (context.HttpContext.Request.Headers is null)
+            {
+                throw new ArgumentNullException(nameof(context), "Invalid action context given without any HTTP request headers");
+            }
+            if (context.HttpContext.RequestServices is null)
+            {
+                throw new ArgumentNullException(nameof(context), "Invalid action context given without any HTTP request services");
+            }
 
             ILogger logger = context.HttpContext.RequestServices.GetLoggerOrDefault<JwtTokenAuthorizationFilter>();
             
