@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging.Core.RequestTracking;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
@@ -34,9 +33,18 @@ namespace Arcus.WebApi.Logging
             ILogger<RequestTrackingMiddleware> logger)
             : base(options)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of options to control the behavior of the HTTP tracking middleware");
-            Guard.NotNull(next, nameof(next), "Requires a function pipeline to delegate the remainder of the request processing");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to write telemetry tracking during the request processing");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a set of options to control the behavior of the HTTP tracking middleware");
+            }
+            if (next is null)
+            {
+                throw new ArgumentNullException(nameof(next), "Requires a function pipeline to delegate the remainder of the request processing");
+            }
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger), "Requires a logger instance to write telemetry tracking during the request processing");
+            }
 
             _next = next;
             _logger = logger;
@@ -50,9 +58,18 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="httpContext"/> is <c>null</c>.</exception>
         public async Task Invoke(HttpContext httpContext)
         {
-            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context instance to track the incoming request and outgoing response");
-            Guard.NotNull(httpContext.Request, nameof(httpContext), "Requires a HTTP request in the context to track the request");
-            Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the context to track the request");
+            if (httpContext is null)
+            {
+                throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP context instance to track the incoming request and outgoing response");
+            }
+            if (httpContext.Request is null)
+            {
+                throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP request in the context to track the request");
+            }
+            if (httpContext.Response is null)
+            {
+                throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP response in the context to track the request");
+            }
 
             if (IsRequestPathOmitted(httpContext.Request.Path, _logger))
             {

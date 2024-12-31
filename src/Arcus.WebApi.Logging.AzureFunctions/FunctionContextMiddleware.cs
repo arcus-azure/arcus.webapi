@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Middleware;
 
@@ -19,9 +18,8 @@ namespace Arcus.WebApi.Logging.AzureFunctions
         /// <param name="contextAccessor">The instance to manage the <see cref="FunctionContext"/> in this request.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="contextAccessor"/> is <c>null</c>.</exception>
         public FunctionContextMiddleware(IFunctionContextAccessor contextAccessor)
-        {
-            Guard.NotNull(contextAccessor, nameof(contextAccessor), "Requires a function context accessor to assign the current function context instance");
-            _contextAccessor = contextAccessor;
+        {   
+            _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor), "Requires a function context accessor to assign the current function context instance");
         }
 
         /// <summary>
@@ -32,8 +30,14 @@ namespace Arcus.WebApi.Logging.AzureFunctions
         /// <returns>A <see cref="T:System.Threading.Tasks.Task" /> that represents the asynchronous invocation.</returns>
         public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
         {
-            Guard.NotNull(context, nameof(context), "Requires a function context instance to assign the context to the function context accessor");
-            Guard.NotNull(next, nameof(next), "Requires a 'next' function to chain this middleware to the next action in the HTTP request pipeline");
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context), "Requires a function context instance to assign the context to the function context accessor");
+            }
+            if (next is null)
+            {
+                throw new ArgumentNullException(nameof(next), "Requires a 'next' function to chain this middleware to the next action in the HTTP request pipeline");
+            }
 
             _contextAccessor.FunctionContext = context;
             await next(context);

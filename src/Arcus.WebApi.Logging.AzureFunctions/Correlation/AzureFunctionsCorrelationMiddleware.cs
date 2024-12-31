@@ -2,7 +2,6 @@
 using System.Net;
 using System.Threading.Tasks;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Azure.Functions.Worker.Middleware;
@@ -25,8 +24,14 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="context"/> or <paramref name="next"/> is <c>nul</c>.</exception>
         public async Task Invoke(FunctionContext context, FunctionExecutionDelegate next)
         {
-            Guard.NotNull(context, nameof(context), "Requires a function context instance of the current Azure Function invocation to HTTP correlate the HTTP request");
-            Guard.NotNull(next, nameof(next), "Requires a 'next' function to chain this HTTP correlation middleware to the next action in the HTTP request pipeline");
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context), "Requires a function context instance of the current Azure Function invocation to HTTP correlate the HTTP request");
+            }
+            if (next is null)
+            {
+                throw new ArgumentNullException(nameof(next), "Requires a 'next' function to chain this HTTP correlation middleware to the next action in the HTTP request pipeline");
+            }
 
             var service = context.InstanceServices.GetRequiredService<AzureFunctionsHttpCorrelation>();
             HttpRequestData request = await DetermineHttpRequestAsync(context);

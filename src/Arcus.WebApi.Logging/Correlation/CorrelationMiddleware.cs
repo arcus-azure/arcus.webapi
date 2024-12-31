@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -25,11 +24,8 @@ namespace Arcus.WebApi.Logging.Correlation
             RequestDelegate next,
             ILogger<CorrelationMiddleware> logger)
         {
-            Guard.NotNull(next, nameof(next), "Requires a continuation delegate");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance");
-
-            _next = next;
-            _logger = logger;
+            _next = next ?? throw new ArgumentNullException(nameof(next), "Requires a continuation delegate");
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger), "Requires a logger instance");
         }
 
         /// <summary>
@@ -44,10 +40,22 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentException">Thrown when the <paramref name="httpContext"/> response headers are <c>null</c>.</exception>
         public async Task Invoke(HttpContext httpContext, HttpCorrelation service)
         {
-            Guard.NotNull(httpContext, nameof(httpContext));
-            Guard.NotNull(service, nameof(service), "Requires the HTTP correlation service");
-            Guard.For<ArgumentException>(() => httpContext.Response is null, "Requires a 'Response'");
-            Guard.For<ArgumentException>(() => httpContext.Response.Headers is null, "Requires a 'Response' object with headers");
+            if (httpContext is null)
+            {
+                throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP context");
+            }
+            if (service is null)
+            {
+                throw new ArgumentNullException(nameof(service), "Requires the HTTP correlation service");
+            }
+            if (httpContext.Response is null)
+            {
+                throw new ArgumentException("Requires a 'Response'", nameof(httpContext));
+            }
+            if (httpContext.Response.Headers is null)
+            {
+                throw new ArgumentException("Requires a 'Response' object with headers", nameof(httpContext));
+            }
 
             using (HttpCorrelationResult result = service.CorrelateHttpRequest())
             {

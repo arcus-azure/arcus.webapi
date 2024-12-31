@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Arcus.Observability.Telemetry.Core;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -35,9 +34,18 @@ namespace Arcus.WebApi.Logging
             RequestDelegate next,
             ILogger<VersionTrackingMiddleware> logger)
         {
-            Guard.NotNull(appVersion, nameof(appVersion), "Requires an instance to retrieve the current application version to add the version to the response");
-            Guard.NotNull(next, nameof(next), "Requires a continuation delegate to move towards the next functionality in the request pipeline");
-            Guard.NotNull(options, nameof(options), "Requires version tracking options to specify how the application version should be tracked in the response");
+            if (appVersion is null)
+            {
+                throw new ArgumentNullException(nameof(appVersion), "Requires an instance to retrieve the current application version to add the version to the response");
+            }
+            if (next is null)
+            {
+                throw new ArgumentNullException(nameof(next), "Requires a continuation delegate to move towards the next functionality in the request pipeline");
+            }
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires version tracking options to specify how the application version should be tracked in the response");
+            }
 
             _appVersion = appVersion;
             _options = options;
@@ -53,8 +61,14 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentException">Thrown when the <paramref name="context"/> doesn't contain a response.</exception>
         public async Task Invoke(HttpContext context)
         {
-            Guard.NotNull(context, nameof(context), "Requires a HTTP context to add the application version to the response");
-            Guard.For(() => context.Response is null, new ArgumentException("Requires a HTTP context with a response to add the application version", nameof(context)));
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context), "Requires a HTTP context to add the application version to the response");
+            }
+            if (context.Response is null)
+            {
+                throw new ArgumentException("Requires a HTTP context with a response to add the application version", nameof(context));
+            }
 
             context.Response.OnStarting(() =>
             {

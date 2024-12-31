@@ -1,7 +1,6 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 
 namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
@@ -20,8 +19,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="contextAccessor"/> is <c>null</c>.</exception>
         public AzureFunctionsHttpCorrelationInfoAccessor(IFunctionContextAccessor contextAccessor)
         {
-            Guard.NotNull(contextAccessor, nameof(contextAccessor), "Requires a function context accessor instance to get/set the correlation information in the function context");
-            _contextAccessor = contextAccessor;
+            _contextAccessor = contextAccessor ?? throw new ArgumentNullException(nameof(contextAccessor),  "Requires a function context accessor instance to get/set the correlation information in the function context");
         }
 
         /// <summary>

@@ -1,7 +1,6 @@
 ﻿using System;
 using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.Correlation;
-using GuardNet;
 
 // ReSharper disable once CheckNamespace
 namespace Microsoft.AspNetCore.Builder 
@@ -19,7 +18,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="app"/> is <c>null</c>.</exception>
         public static IApplicationBuilder UseExceptionHandling(this IApplicationBuilder app)
         {
-            Guard.NotNull(app, nameof(app), "Requires an application builder instance to add the exception middleware component");
+            if (app is null)
+            {
+                throw new ArgumentNullException(nameof(app), "Requires an application builder instance to add the exception middleware component");
+            }
 
             return app.UseMiddleware<ExceptionHandlingMiddleware>();
         }
@@ -33,7 +35,10 @@ namespace Microsoft.AspNetCore.Builder
         public static IApplicationBuilder UseExceptionHandling<TMiddleware>(this IApplicationBuilder app)
             where TMiddleware : ExceptionHandlingMiddleware
         {
-            Guard.NotNull(app, nameof(app), "Requires an application builder instance to add the exception middleware component");
+            if (app is null)
+            {
+                throw new ArgumentNullException(nameof(app), "Requires an application builder instance to add the exception middleware component");
+            }
 
             return app.UseMiddleware<TMiddleware>();
         }
@@ -47,7 +52,10 @@ namespace Microsoft.AspNetCore.Builder
             this IApplicationBuilder app,
             Action<RequestTrackingOptions> configureOptions = null)
         {
-            Guard.NotNull(app, nameof(app));
+            if (app is null)
+            {
+                throw new ArgumentNullException(nameof(app), "Requires an application builder instance to add the request tracking middleware component");
+            }
 
             return UseRequestTracking<RequestTrackingMiddleware>(app, configureOptions);
         }
@@ -62,7 +70,10 @@ namespace Microsoft.AspNetCore.Builder
             Action<RequestTrackingOptions> configureOptions = null)
             where TMiddleware : RequestTrackingMiddleware
         {
-            Guard.NotNull(app, nameof(app));
+            if (app is null)
+            {
+                throw new ArgumentNullException(nameof(app), "Requires an application builder instance to add the request tracking middleware component");
+            }
 
             var options = new RequestTrackingOptions();
             configureOptions?.Invoke(options);
@@ -76,7 +87,10 @@ namespace Microsoft.AspNetCore.Builder
         /// <param name="app">The builder to configure the application's request pipeline.</param>
         public static IApplicationBuilder UseHttpCorrelation(this IApplicationBuilder app)
         {
-            Guard.NotNull(app, nameof(app));
+            if (app is null)
+            {
+                throw new ArgumentNullException(nameof(app), "Requires an application builder instance to add the request tracking middleware component");
+            }
 
             return app.UseMiddleware<CorrelationMiddleware>();
         }
@@ -94,7 +108,10 @@ namespace Microsoft.AspNetCore.Builder
         /// </remarks>
         public static IApplicationBuilder UseVersionTracking(this IApplicationBuilder app, Action<VersionTrackingOptions> configureOptions = null)
         {
-            Guard.NotNull(app, nameof(app), "Requires an application builder to add the version tracking middleware");
+            if (app is null)
+            {
+                throw new ArgumentNullException(nameof(app), "Requires an application builder instance to add the request tracking middleware component");
+            }
 
             var options = new VersionTrackingOptions();
             configureOptions?.Invoke(options);

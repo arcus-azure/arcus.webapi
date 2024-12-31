@@ -3,7 +3,6 @@ using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -25,7 +24,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
+            }
 
             return AddHttpCorrelation(builder, options => { });
         }
@@ -38,7 +40,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public static IServiceCollection AddHttpCorrelation(this IFunctionsHostBuilder builder, Action<HttpCorrelationInfoOptions> configureOptions)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function host builder instance to add the HTTP correlation services");
+            }
 
             IServiceCollection services = builder.Services;
 

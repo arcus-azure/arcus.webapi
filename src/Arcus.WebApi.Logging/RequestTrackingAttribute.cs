@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using GuardNet;
 
 namespace Arcus.WebApi.Logging
 {

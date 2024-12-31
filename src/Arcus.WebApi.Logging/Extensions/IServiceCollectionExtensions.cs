@@ -2,7 +2,6 @@
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Arcus.WebApi.Logging.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -21,7 +20,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="services">The services collection containing the dependency injection services.</param>
         public static IServiceCollection AddHttpCorrelation(this IServiceCollection services)
         {
-            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
+            if (services == null)
+            {
+                throw new ArgumentNullException(nameof(services), "Requires a services collection to add the HTTP correlation services");
+            }
 
             return AddHttpCorrelation(services, configureOptions: (HttpCorrelationInfoOptions options) => { });
         }
@@ -36,7 +38,10 @@ namespace Microsoft.Extensions.DependencyInjection
             this IServiceCollection services,
             Action<HttpCorrelationInfoOptions> configureOptions)
         {
-            Guard.NotNull(services, nameof(services), "Requires a services collection to add the HTTP correlation services");
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Requires a services collection to add the HTTP correlation services");
+            }
 
             services.AddHttpContextAccessor();
             services.AddSingleton<IHttpCorrelationInfoAccessor>(serviceProvider =>
