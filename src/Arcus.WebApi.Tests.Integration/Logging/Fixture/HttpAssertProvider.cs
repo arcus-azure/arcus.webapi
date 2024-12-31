@@ -28,7 +28,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             }
             if (namedAssertions.Any(item => item is null))
             {
-                throw new ArgumentException("Requires a series of named HTTP assertions without any 'null' elements to setup the HTTP assertion provider", nameof(namedAssertions);
+                throw new ArgumentException("Requires a series of named HTTP assertions without any 'null' elements to setup the HTTP assertion provider", nameof(namedAssertions));
             }
             if (namedAssertions.GroupBy(item => item.Item1).All(group => group.Count() != 1))
             {

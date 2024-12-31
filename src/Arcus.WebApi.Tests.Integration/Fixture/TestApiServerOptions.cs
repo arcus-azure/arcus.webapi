@@ -126,6 +126,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             }
             _appConfigures.Add(configure);
 
+            return this;
         }
         
         /// <summary>

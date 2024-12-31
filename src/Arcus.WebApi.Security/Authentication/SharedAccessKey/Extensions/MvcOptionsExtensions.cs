@@ -31,7 +31,7 @@ namespace Microsoft.Extensions.DependencyInjection
             }
             if (string.IsNullOrWhiteSpace(headerName))
             {
-                throw new ArgumentException("Requires a non-blank HTTP request header name to match the stored secret during the shared access key authentication", nameof(headerName);
+                throw new ArgumentException("Requires a non-blank HTTP request header name to match the stored secret during the shared access key authentication", nameof(headerName));
             }
 
             return AddSharedAccessKeyAuthenticationFilterOnHeader(options, headerName, secretName, configureOptions: null);
