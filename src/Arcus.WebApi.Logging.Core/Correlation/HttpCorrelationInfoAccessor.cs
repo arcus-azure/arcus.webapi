@@ -1,7 +1,6 @@
 ﻿using System;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 
 // ReSharper disable once CheckNamespace
@@ -21,7 +20,10 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="contextAccessor"/> is <c>null</c>.</exception>
         public HttpCorrelationInfoAccessor(IHttpContextAccessor contextAccessor)
         {
-            Guard.NotNull(contextAccessor, nameof(contextAccessor));
+            if (contextAccessor is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(contextAccessor));
+            }
 
             _httpContextAccessor = contextAccessor;
         }
@@ -42,7 +44,11 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="correlationInfo"/> is <c>null</c>.</exception>
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
-            Guard.NotNull(correlationInfo, nameof(correlationInfo));
+            if (correlationInfo is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(correlationInfo));
+            }
+
             _httpContextAccessor.HttpContext?.Features?.Set(correlationInfo);
         }
     }

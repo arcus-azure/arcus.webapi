@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using Arcus.Observability.Correlation;
-using GuardNet;
 using Microsoft.ApplicationInsights;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.ApplicationInsights.Extensibility;
@@ -19,8 +18,14 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
         private HttpCorrelationResult(bool isSuccess, string requestId, string errorMessage)
         {
-            Guard.For(() => isSuccess && errorMessage != null, new ArgumentException("Cannot create a successful HTTP correlation result with an error user message", nameof(errorMessage)));
-            Guard.For(() => !isSuccess && requestId != null, new ArgumentException("Cannot create a failed HTTP correlation result with a request ID", nameof(requestId)));
+            if (isSuccess && errorMessage != null)
+            {
+                throw new ArgumentException("Cannot create a successful HTTP correlation result with an error user message", nameof(errorMessage));
+            }
+            if (!isSuccess && requestId != null)
+            {
+                throw new ArgumentException("Cannot create a failed HTTP correlation result with a request ID", nameof(requestId));
+            }
 
             RequestId = requestId;
             ErrorMessage = errorMessage;
@@ -82,7 +87,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <exception cref="ArgumentException">Thrown when the <paramref name="errorMessage"/> is blank.</exception>
         public static HttpCorrelationResult Failure(string errorMessage)
         {
-            Guard.NotNullOrWhitespace(errorMessage, nameof(errorMessage), "Requires an error user message that describes why the HTTP correlation process failed on the current HTTP request");
+            if (string.IsNullOrWhiteSpace(errorMessage))
+            {
+                throw new ArgumentException(paramName:  nameof(errorMessage), message: "Requires an error user message that describes why the HTTP correlation process failed on the current HTTP request");
+            }
+
             return new HttpCorrelationResult(isSuccess: false, requestId: null, errorMessage);
         }
 
@@ -95,8 +104,14 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <exception cref="ArgumentException">Thrown when the <paramref name="transactionId"/> is blank.</exception>
         public static HttpCorrelationResult Success(TelemetryClient client, string transactionId)
         {
-            Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
-            Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
+            if (client is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(client), message: "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+            }
+            if (string.IsNullOrWhiteSpace(transactionId))
+            {
+                throw new ArgumentException(message: "Requires a non-blank transaction ID for the pending HTTP correlation", paramName: nameof(transactionId));
+            }
 
             return Success(client, transactionId, operationParentId: null, traceParent: null);
         }
@@ -114,8 +129,14 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// </exception>
         public static HttpCorrelationResult Success(TelemetryClient client, string transactionId, string operationParentId, string traceParent)
         {
-            Guard.NotNull(client, nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
-            Guard.NotNullOrWhitespace(transactionId, nameof(transactionId), "Requires a non-blank transaction ID for the pending HTTP correlation");
+            if (client is null)
+            {
+                throw new ArgumentNullException(paramName: nameof(client), message: "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+            }
+            if (string.IsNullOrWhiteSpace(transactionId))
+            {
+                throw new ArgumentException(message: "Requires a non-blank transaction ID for the pending HTTP correlation", paramName: nameof(transactionId));
+            }
 
             var telemetry = new RequestTelemetry();
             telemetry.Context.Operation.Id = transactionId;

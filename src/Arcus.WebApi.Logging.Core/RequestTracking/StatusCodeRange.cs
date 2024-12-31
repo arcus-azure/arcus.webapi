@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 
 namespace Arcus.WebApi.Logging
 {
@@ -30,9 +29,18 @@ namespace Arcus.WebApi.Logging
         /// </exception>
         public StatusCodeRange(int minimum, int maximum)
         {
-            Guard.NotLessThan(minimum, 100, nameof(minimum), "Requires the minimum HTTP status code threshold not be less than 100");
-            Guard.NotGreaterThan(maximum, 599, nameof(maximum), "Requires the maximum HTTP status code threshold not be greater than 599");
-            Guard.NotGreaterThan(minimum, maximum, nameof(minimum), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            if (minimum < 100)
+            {
+                throw new ArgumentOutOfRangeException(paramName: nameof(minimum), message: "Requires the minimum HTTP status code threshold to not be less than 100");
+            }
+            if (maximum > 599)
+            {
+                throw new ArgumentOutOfRangeException(paramName: nameof(maximum), message: "Requires the maximum HTTP status code threshold to not be greater than 599");
+            }
+            if (minimum > maximum)
+            {
+                throw new ArgumentOutOfRangeException(paramName: nameof(minimum), message: "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            }
             
             Minimum = minimum;
             Maximum = maximum;
@@ -58,8 +66,14 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="statusCode"/> is less than 100 or greater than 599.</exception>
         public bool IsWithinRange(int statusCode)
         {
-            Guard.NotLessThan(statusCode, 100, nameof(statusCode), "Requires the response HTTP status code not be less than 100");
-            Guard.NotGreaterThan(statusCode, 599, nameof(statusCode), "Requires the response HTTP status code not be greater than 599");
+            if (statusCode < 100)
+            {
+                throw new ArgumentOutOfRangeException(paramName: nameof(statusCode), message: "Requires the response HTTP status code to not be less than 100");
+            }
+            if (statusCode > 599)
+            {
+                throw new ArgumentOutOfRangeException(paramName: nameof(statusCode), message: "Requires the response HTTP status code to not be greater than 599");
+            }
             
             return Minimum <= statusCode && statusCode <= Maximum;
         }

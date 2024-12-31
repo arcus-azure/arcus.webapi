@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using GuardNet;
 #if !NETSTANDARD2_1
 using Microsoft.OpenApi.Models;
 #endif
@@ -44,16 +43,13 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #endif
         )
         {
-            Guard.NotNullOrWhitespace(securitySchemeName,
-                                      nameof(securitySchemeName),
-                                      "Requires a name for the Certificate security scheme");
-
-            _securitySchemeName = securitySchemeName;
+            _securitySchemeName = securitySchemeName ?? throw new ArgumentNullException(paramName: nameof(securitySchemeName), message: "Requires a name for the Certificate security scheme");
 
 #if !NETSTANDARD2_1
-            Guard.For<ArgumentException>(
-                () => !Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType), 
-                "Requires a security scheme type for the Certificate authentication that is within the bounds of the enumeration");
+            if (!Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType))
+            {
+                throw new ArgumentException(paramName: nameof(securitySchemeType), message: "Requires a security scheme type for the Certificate authentication that is within the bounds of the enumeration");
+            }
 
             _securitySchemeType = securitySchemeType;
 #endif

@@ -32,10 +32,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Guard.Net" Version="3.0.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\Arcus.WebApi.Security\Arcus.WebApi.Security.csproj" />
   </ItemGroup>
 

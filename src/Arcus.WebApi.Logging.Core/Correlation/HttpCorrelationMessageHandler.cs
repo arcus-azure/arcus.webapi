@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Core;
-using GuardNet;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
@@ -34,13 +32,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             HttpCorrelationClientOptions options, 
             ILogger<HttpCorrelationMessageHandler> logger)
         {
-            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a HTTP context accessor to retrieve the current HTTP correlation");
-            Guard.NotNull(options, nameof(options), "Requires a set of additional user-configurable options to influence the HTTP dependency tracking");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to write the HTTP dependency telemetry");
-
-            _correlationInfoAccessor = correlationInfoAccessor;
-            _options = options;
-            _logger = logger;
+            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(paramName: nameof(correlationInfoAccessor), message: "Requires a HTTP context accessor to retrieve the current HTTP correlation");
+            _options = options ?? throw new ArgumentNullException(paramName: nameof(options), message: "Requires a set of additional user-configurable options to influence the HTTP dependency tracking");
+            _logger = logger ?? throw new ArgumentNullException(paramName: nameof(logger), message: "Requires a logger instance to write the HTTP dependency telemetry");
         }
 
         /// <summary>
