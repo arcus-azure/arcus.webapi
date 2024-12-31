@@ -65,9 +65,18 @@ namespace Arcus.WebApi.Logging
         /// </exception>
         public RequestTrackingAttribute(int minimumStatusCode, int maximumStatusCode)
         {
-            Guard.NotLessThan(minimumStatusCode, 100, nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold not be less than 100");
-            Guard.NotGreaterThan(maximumStatusCode, 599, nameof(maximumStatusCode), "Requires the maximum HTTP status code threshold not be greater than 599");
-            Guard.NotGreaterThan(minimumStatusCode, maximumStatusCode, nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            if (minimumStatusCode < 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to not be less than 100");
+            }
+            if (maximumStatusCode > 599)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumStatusCode), "Requires the maximum HTTP status code threshold to not be greater than 599");
+            }
+            if (minimumStatusCode >= maximumStatusCode)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            }
             
             StatusCodeRange = new StatusCodeRange(minimumStatusCode, maximumStatusCode);
         }
