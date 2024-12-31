@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Primitives;
 
@@ -15,7 +14,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
 
         private TestConfig(IConfigurationRoot config)
         {
-            Guard.NotNull(config, nameof(config));
+            if (config is null)
+            {
+                throw new ArgumentNullException(nameof(config));
+            }
             _config = config;
         }
 

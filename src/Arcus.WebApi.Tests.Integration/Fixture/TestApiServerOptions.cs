@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Bogus;
-using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Azure.Functions.Worker;
@@ -47,7 +46,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configureServices"/> is <c>null</c>.</exception>
         public TestApiServerOptions ConfigureServices(Action<IServiceCollection> configureServices)
         {
-            Guard.NotNull(configureServices, nameof(configureServices), "Requires a function to configure the dependency services on the test API server");
+            if (configureServices is null)
+            {
+                throw new ArgumentNullException(nameof(configureServices), "Requires a function to configure the dependency services on the test API server");
+            }
             _configureServices.Add(configureServices);
 
             return this;
@@ -64,7 +66,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configure"/> is <c>null</c>.</exception>
         public TestApiServerOptions PreConfigure(Action<IApplicationBuilder> configure)
         {
-            Guard.NotNull(configure, nameof(configure), "Requires a function to configure the application on the test API server");
+            if (configure is null)
+            {
+                throw new ArgumentNullException(nameof(configure), "Requires a function to configure the application on the test API server");
+            }
             _preconfigures.Add(configure);
 
             return this;
@@ -81,7 +86,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configure"/> is <c>null</c>.</exception>
         public TestApiServerOptions Configure(Action<IApplicationBuilder> configure)
         {
-            Guard.NotNull(configure, nameof(configure), "Requires a function to configure the application on the test API server");
+            if (configure is null)
+            {
+                throw new ArgumentNullException(nameof(configure), "Requires a function to configure the application on the test API server");
+            }
             _configures.Add(configure);
 
             return this;
@@ -95,7 +103,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configure"/> is <c>null</c>.</exception>
         public TestApiServerOptions ConfigureHost(Action<IHostBuilder> configure)
         {
-            Guard.NotNull(configure, nameof(configure), "Requires a function to configure the hosting configuration of the test API server");
+            if (configure is null)
+            {
+                throw new ArgumentNullException(nameof(configure), "Requires a function to configure the hosting configuration of the test API server");
+            }
             _hostingConfigures.Add(configure);
 
             return this;
@@ -109,10 +120,12 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="configure"/> is <c>null</c>.</exception>
         public TestApiServerOptions ConfigureAppConfiguration(Action<IConfigurationBuilder> configure)
         {
-            Guard.NotNull(configure, nameof(configure), "Requires a function to configure the application configuration of the test API server");
+            if (configure is null)
+            {
+                throw new ArgumentNullException(nameof(configure), "Requires a function to configure the application configuration of the test API server");
+            }
             _appConfigures.Add(configure);
 
-            return this;
         }
         
         /// <summary>

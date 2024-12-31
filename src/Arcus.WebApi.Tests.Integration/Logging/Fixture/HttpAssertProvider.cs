@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using GuardNet;
 using Xunit;
 using Xunit.Sdk;
 
@@ -22,11 +22,18 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="namedAssertions"/> contains <c>null</c> elements or has duplicate names.</exception>
         public HttpAssertProvider(IEnumerable<Tuple<string, HttpAssert>> namedAssertions)
         {
-            Guard.NotNull(namedAssertions, nameof(namedAssertions), "Requires a series of named HTTP assertions to setup the HTTP assertion provider");
-            Guard.For(() => namedAssertions.Any(item => item is null), 
-                new ArgumentException("Requires a series of named HTTP assertions without any 'null' elements to setup the HTTP assertion provider", nameof(namedAssertions)));
-            Guard.For(() => namedAssertions.GroupBy(item => item.Item1).All(group => group.Count() != 1),
-                new ArgumentException("Requires a series of named HTTP assertions with unique names to setup the HTTP assertion provider", nameof(namedAssertions)));
+            if (namedAssertions is null)
+            {
+                throw new ArgumentNullException(nameof(namedAssertions), "Requires a series of named HTTP assertions to setup the HTTP assertion provider");
+            }
+            if (namedAssertions.Any(item => item is null))
+            {
+                throw new ArgumentException("Requires a series of named HTTP assertions without any 'null' elements to setup the HTTP assertion provider", nameof(namedAssertions);
+            }
+            if (namedAssertions.GroupBy(item => item.Item1).All(group => group.Count() != 1))
+            {
+                throw new ArgumentException("Requires a series of named HTTP assertions with unique names to setup the HTTP assertion provider", nameof(namedAssertions));
+            }
 
             _namedAssertions = namedAssertions.ToArray();
         }
@@ -39,7 +46,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         /// <exception cref="SingleException">Thrown when more than one <see cref="HttpAssert"/> was registered under the given <paramref name="name"/>.</exception>
         public HttpAssert GetAssertion(string name)
         {
-            Guard.NotNullOrWhitespace(name, nameof(name), "Requires a non-blank name to retrieve the HTTP assertion");
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Requires a non-blank name to retrieve the HTTP assertion", nameof(name));
+            }
             return Assert.Single(_namedAssertions, item => item.Item1 == name).Item2;
         }
     }

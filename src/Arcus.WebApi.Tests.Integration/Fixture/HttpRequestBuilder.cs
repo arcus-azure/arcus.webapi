@@ -4,7 +4,7 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
-using GuardNet;
+using System.Threading;
 
 namespace Arcus.WebApi.Tests.Integration.Fixture
 {
@@ -33,7 +33,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="route"/> is blank.</exception>
         public static HttpRequestBuilder Get(string route)
         {
-            Guard.NotNullOrWhitespace(route, nameof(route), "Requires a non-blank HTTP relative route to create a HTTP GET request builder instance");
+            if (string.IsNullOrWhiteSpace(route))
+            {
+                throw new ArgumentException("Requires a non-blank HTTP relative route to create a HTTP GET request builder instance", nameof(route));
+            }
             return new HttpRequestBuilder(HttpMethod.Get, route);
         }
 
@@ -45,7 +48,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="route"/> is blank.</exception>
         public static HttpRequestBuilder Post(string route)
         {
-            Guard.NotNullOrWhitespace(route, nameof(route), "Requires a non-blank HTTP relative route to create a HTTP POST request builder instance");
+            if (string.IsNullOrWhiteSpace(route))
+            {
+                throw new ArgumentException("Requires a non-blank HTTP relative route to create a HTTP POST request builder instance", nameof(route));
+            }
             return new HttpRequestBuilder(HttpMethod.Post, route);
         }
         
@@ -57,7 +63,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> is blank.</exception>
         public HttpRequestBuilder WithHeader(string headerName, object headerValue)
         {
-            Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Requires a non-blank header name to add the header to the HTTP request builder instance");
+            if (string.IsNullOrWhiteSpace(headerName))
+            {
+                throw new ArgumentException("Requires a non-blank header name to add the header to the HTTP request builder instance", nameof(headerName));
+            }
             _headers.Add(new KeyValuePair<string, string>(headerName, headerValue?.ToString()));
 
             return this;
@@ -71,7 +80,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="parameterName"/> is blank.</exception>
         public HttpRequestBuilder WithParameter(string parameterName, object parameterValue)
         {
-            Guard.NotNullOrWhitespace(parameterName, nameof(parameterName), "Requires a non-blank query parameter name to add the parameter to the HTTP request builder instance");
+            if (string.IsNullOrWhiteSpace(parameterName))
+            {
+                throw new ArgumentException("Requires a non-blank query parameter to add the parameter to the HTTP request builder instance", nameof(parameterName));
+            }
             _parameters.Add(new KeyValuePair<string, string>(parameterName, parameterValue.ToString()));
 
             return this;
@@ -85,12 +97,15 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="text"/> is blank.</exception>
         public HttpRequestBuilder WithJsonText(string text)
         {
-            Guard.NotNullOrWhitespace(text, nameof(text), "Requires non-blank JSON request text to add the content to the HTTP request builder instance");
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentException("Requires a non-blank JSON request text to add the content to the HTTP request builder instance", nameof(text));
+            }
             _createContent = () => new StringContent($"\"{text}\"", Encoding.UTF8, "application/json");
 
             return this;
         }
-        
+
         /// <summary>
         /// Adds a JSON json to the HTTP request.
         /// </summary>
@@ -99,7 +114,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="json"/> is blank.</exception>
         public HttpRequestBuilder WithJsonBody(string json)
         {
-            Guard.NotNullOrWhitespace(json, nameof(json), "Requires non-blank JSON request body to add the content to the HTTP request builder instance");
+            if (string.IsNullOrWhiteSpace(json))
+            {
+                throw new ArgumentException("Requires a non-blank JSON request body to add the content to the HTTP request builder instance", nameof(json));
+            }
             _createContent = () => new StringContent(json, Encoding.UTF8, "application/json");
 
             return this;
@@ -113,7 +131,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="text"/> is blank.</exception>
         public HttpRequestBuilder WithTextBody(string text)
         {
-            Guard.NotNullOrWhitespace(text, nameof(text), "Requires a non-blank text input for the request body");
+            if (string.IsNullOrWhiteSpace(text))
+            {
+                throw new ArgumentException("Requires a non-blank text input for the request body", nameof(text));
+            }
             _createContent = () => new StringContent(text, Encoding.UTF8, "text/plain");
 
             return this;
@@ -127,7 +148,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="UriFormatException">Thrown when the <paramref name="baseRoute"/> is not in the correct HTTP format.</exception>
         internal HttpRequestMessage Build(string baseRoute)
         {
-            Guard.NotNullOrWhitespace(baseRoute, nameof(baseRoute), "Requires a non-blank base HTTP endpoint to create a HTTP request message from the HTTP request builder instance");
+            if (string.IsNullOrWhiteSpace(baseRoute))
+            {
+                throw new ArgumentException("Requires a non-blank base HTTP endpoint to create a HTTP request message from the HTTP request builder instance", nameof(baseRoute));
+            }
 
             string parameters = "";
             if (_parameters.Count > 0)

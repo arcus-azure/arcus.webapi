@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using GuardNet;
 using Microsoft.Extensions.Http;
 
 namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
@@ -18,8 +17,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="provider"/> is <c>null</c>.</exception>
         public DefaultHttpMessageHandlerBuilder(IServiceProvider provider)
         {
-            Guard.NotNull(provider, nameof(provider), "Requires a service provider to retrieve the available application services when registering HTTP message handlers");
-            Services = provider;
+            Services = provider ?? throw new ArgumentNullException(nameof(provider), "Requires a service provider to retrieve the available application services when registering HTTP message handlers");
         }
 
         /// <summary>

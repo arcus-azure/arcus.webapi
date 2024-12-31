@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Security.Cryptography.X509Certificates;
 using Arcus.WebApi.Tests.Integration.Fixture;
-using GuardNet;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 
@@ -21,9 +20,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture
         /// <exception cref="ArgumentNullException">When the <paramref name="clientCertificate"/> is <c>null</c>.</exception>
         public CertificateConfiguration(X509Certificate2 clientCertificate)
         {
-            Guard.NotNull(clientCertificate, nameof(clientCertificate));
-
-            _clientCertificate = clientCertificate;
+            _clientCertificate = clientCertificate ?? throw new ArgumentNullException(nameof(clientCertificate));
         }
 
         /// <inheritdoc />

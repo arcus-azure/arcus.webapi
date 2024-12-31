@@ -4,12 +4,12 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 using Arcus.Testing.Logging;
-using GuardNet;
 using Microsoft.ApplicationInsights.AspNetCore.Extensions;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.ApplicationInsights;
+using Microsoft.Extensions.Options;
 
 namespace Arcus.WebApi.Tests.Integration.Fixture
 {
@@ -26,9 +26,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
 
         protected TestApiServer(IHost host, TestApiServerOptions options, ILogger logger)
         {
-            Guard.NotNull(host, nameof(host), "Requires a 'IHost' instance to start/stop the test API server");
-
-            _host = host;
+            _host = host ?? throw new ArgumentNullException(nameof(host), "Requires a 'IHost' instance to start/stop the test API server");
             _options = options;
             _logger = logger;
 
@@ -48,8 +46,14 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> or <paramref name="logger"/> is <c>null</c>.</exception>
         public static async Task<TestApiServer> StartNewAsync(TestApiServerOptions options, ILogger logger)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of configurable options to control the behavior of the test API server");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to write diagnostic messages during the lifetime of the test API server");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a set of configurable options to control the behavior of the test API server");
+            }
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger), "Requires a logger instance to write diagnostic messages during the lifetime of the test API server");
+            }
 
             IHostBuilder builder = Host.CreateDefaultBuilder();
             options.ApplyOptions(builder);
@@ -88,7 +92,10 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public async Task<HttpResponseMessage> SendAsync(HttpRequestBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a HTTP request builder instance to create a HTTP request to the test API server");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a HTTP request builder instance to create a HTTP request to the test API server");
+            }
 
             HttpRequestMessage request = builder.Build(_options.Url);
 

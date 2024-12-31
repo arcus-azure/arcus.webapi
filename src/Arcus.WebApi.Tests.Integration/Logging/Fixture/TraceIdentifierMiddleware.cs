@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 
 namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
@@ -20,11 +19,8 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             RequestDelegate next,
             TraceIdentifierOptions options)
         {
-            _next = next;
-            Guard.NotNull(next, nameof(next), "Requires a continuation delegate");
-            Guard.NotNull(options, nameof(options), $"Requires a non-null '{nameof(TraceIdentifierOptions)}' options");
-
-            _options = options;
+            _next = next ?? throw new ArgumentNullException(nameof(next), "Requires a continuation delegate");
+            _options = options ?? throw new ArgumentNullException(nameof(options), $"Requires a non-null '{nameof(TraceIdentifierOptions)}' options instance");
         }
 
         /// <summary>Request handling method.</summary>

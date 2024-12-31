@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 
 namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
@@ -13,7 +12,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
 
         private HttpAssert(Action<HttpContext> assertion)
         {
-            Guard.NotNull(assertion, nameof(assertion), "Requires an assertion function to verify a HTTP context");
+            if (assertion is null)
+            {
+                throw new ArgumentNullException(nameof(assertion), "Requires an assertion function to verify a HTTP context");
+            }
             _assertion = assertion;
         }
 
@@ -24,7 +26,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="assertion"/> is <c>null</c>.</exception>
         public static HttpAssert Create(Action<HttpContext> assertion)
         {
-            Guard.NotNull(assertion, nameof(assertion), "Requires an assertion function to verify a HTTP context");
+            if (assertion is null)
+            {
+                throw new ArgumentNullException(nameof(assertion), "Requires an assertion function to verify a HTTP context");
+            }
             return new HttpAssert(assertion);
         }
 
@@ -35,7 +40,10 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="context"/> is <c>null</c>.</exception>
         public void Assert(HttpContext context)
         {
-            Guard.NotNull(context, nameof(context), "Requires a HTTP context to run an assertion function on it");
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context), "Requires a HTTP context to run an assertion function to it");
+            }
             _assertion(context);
         }
     }
