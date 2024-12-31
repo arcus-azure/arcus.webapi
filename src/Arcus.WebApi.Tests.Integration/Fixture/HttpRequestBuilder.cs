@@ -160,7 +160,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             }
 
             string path = _path;
-            if (path.StartsWith("/"))
+            if (path.StartsWith('/'))
             {
                 path = path.TrimStart('/');
             }
