@@ -22,7 +22,7 @@ namespace Arcus.WebApi.Logging
         {
             if (!Enum.IsDefined(typeof(Exclude), filter) || filter is Exclude.None)
             {
-                throw new ArgumentOutOfRangeException(nameof(filter), $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed",);
+                throw new ArgumentOutOfRangeException(nameof(filter), $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed");
             }
 
             Filter = filter;
