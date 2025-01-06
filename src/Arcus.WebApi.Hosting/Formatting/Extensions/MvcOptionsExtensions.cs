@@ -52,6 +52,7 @@ namespace Microsoft.AspNetCore.Mvc
             {
                 throw new ArgumentNullException(nameof(options), "Requires MVC options to configure the JSON formatters");
             }
+
             if (configureOptions is null)
             {
                 throw new ArgumentNullException(nameof(configureOptions), "Requires a function to configure the JSON formatters in the MVC options");

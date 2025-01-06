@@ -27,6 +27,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 throw new ArgumentNullException(nameof(builder), "Requires an Azure Functions application builder instance to add the JSON serializer to the application services");
             }
+
             if (configureOptions is null)
             {
                 throw new ArgumentNullException(nameof(configureOptions), "Requires a function to configure the JSON serialization options to add the JSON serializer to the application services");
