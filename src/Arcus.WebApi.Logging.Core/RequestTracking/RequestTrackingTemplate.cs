@@ -48,7 +48,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
             IEnumerable<string> allOmittedRoutes = Options.OmittedRoutes ?? new Collection<string>();
             string[] matchedOmittedRoutes =
                 allOmittedRoutes
-                    .Select(omittedRoute => omittedRoute?.StartsWith("/") == true ? omittedRoute : "/" + omittedRoute)
+                    .Select(omittedRoute => omittedRoute?.StartsWith('/') == true ? omittedRoute : "/" + omittedRoute)
                     .Where(omittedRoute => requestPath.StartsWithSegments(omittedRoute, StringComparison.OrdinalIgnoreCase))
                     .ToArray();
 

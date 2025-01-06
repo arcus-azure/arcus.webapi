@@ -365,7 +365,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             //     returns: def
             
             Logger.LogTrace("Extracting operation parent ID from request ID '{RequestId}' from the upstream service according to W3C Trace-Context standard", requestId);
-            if (requestId.Contains("."))
+            if (requestId.Contains('.'))
             {
                 string[] ids = requestId.Split('.');
                 string operationParentId = ids.LastOrDefault(id => !string.IsNullOrWhiteSpace(id));
