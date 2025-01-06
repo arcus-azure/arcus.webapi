@@ -37,6 +37,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
             ILogger logger = context.GetLogger<AzureFunctionsRequestTrackingMiddleware>();
 
             HttpRequestData request = await context.GetHttpRequestDataAsync();
+
             if (request is null || IsRequestPathOmitted(PathString.FromUriComponent(request.Url), logger))
             {
                 await next(context);
@@ -72,13 +73,8 @@ namespace Arcus.WebApi.Logging.AzureFunctions
 
         private static async Task<HttpRequestData> EnableHttpRequestBufferingAsync(FunctionContext context)
         {
-            BindingMetadata bindingMetadata = context.FunctionDefinition.InputBindings.Values.FirstOrDefault(a => a.Type == "httpTrigger");
-            if (bindingMetadata is null)
-            {
-                throw new InvalidOperationException(
+            BindingMetadata bindingMetadata = context.FunctionDefinition.InputBindings.Values.FirstOrDefault(a => a.Type == "httpTrigger") ?? throw new InvalidOperationException(
                     "Cannot enable HTTP request body buffering because it cannot find the Azure Functions' HTTP trigger input binding representing the HTTP request");
-            }
-
             InputBindingData<HttpRequestData> bindingData = await context.BindInputAsync<HttpRequestData>(bindingMetadata);
             bindingData.Value = new BufferedHttpRequestData(bindingData.Value);
 

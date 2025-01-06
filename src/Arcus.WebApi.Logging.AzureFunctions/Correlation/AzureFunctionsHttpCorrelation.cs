@@ -134,10 +134,12 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             {
                 throw new ArgumentNullException(nameof(response), "Requires a HTTP response to set the HTTP correlation headers");
             }
+
             if (string.IsNullOrWhiteSpace(headerName))
             {
                 throw new ArgumentException("Requires a non-blank HTTP correlation header name to set the HTTP correlation header in the HTTP request", nameof(headerName));
             }
+
             if (string.IsNullOrWhiteSpace(headerValue))
             {
                 throw new ArgumentException("Requires a non-blank HTTP correlation header value to set the HTTP correlation header in the HTTP request", nameof(headerValue));

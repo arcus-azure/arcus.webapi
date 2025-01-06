@@ -34,6 +34,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
             {
                 throw new ArgumentNullException(nameof(context), "Requires a function context instance to assign the context to the function context accessor");
             }
+    
             if (next is null)
             {
                 throw new ArgumentNullException(nameof(next), "Requires a 'next' function to chain this middleware to the next action in the HTTP request pipeline");

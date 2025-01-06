@@ -44,14 +44,7 @@ namespace Microsoft.Extensions.Hosting
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public static IFunctionsWorkerApplicationBuilder UseHttpCorrelation(
             this IFunctionsWorkerApplicationBuilder builder)
-        {
-            if (builder is null)
-            {
-                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
-            }
-
-            return UseHttpCorrelation(builder, options => { });
-        }
+            => UseHttpCorrelation(builder, options => { });
 
         /// <summary>
         /// Adds a middleware component that exposes the <see cref="FunctionContext"/> in a scoped service <see cref="IFunctionContextAccessor"/>.
@@ -110,7 +103,8 @@ namespace Microsoft.Extensions.Hosting
             {
                 throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
             }
-             return builder.UseMiddleware<AzureFunctionsExceptionHandlingMiddleware>();
+
+            return builder.UseMiddleware<AzureFunctionsExceptionHandlingMiddleware>();
         }
 
         /// <summary>
@@ -126,6 +120,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
             }
+
             return builder.UseMiddleware<TMiddleware>();
         }
 
@@ -141,6 +136,7 @@ namespace Microsoft.Extensions.Hosting
             {
                 throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
             }
+
             return UseRequestTracking(builder, configureOptions: null);
         }
 

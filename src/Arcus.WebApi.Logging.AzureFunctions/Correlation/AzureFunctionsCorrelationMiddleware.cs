@@ -28,6 +28,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             {
                 throw new ArgumentNullException(nameof(context), "Requires a function context instance of the current Azure Function invocation to HTTP correlate the HTTP request");
             }
+
             if (next is null)
             {
                 throw new ArgumentNullException(nameof(next), "Requires a 'next' function to chain this HTTP correlation middleware to the next action in the HTTP request pipeline");
