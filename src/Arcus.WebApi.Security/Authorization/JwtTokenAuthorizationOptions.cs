@@ -63,6 +63,7 @@ namespace Arcus.WebApi.Security.Authorization
             {
                 throw new ArgumentNullException(nameof(reader), $"Requires a valid {nameof(IJwtTokenReader)} to verify the JWT token");
             }
+
             if (string.IsNullOrWhiteSpace(headerName))
             {
                 throw new ArgumentException("Requires a non-blank request header name to look for the JWT token", nameof(headerName));
@@ -85,6 +86,7 @@ namespace Arcus.WebApi.Security.Authorization
                 {
                     throw new ArgumentException("Requires a non-blank request header name to look for the JWT token", nameof(value));
                 }
+
                 _headerName = value;
             }
         }
@@ -102,6 +104,7 @@ namespace Arcus.WebApi.Security.Authorization
                 {
                     throw new ArgumentNullException(nameof(value), $"Requires a valid {nameof(IJwtTokenReader)} to verify the JWT token");
                 }
+
                 _jwtTokenReader = value;
                 _createJwtTokenReader = null;
             }
@@ -149,6 +152,7 @@ namespace Arcus.WebApi.Security.Authorization
                     {
                         throw new ArgumentNullException(nameof(serviceProvider), $"Requires a collection of services to create an {nameof(IJwtTokenReader)} instance");
                     }
+
                     return _createJwtTokenReader(serviceProvider);
                 }
                 catch (Exception exception)

@@ -52,18 +52,22 @@ namespace Arcus.WebApi.Security.Authorization
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
             if (context.HttpContext is null)
             {
                 throw new ArgumentNullException(nameof(context.HttpContext));
             }
+
             if (context.HttpContext.Request is null)
             {
                 throw new ArgumentNullException(nameof(context), "INvalid action context given without any HTTP request");
             }
+
             if (context.HttpContext.Request.Headers is null)
             {
                 throw new ArgumentNullException(nameof(context), "Invalid action context given without any HTTP request headers");
             }
+
             if (context.HttpContext.RequestServices is null)
             {
                 throw new ArgumentNullException(nameof(context), "Invalid action context given without any HTTP request services");

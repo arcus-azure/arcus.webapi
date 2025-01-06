@@ -18,14 +18,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <param name="options">The options that are being applied to the request pipeline.</param>
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         public static MvcOptions AddJwtTokenAuthorizationFilter(this MvcOptions options)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
-            }
-
-            return AddJwtTokenAuthorizationFilter(options, configureOptions: null);
-        }
+            => AddJwtTokenAuthorizationFilter(options, configureOptions: null);
 
         /// <summary>
         /// Adds JWT token authorization.
@@ -58,26 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static MvcOptions AddJwtTokenAuthorizationFilter(
             this MvcOptions options,
             IDictionary<string, string> claimCheck)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
-            }
-            if (claimCheck is null)
-            {
-                throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
-            }
-            if (!claimCheck.Any())
-            {
-                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
-            }
-            if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
-            {
-                throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
-            }
-
-            return AddJwtTokenAuthorizationFilter(options, configureOptions: null, claimCheck: claimCheck);
-        }
+            => AddJwtTokenAuthorizationFilter(options, configureOptions: null, claimCheck: claimCheck);
 
         /// <summary>
         /// Adds JWT token authorization.
@@ -96,14 +70,17 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(options), "Requires a filter collection to add the JWT token authorization filter");
             }
+
             if (claimCheck is null)
             {
                 throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
             }
+
             if (!claimCheck.Any())
             {
                 throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
             }
+
             if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
             {
                 throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");

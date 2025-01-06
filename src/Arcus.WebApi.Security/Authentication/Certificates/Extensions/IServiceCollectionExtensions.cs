@@ -36,6 +36,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(services), "Requires a set of application services to register the certificate authentication validator");
             }
+
             if (configureAuthentication is null)
             {
                 throw new ArgumentNullException(nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");

@@ -37,6 +37,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new ArgumentException("Configured key cannot be blank", nameof(configurationKey));
             }
+
             if (services is null)
             {
                 throw new ArgumentNullException(nameof(services), "Registered services cannot be 'null'");

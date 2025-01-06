@@ -80,10 +80,12 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             {
                 throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
             }
+
             if (!claimCheck.Any())
             {
                 throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
             }
+
             if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
             {
                 throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT", nameof(claimCheck));
@@ -170,6 +172,7 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             {
                 throw new ArgumentNullException(nameof(tokenValidationParameters), "Requires a collection of parameters to influence how the token validation is done");
             }
+
             if (string.IsNullOrWhiteSpace(openIdConnectDiscoveryUri))
             {
                 throw new ArgumentException("Requires an non-blank OpenId URI connection endpoint for discovering the OpenId configuration", nameof(openIdConnectDiscoveryUri));
@@ -215,18 +218,23 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             {
                 throw new ArgumentException("Requires an non-blank OpenId URI connection endpoint for discovering the OpenId configuration", nameof(openIdConnectDiscoveryUri));
             }
+
             if (tokenValidationParameters is null)
             {
                 throw new ArgumentNullException(nameof(tokenValidationParameters), "Requires a collection of parameters to influence how the token validation is done");
             }
+
             if (claimCheck is null)
             {
                 throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
             }
+
             if (!claimCheck.Any())
             {
-                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
+                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the " +
+                    "request JWT", nameof(claimCheck));
             }
+
             if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
             {
                 throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT", nameof(claimCheck));

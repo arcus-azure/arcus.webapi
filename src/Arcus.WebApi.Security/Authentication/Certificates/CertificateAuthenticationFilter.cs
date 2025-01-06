@@ -73,14 +73,17 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
             if (context.HttpContext is null)
             {
                 throw new ArgumentNullException(nameof(context));
             }
+
             if (context.HttpContext.Connection is null)
             {
                 throw new ArgumentException("Invalid action context given without any HTTP connection");
             }
+
             if (context.HttpContext.RequestServices is null)
             {
                 throw new ArgumentException("Invalid action context given without any HTTP request services");

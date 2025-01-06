@@ -24,18 +24,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> or <paramref name="secretName"/> is blank.</exception>
         public static MvcOptions AddSharedAccessKeyAuthenticationFilterOnHeader(this MvcOptions options, string headerName, string secretName)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires an MVC options instance to add the shared access key authentication filter");
-            }
-            if (string.IsNullOrWhiteSpace(headerName))
-            {
-                throw new ArgumentException("Requires a non-blank HTTP request header name to match the stored secret during the shared access key authentication", nameof(headerName));
-            }
-
-            return AddSharedAccessKeyAuthenticationFilterOnHeader(options, headerName, secretName, configureOptions: null);
-        }
+            => AddSharedAccessKeyAuthenticationFilterOnHeader(options, headerName, secretName, configureOptions: null);
 
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its header.
@@ -90,22 +79,7 @@ namespace Microsoft.Extensions.DependencyInjection
             this MvcOptions options,
             string parameterName,
             string secretName)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires a set of MVC options to add the shared access authentication MVC filter");
-            }
-            if (string.IsNullOrWhiteSpace(parameterName))
-            {
-                throw new ArgumentException("Requires a non-blank HTTP request query parameter name to match the stored secret during the shared access key authentication", nameof(parameterName));
-            }
-            if (string.IsNullOrWhiteSpace(secretName))
-            {
-                throw new ArgumentException("Requires a non-blank secret name to retrieve the stored access key in the secret store during the shared access key authentication", nameof(secretName));
-            }
-
-            return AddSharedAccessKeyAuthenticationFilterOnQuery(options, parameterName, secretName, configureOptions: null);
-        }
+            => AddSharedAccessKeyAuthenticationFilterOnQuery(options, parameterName, secretName, configureOptions: null);
 
         /// <summary>
         /// Adds an shared access key authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request on its query.
@@ -132,10 +106,12 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(options), "Requires a set of MVC options to add the shared access authentication MVC filter");
             }
+
             if (string.IsNullOrWhiteSpace(parameterName))
             {
                 throw new ArgumentException("Requires a non-blank HTTP request query parameter name to match the stored secret during the shared access key authentication", nameof(parameterName));
             }
+
             if (string.IsNullOrWhiteSpace(secretName))
             {
                 throw new ArgumentException("Requires a non-blank secret name to retrieve the stored access key in the secret store during the shared access key authentication", nameof(secretName));

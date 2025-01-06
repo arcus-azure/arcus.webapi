@@ -29,8 +29,9 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         {
             if (string.IsNullOrWhiteSpace(secretName))
             {
-                throw new ArgumentException(" Secret name cannot be blank", nameof(secretName));
+                throw new ArgumentException("Secret name cannot be blank", nameof(secretName));
             }
+
             if (string.IsNullOrWhiteSpace(headerName) && string.IsNullOrWhiteSpace(queryParameterName))
             {
                 throw new ArgumentException("Requires either a non-blank header name or query parameter name");

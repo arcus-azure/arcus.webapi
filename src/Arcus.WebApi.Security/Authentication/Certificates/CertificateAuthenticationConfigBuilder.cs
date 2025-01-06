@@ -27,14 +27,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <param name="configuredKey">The configured key that the <paramref name="location"/> requires to retrieve the expected subject name.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfigBuilder WithSubject(X509ValidationLocation location, string configuredKey)
-        {
-            if (string.IsNullOrWhiteSpace(configuredKey))
-            {
-                throw new ArgumentException("Configured key to retrieve expected subject cannot be blank", nameof(configuredKey));
-            }
-
-            return WithSubject(GetValidationLocationImplementation(location), configuredKey);
-        }
+            => WithSubject(GetValidationLocationImplementation(location), configuredKey);
 
         /// <summary>
         /// Configures the validation for the <see cref="X509Certificate2.SubjectName"/> from a given <paramref name="location"/> using a specified <paramref name="configuredKey"/>.
@@ -44,18 +37,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="location"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfigBuilder WithSubject(IX509ValidationLocation location, string configuredKey)
-        {
-            if (location is null)
-            {
-                throw new ArgumentNullException(nameof(location), "Location implementation to retrieve the expected subject cannot be 'null'");
-            }
-            if (configuredKey is null)
-            {
-                throw new ArgumentNullException(nameof(configuredKey), "Configured key to retrieve expected subject cannot be blank");
-            }
-
-            return AddCertificateRequirement(X509ValidationRequirement.SubjectName, location, configuredKey);
-        }
+            => AddCertificateRequirement(X509ValidationRequirement.SubjectName, location, configuredKey);
 
         /// <summary>
         /// Configures the validation for the <see cref="X509Certificate2.IssuerName"/> from a given <paramref name="location"/> using a specified <paramref name="configuredKey"/>.
@@ -64,14 +46,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <param name="configuredKey">The configured key that the <paramref name="location"/> requires to retrieve the expected issuer name.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfigBuilder WithIssuer(X509ValidationLocation location, string configuredKey)
-        {
-            if (string.IsNullOrWhiteSpace(configuredKey))
-            {
-                throw new ArgumentException("Configured key to retrieve expected issuer cannot be blank", nameof(configuredKey));
-            }
-
-            return WithIssuer(GetValidationLocationImplementation(location), configuredKey);
-        }
+            => WithIssuer(GetValidationLocationImplementation(location), configuredKey);
 
         /// <summary>
         /// Configures the validation for the <see cref="X509Certificate2.IssuerName"/> from a given <paramref name="location"/> using a specified <paramref name="configuredKey"/>.
@@ -81,18 +56,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="location"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfigBuilder WithIssuer(IX509ValidationLocation location, string configuredKey)
-        {
-            if (location is null)
-            {
-                throw new ArgumentNullException(nameof(location), "Location implementation to retrieve the expected issuer cannot be 'null'");
-            }
-            if (configuredKey is null)
-            {
-                throw new ArgumentNullException(nameof(configuredKey), "Configured key to retrieve expected issuer cannot be blank");
-            }
-
-            return AddCertificateRequirement(X509ValidationRequirement.IssuerName, location, configuredKey);
-        }
+            => AddCertificateRequirement(X509ValidationRequirement.IssuerName, location, configuredKey);
 
         /// <summary>
         /// Configures the validation for the <see cref="X509Certificate2.Thumbprint"/> from a given <paramref name="location"/> using a specified <paramref name="configuredKey"/>.
@@ -101,14 +65,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <param name="configuredKey">The configured key that the <paramref name="location"/> requires to retrieve the expected thumbprint.</param>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfigBuilder WithThumbprint(X509ValidationLocation location, string configuredKey)
-        {
-            if (string.IsNullOrWhiteSpace(configuredKey))
-            {
-                throw new ArgumentException("Configured key to retrieve expected thumbprint cannot be blank", nameof(configuredKey));
-            }
-
-            return WithThumbprint(GetValidationLocationImplementation(location), configuredKey);
-        }
+            => WithThumbprint(GetValidationLocationImplementation(location), configuredKey);
 
         /// <summary>
         /// Configures the validation for the <see cref="X509Certificate2.Thumbprint"/> from a given <paramref name="location"/> using a specified <paramref name="configuredKey"/>.
@@ -118,18 +75,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="location"/> is <c>null</c>.</exception>
         /// <exception cref="ArgumentException">Thrown when the <paramref name="configuredKey"/> is blank.</exception>
         public CertificateAuthenticationConfigBuilder WithThumbprint(IX509ValidationLocation location, string configuredKey)
-        {
-            if (location is null)
-            {
-                throw new ArgumentNullException(nameof(location), "Location implementation to retrieve the expected thumbprint cannot be 'null'");
-            }
-            if (configuredKey is null)
-            {
-                throw new ArgumentNullException(nameof(configuredKey), "Configured key to retrieve expected thumbprint cannot be blank");
-            }
-
-            return AddCertificateRequirement(X509ValidationRequirement.Thumbprint, location, configuredKey);
-        }
+            => AddCertificateRequirement(X509ValidationRequirement.Thumbprint, location, configuredKey);
 
         private CertificateAuthenticationConfigBuilder AddCertificateRequirement(
             X509ValidationRequirement requirement,
@@ -140,6 +86,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new ArgumentNullException(nameof(location), "Location cannot be 'null'");
             }
+
             if (string.IsNullOrWhiteSpace(configuredKey))
             {
                 throw new ArgumentException("Configured key cannot be blank", nameof(configuredKey));

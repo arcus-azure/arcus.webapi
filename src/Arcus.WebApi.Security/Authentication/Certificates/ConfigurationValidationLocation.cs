@@ -37,19 +37,15 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                 {
                     throw new ArgumentException("Configured key cannot be blank", nameof(configurationKey));
                 }
+
                 if (services is null)
                 {
                     throw new ArgumentNullException(nameof(services), "Registered services cannot be 'null'");
                 }
 
-                var configuration = services.GetService<IConfiguration>();
-                if (configuration == null)
-                {
-                    throw new KeyNotFoundException(
+                var configuration = services.GetService<IConfiguration>() ?? throw new KeyNotFoundException(
                         $"No configured {nameof(IConfiguration)} implementation found in the request service container. "
                         + "Please configure such an implementation (ex. in the Startup) of your application");
-                }
-
                 string value = configuration[configurationKey];
                 return Task.FromResult(value);
             }

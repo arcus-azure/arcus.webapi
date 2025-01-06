@@ -30,6 +30,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new ArgumentNullException(nameof(locationAndKeyByRequirement), "Location and key by certificate requirement dictionary cannot be 'null'");
             }
+
             if (locationAndKeyByRequirement.Any(keyValue => keyValue.Value.location is null || keyValue.Value.configuredKey is null))
             {
                 throw new ArgumentException("All locations and configured keys by certificate requirement cannot be 'null'");
@@ -52,6 +53,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new ArgumentNullException(nameof(services), "Request services cannot be 'null'");
             }
+
             if (logger is null)
             {
                 throw new ArgumentNullException(nameof(logger), "Logger cannot be 'null'");

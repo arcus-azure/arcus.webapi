@@ -22,15 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddCertificateAuthenticationFilter) + " overload where the certificate validation locations are configured directly")]
         public static MvcOptions AddCertificateAuthenticationFilter(this MvcOptions options)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
-            }
+            => AddCertificateAuthenticationFilter(options, configureOptions: null);
 
-            return AddCertificateAuthenticationFilter(options, configureOptions: null);
-        }
-        
         /// <summary>
         /// Adds an certificate authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request.
         /// </summary>
@@ -81,18 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static MvcOptions AddCertificateAuthenticationFilter(
             this MvcOptions options,
             Action<CertificateAuthenticationConfigBuilder> configureAuthentication)
-        {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
-            }
-            if (configureAuthentication is null)
-            {
-                throw new ArgumentNullException(nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
-            }
-
-            return AddCertificateAuthenticationFilter(options, configureAuthentication, configureOptions: null);
-        }
+            => AddCertificateAuthenticationFilter(options, configureAuthentication, configureOptions: null);
 
         /// <summary>
         /// Adds an certificate authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request.
@@ -124,6 +106,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
             }
+
             if (configureAuthentication is null)
             {
                 throw new ArgumentNullException(nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
