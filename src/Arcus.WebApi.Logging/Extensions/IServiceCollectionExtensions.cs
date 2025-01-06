@@ -19,14 +19,7 @@ namespace Microsoft.Extensions.DependencyInjection
         /// </summary>
         /// <param name="services">The services collection containing the dependency injection services.</param>
         public static IServiceCollection AddHttpCorrelation(this IServiceCollection services)
-        {
-            if (services == null)
-            {
-                throw new ArgumentNullException(nameof(services), "Requires a services collection to add the HTTP correlation services");
-            }
-
-            return AddHttpCorrelation(services, configureOptions: (HttpCorrelationInfoOptions options) => { });
-        }
+            => AddHttpCorrelation(services, configureOptions: (HttpCorrelationInfoOptions options) => { });
 
         /// <summary>
         /// Adds operation and transaction correlation to the application.

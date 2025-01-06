@@ -44,14 +44,17 @@ namespace Arcus.WebApi.Logging.Correlation
             {
                 throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP context");
             }
+
             if (service is null)
             {
                 throw new ArgumentNullException(nameof(service), "Requires the HTTP correlation service");
             }
+
             if (httpContext.Response is null)
             {
                 throw new ArgumentException("Requires a 'Response'", nameof(httpContext));
             }
+
             if (httpContext.Response.Headers is null)
             {
                 throw new ArgumentException("Requires a 'Response' object with headers", nameof(httpContext));

@@ -38,10 +38,12 @@ namespace Arcus.WebApi.Logging
             {
                 throw new ArgumentNullException(nameof(appVersion), "Requires an instance to retrieve the current application version to add the version to the response");
             }
+
             if (next is null)
             {
                 throw new ArgumentNullException(nameof(next), "Requires a continuation delegate to move towards the next functionality in the request pipeline");
             }
+
             if (options is null)
             {
                 throw new ArgumentNullException(nameof(options), "Requires version tracking options to specify how the application version should be tracked in the response");
@@ -65,6 +67,7 @@ namespace Arcus.WebApi.Logging
             {
                 throw new ArgumentNullException(nameof(context), "Requires a HTTP context to add the application version to the response");
             }
+
             if (context.Response is null)
             {
                 throw new ArgumentException("Requires a HTTP context with a response to add the application version", nameof(context));

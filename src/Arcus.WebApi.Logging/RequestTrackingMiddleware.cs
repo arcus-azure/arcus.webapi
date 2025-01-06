@@ -37,10 +37,12 @@ namespace Arcus.WebApi.Logging
             {
                 throw new ArgumentNullException(nameof(options), "Requires a set of options to control the behavior of the HTTP tracking middleware");
             }
+
             if (next is null)
             {
                 throw new ArgumentNullException(nameof(next), "Requires a function pipeline to delegate the remainder of the request processing");
             }
+
             if (logger is null)
             {
                 throw new ArgumentNullException(nameof(logger), "Requires a logger instance to write telemetry tracking during the request processing");
@@ -62,10 +64,12 @@ namespace Arcus.WebApi.Logging
             {
                 throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP context instance to track the incoming request and outgoing response");
             }
+
             if (httpContext.Request is null)
             {
                 throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP request in the context to track the request");
             }
+
             if (httpContext.Response is null)
             {
                 throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP response in the context to track the request");

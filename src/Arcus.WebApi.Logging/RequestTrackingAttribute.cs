@@ -68,10 +68,12 @@ namespace Arcus.WebApi.Logging
             {
                 throw new ArgumentOutOfRangeException(nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to not be less than 100");
             }
+
             if (maximumStatusCode > 599)
             {
                 throw new ArgumentOutOfRangeException(nameof(maximumStatusCode), "Requires the maximum HTTP status code threshold to not be greater than 599");
             }
+
             if (minimumStatusCode >= maximumStatusCode)
             {
                 throw new ArgumentOutOfRangeException(nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
