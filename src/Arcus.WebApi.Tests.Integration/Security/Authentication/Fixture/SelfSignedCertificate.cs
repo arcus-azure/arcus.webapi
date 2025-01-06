@@ -56,6 +56,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture
             {
                 throw new ArgumentException("Subject name should not be blank", nameof(subjectName));
             }
+
             if (string.IsNullOrWhiteSpace(issuerName))
             {
                 throw new ArgumentException("Issuer name should not be blank", nameof(issuerName));

@@ -124,6 +124,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentNullException(nameof(configure), "Requires a function to configure the application configuration of the test API server");
             }
+
             _appConfigures.Add(configure);
 
             return this;

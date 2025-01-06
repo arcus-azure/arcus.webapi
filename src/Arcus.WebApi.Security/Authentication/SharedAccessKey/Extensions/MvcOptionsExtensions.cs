@@ -51,6 +51,7 @@ namespace Microsoft.Extensions.DependencyInjection
             {
                 throw new ArgumentNullException(nameof(options), "Requires a MVC options instance to add the shared access key authentication filter");
             }
+
             if (string.IsNullOrWhiteSpace(headerName))
             {
                 throw new ArgumentException("Requires a non-blank HTTP request header name to match the stored secret during the shared access key authentication", nameof(headerName));

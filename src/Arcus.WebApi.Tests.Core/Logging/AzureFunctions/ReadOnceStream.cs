@@ -17,6 +17,7 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
             {
                 throw new ArgumentNullException(nameof(innerStream));
             }
+
             if (!innerStream.CanRead)
             {
                 throw new ArgumentException("Requires a readable stream to represent a read-once stream", nameof(innerStream));

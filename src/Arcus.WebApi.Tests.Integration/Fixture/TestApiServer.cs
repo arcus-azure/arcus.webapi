@@ -50,6 +50,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentNullException(nameof(options), "Requires a set of configurable options to control the behavior of the test API server");
             }
+
             if (logger is null)
             {
                 throw new ArgumentNullException(nameof(logger), "Requires a logger instance to write diagnostic messages during the lifetime of the test API server");

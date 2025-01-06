@@ -37,6 +37,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank HTTP relative route to create a HTTP GET request builder instance", nameof(route));
             }
+
             return new HttpRequestBuilder(HttpMethod.Get, route);
         }
 
@@ -52,6 +53,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank HTTP relative route to create a HTTP POST request builder instance", nameof(route));
             }
+
             return new HttpRequestBuilder(HttpMethod.Post, route);
         }
         
@@ -67,6 +69,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank header name to add the header to the HTTP request builder instance", nameof(headerName));
             }
+
             _headers.Add(new KeyValuePair<string, string>(headerName, headerValue?.ToString()));
 
             return this;
@@ -84,6 +87,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank query parameter to add the parameter to the HTTP request builder instance", nameof(parameterName));
             }
+
             _parameters.Add(new KeyValuePair<string, string>(parameterName, parameterValue.ToString()));
 
             return this;
@@ -101,6 +105,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank JSON request text to add the content to the HTTP request builder instance", nameof(text));
             }
+
             _createContent = () => new StringContent($"\"{text}\"", Encoding.UTF8, "application/json");
 
             return this;
@@ -118,6 +123,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank JSON request body to add the content to the HTTP request builder instance", nameof(json));
             }
+
             _createContent = () => new StringContent(json, Encoding.UTF8, "application/json");
 
             return this;
@@ -135,6 +141,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentException("Requires a non-blank text input for the request body", nameof(text));
             }
+
             _createContent = () => new StringContent(text, Encoding.UTF8, "text/plain");
 
             return this;
@@ -153,13 +160,16 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
                 throw new ArgumentException("Requires a non-blank base HTTP endpoint to create a HTTP request message from the HTTP request builder instance", nameof(baseRoute));
             }
 
+
             string parameters = "";
+            
             if (_parameters.Count > 0)
             {
                 parameters = "?" + String.Join("&", _parameters.Select(p => $"{p.Key}={p.Value}")); 
             }
 
             string path = _path;
+            
             if (path.StartsWith('/'))
             {
                 path = path.TrimStart('/');

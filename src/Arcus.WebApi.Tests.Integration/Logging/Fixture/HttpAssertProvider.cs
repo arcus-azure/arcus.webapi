@@ -26,10 +26,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             {
                 throw new ArgumentNullException(nameof(namedAssertions), "Requires a series of named HTTP assertions to setup the HTTP assertion provider");
             }
+
             if (namedAssertions.Any(item => item is null))
             {
                 throw new ArgumentException("Requires a series of named HTTP assertions without any 'null' elements to setup the HTTP assertion provider", nameof(namedAssertions));
             }
+
             if (namedAssertions.GroupBy(item => item.Item1).All(group => group.Count() != 1))
             {
                 throw new ArgumentException("Requires a series of named HTTP assertions with unique names to setup the HTTP assertion provider", nameof(namedAssertions));
@@ -50,6 +52,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             {
                 throw new ArgumentException("Requires a non-blank name to retrieve the HTTP assertion", nameof(name));
             }
+
             return Assert.Single(_namedAssertions, item => item.Item1 == name).Item2;
         }
     }

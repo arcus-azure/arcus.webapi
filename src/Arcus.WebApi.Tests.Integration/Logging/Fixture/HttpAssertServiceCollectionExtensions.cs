@@ -25,10 +25,12 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             {
                 throw new ArgumentNullException(nameof(services), "Requires a set of services to add the HTTP assertion to");
             }
+
             if (string.IsNullOrWhiteSpace(name))
             {
                 throw new ArgumentException("Requires a non-blank name to register the HTTP assertion", nameof(name));
             }
+
             if (assertion is null)
             {
                 throw new ArgumentNullException(nameof(assertion), "Requires an assertion function to verify the currently available HTTP context");

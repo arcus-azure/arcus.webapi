@@ -18,6 +18,7 @@ namespace Arcus.WebApi.Tests.Integration.Fixture
             {
                 throw new ArgumentNullException(nameof(config));
             }
+
             _config = config;
         }
 

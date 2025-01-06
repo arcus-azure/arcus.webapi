@@ -43,6 +43,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 throw new ArgumentNullException(nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
             }
+
             if (services is null)
             {
                 throw new ArgumentNullException(nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");

@@ -16,6 +16,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             {
                 throw new ArgumentNullException(nameof(assertion), "Requires an assertion function to verify a HTTP context");
             }
+
             _assertion = assertion;
         }
 
@@ -30,6 +31,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             {
                 throw new ArgumentNullException(nameof(assertion), "Requires an assertion function to verify a HTTP context");
             }
+
             return new HttpAssert(assertion);
         }
 
@@ -44,6 +46,7 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
             {
                 throw new ArgumentNullException(nameof(context), "Requires a HTTP context to run an assertion function to it");
             }
+
             _assertion(context);
         }
     }

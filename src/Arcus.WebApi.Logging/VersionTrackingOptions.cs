@@ -21,6 +21,7 @@ namespace Arcus.WebApi.Logging
                 {
                     throw new ArgumentException("Requires a non-blank header name to add the current application version to the response", nameof(value));
                 }
+
                 _headerName = value;
             }
         }
