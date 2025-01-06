@@ -25,8 +25,9 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (builder is null)
             {
-                throw new ArgumentNullException(paramName: nameof(builder), message: "Requires a HTTP client builder instance to add the HTTP correlation message handler");
+                throw new ArgumentNullException(nameof(builder), "Requires a HTTP client builder instance to add the HTTP correlation message handler");
             }
+
             return WithHttpCorrelationTracking(builder, configureOptions: null);
         }
 
@@ -44,7 +45,7 @@ namespace Microsoft.Extensions.DependencyInjection
         {
             if (builder is null)
             {
-                throw new ArgumentNullException(paramName: nameof(builder), message: "Requires a HTTP client builder instance to add the HTTP correlation message handler");
+                throw new ArgumentNullException(nameof(builder), "Requires a HTTP client builder instance to add the HTTP correlation message handler");
             }
 
             return builder.AddHttpMessageHandler(serviceProvider =>

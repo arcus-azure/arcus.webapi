@@ -26,7 +26,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         {
             if (options is null)
             {
-                throw new ArgumentNullException(paramName: nameof(options), message: "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
+                throw new ArgumentNullException(nameof(options), "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
             }
             Options = options;
         }
@@ -122,12 +122,12 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
                 IDictionary<string, StringValues> headers = GetSanitizedRequestHeaders(requestHeaders, logger);
                 Dictionary<string, string> telemetryContext = headers.ToDictionary(header => header.Key, header => string.Join(",", header.Value));
 
-                if (string.IsNullOrWhiteSpace(requestBody) == false)
+                if (!string.IsNullOrWhiteSpace(requestBody))
                 {
                     telemetryContext.Add("RequestBody", requestBody);
                 }
 
-                if (string.IsNullOrWhiteSpace(responseBody) == false)
+                if (!string.IsNullOrWhiteSpace(responseBody))
                 {
                     telemetryContext.Add("ResponseBody", responseBody);
                 }
@@ -186,8 +186,9 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         {
             if (body is null)
             {
-                throw new ArgumentNullException(paramName: nameof(body), message: $"Requires a streamed body to read the string representation of the {targetName}");
+                throw new ArgumentNullException(nameof(body), $"Requires a streamed body to read the string representation of the {targetName}");
             }
+
             logger = logger ?? NullLogger.Instance;
 
             logger.LogTrace("Prepare for {Target} body to be tracked...", targetName);

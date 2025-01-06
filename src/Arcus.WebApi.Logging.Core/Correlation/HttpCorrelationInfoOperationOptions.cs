@@ -28,7 +28,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentException(message: "Correlation operation header cannot be blank", paramName: nameof(value));
+                    throw new ArgumentException("Correlation operation header cannot be blank", nameof(value));
                 }
 
                 _headerName = value;
@@ -48,7 +48,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (value is null)
                 {
-                    throw new ArgumentNullException(paramName: nameof(value), message: "Correlation function to generate an operation ID cannot be 'null'");
+                    throw new ArgumentNullException(nameof(value), "Correlation function to generate an operation ID cannot be 'null'");
                 }
 
                 _generateId = value;

@@ -19,7 +19,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (headers is null)
             {
-                throw new ArgumentNullException(paramName: nameof(headers), message: "Requires a HTTP request headers dictionary instance to retrieve the 'traceparent' header value");
+                throw new ArgumentNullException(nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'traceparent' header value");
             }
 #if NET6_0
             StringValues traceParent = headers.TraceParent;
@@ -44,7 +44,7 @@ namespace Microsoft.AspNetCore.Http
         {
             if (headers is null)
             {
-                throw new ArgumentNullException(paramName: nameof(headers), message: "Requires a HTTP request headers dictionary instance to retrieve the 'tracestate' header value");
+                throw new ArgumentNullException(nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'tracestate' header value");
             }
 #if NET6_0
             return headers.TraceState; 

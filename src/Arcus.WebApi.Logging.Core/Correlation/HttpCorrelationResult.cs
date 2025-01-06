@@ -22,6 +22,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 throw new ArgumentException("Cannot create a successful HTTP correlation result with an error user message", nameof(errorMessage));
             }
+
             if (!isSuccess && requestId != null)
             {
                 throw new ArgumentException("Cannot create a failed HTTP correlation result with a request ID", nameof(requestId));
@@ -89,7 +90,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             if (string.IsNullOrWhiteSpace(errorMessage))
             {
-                throw new ArgumentException(paramName:  nameof(errorMessage), message: "Requires an error user message that describes why the HTTP correlation process failed on the current HTTP request");
+                throw new ArgumentException("Requires an error user message that describes why the HTTP correlation process failed on the current HTTP request", nameof(errorMessage));
             }
 
             return new HttpCorrelationResult(isSuccess: false, requestId: null, errorMessage);
@@ -106,11 +107,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             if (client is null)
             {
-                throw new ArgumentNullException(paramName: nameof(client), message: "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+                throw new ArgumentNullException(nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
             }
             if (string.IsNullOrWhiteSpace(transactionId))
             {
-                throw new ArgumentException(message: "Requires a non-blank transaction ID for the pending HTTP correlation", paramName: nameof(transactionId));
+                throw new ArgumentException("Requires a non-blank transaction ID for the pending HTTP correlation", nameof(transactionId));
             }
 
             return Success(client, transactionId, operationParentId: null, traceParent: null);
@@ -131,11 +132,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             if (client is null)
             {
-                throw new ArgumentNullException(paramName: nameof(client), message: "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
+                throw new ArgumentNullException(nameof(client), "Requires a telemetry client instance to automatically track built-in Microsoft dependencies");
             }
             if (string.IsNullOrWhiteSpace(transactionId))
             {
-                throw new ArgumentException(message: "Requires a non-blank transaction ID for the pending HTTP correlation", paramName: nameof(transactionId));
+                throw new ArgumentException("Requires a non-blank transaction ID for the pending HTTP correlation", nameof(transactionId));
             }
 
             var telemetry = new RequestTelemetry();

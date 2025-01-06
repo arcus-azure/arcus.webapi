@@ -34,7 +34,7 @@ namespace Arcus.WebApi.Logging
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(paramName: nameof(value), message: "Requires a request body buffer size greater than zero");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Requires a request body buffer size greater than zero");
                 }
                 _requestBodyBufferSize = value;
             }
@@ -56,7 +56,7 @@ namespace Arcus.WebApi.Logging
             {
                 if (value < 0)
                 {
-                    throw new ArgumentOutOfRangeException(paramName: nameof(value), message: "Requires a response body buffer size greater than zero");
+                    throw new ArgumentOutOfRangeException(nameof(value), "Requires a response body buffer size greater than zero");
                 }
                 _responseBodyBufferSize = value;
             }

@@ -32,9 +32,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             HttpCorrelationClientOptions options, 
             ILogger<HttpCorrelationMessageHandler> logger)
         {
-            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(paramName: nameof(correlationInfoAccessor), message: "Requires a HTTP context accessor to retrieve the current HTTP correlation");
-            _options = options ?? throw new ArgumentNullException(paramName: nameof(options), message: "Requires a set of additional user-configurable options to influence the HTTP dependency tracking");
-            _logger = logger ?? throw new ArgumentNullException(paramName: nameof(logger), message: "Requires a logger instance to write the HTTP dependency telemetry");
+            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(nameof(correlationInfoAccessor), "Requires a HTTP context accessor to retrieve the current HTTP correlation");
+            _options = options ?? throw new ArgumentNullException(nameof(options), "Requires a set of additional user-configurable options to influence the HTTP dependency tracking");
+            _logger = logger ?? throw new ArgumentNullException(nameof(logger), "Requires a logger instance to write the HTTP dependency telemetry");
         }
 
         /// <summary>

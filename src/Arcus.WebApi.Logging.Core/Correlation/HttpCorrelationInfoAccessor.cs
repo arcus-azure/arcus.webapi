@@ -22,7 +22,7 @@ namespace Arcus.WebApi.Logging.Correlation
         {
             if (contextAccessor is null)
             {
-                throw new ArgumentNullException(paramName: nameof(contextAccessor));
+                throw new ArgumentNullException(nameof(contextAccessor));
             }
 
             _httpContextAccessor = contextAccessor;
@@ -46,7 +46,7 @@ namespace Arcus.WebApi.Logging.Correlation
         {
             if (correlationInfo is null)
             {
-                throw new ArgumentNullException(paramName: nameof(correlationInfo));
+                throw new ArgumentNullException(nameof(correlationInfo));
             }
 
             _httpContextAccessor.HttpContext?.Features?.Set(correlationInfo);

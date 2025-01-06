@@ -37,8 +37,8 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger logger)
         {
-            _options = options ?? throw new ArgumentNullException(paramName: nameof(options), message: "Requires a set of options to configure the correlation process"); ;
-            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(paramName: nameof(correlationInfoAccessor), message: "Requires a correlation info instance to set and retrieve the correlation information");
+            _options = options ?? throw new ArgumentNullException(nameof(options), "Requires a set of options to configure the correlation process");
+            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
             Logger = logger ?? NullLogger.Instance;
         }
 
@@ -66,7 +66,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             if (request is null)
             {
-                throw new ArgumentNullException(paramName: nameof(request), message: "Requires a HTTP request to determine the HTTP correlation of the application");
+                throw new ArgumentNullException(nameof(request), "Requires a HTTP request to determine the HTTP correlation of the application");
             }
 
             IHeaderDictionary requestHeaders = GetRequestHeaders(request);
@@ -406,11 +406,12 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         {
             if (response is null)
             {
-                throw new ArgumentNullException(paramName: nameof(response), message: "Requires a HTTP response to set the HTTP correlation headers");
+                throw new ArgumentNullException(nameof(response), "Requires a HTTP response to set the HTTP correlation headers");
             }
+
             if (result is null)
             {
-                throw new ArgumentNullException(paramName: nameof(result), message: "Requires a HTTP correlation result to determine to set the HTTP correlation headers in the HTTP request");
+                throw new ArgumentNullException(nameof(result), "Requires a HTTP correlation result to determine to set the HTTP correlation headers in the HTTP request");
             }
 
             string requestId = result.RequestId;

@@ -40,7 +40,7 @@ namespace Arcus.WebApi.Logging.Correlation
         {
             if (options is null)
             {
-                throw new ArgumentNullException(paramName: nameof(options), message: "Requires a value in the set of options to configure the correlation process");
+                throw new ArgumentNullException(nameof(options), "Requires a value in the set of options to configure the correlation process");
             }
 
             _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(paramName: nameof(httpContextAccessor), message: "Requires a HTTP context accessor to get the current HTTP context");
@@ -68,8 +68,9 @@ namespace Arcus.WebApi.Logging.Correlation
         {
             if (_correlationInfoAccessor is null)
             {
-                throw new ArgumentNullException(paramName: nameof(correlationInfo), message: "Requires a correlation info instance to set and retrieve the correlation information");
+                throw new ArgumentNullException(nameof(correlationInfo), "Requires a correlation info instance to set and retrieve the correlation information");
             }
+
             _correlationInfoAccessor.SetCorrelationInfo(correlationInfo);
         }
 
@@ -85,11 +86,12 @@ namespace Arcus.WebApi.Logging.Correlation
 
             if (httpContext.Response is null)
             {
-                throw new ArgumentException(message: "Requires a 'Response'", paramName: nameof(httpContext.Response));
+                throw new ArgumentException("Requires a 'Response'", nameof(httpContext.Response));
             }
+
             if (httpContext.Response.Headers is null)
             {
-                throw new ArgumentException(message: "Requires a 'Response' object with headers", paramName: nameof(httpContext.Response.Headers));
+                throw new ArgumentException("Requires a 'Response' object with headers", nameof(httpContext.Response.Headers));
             }
 
             HttpCorrelationResult result = TrySettingCorrelationFromRequest(httpContext.Request, httpContext.TraceIdentifier);

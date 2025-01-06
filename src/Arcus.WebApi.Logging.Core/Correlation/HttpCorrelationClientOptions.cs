@@ -26,8 +26,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (value is null)
                 {
-                    throw new ArgumentNullException(paramName: nameof(value), message: "Requires a function to generate the dependency ID used when tracking HTTP dependencies");
+                    throw new ArgumentNullException(nameof(value), "Requires a function to generate the dependency ID used when tracking HTTP dependencies");
                 }
+
                 _generateDependencyId = value;
             }
         }
@@ -43,8 +44,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (value is null)
                 {
-                    throw new ArgumentNullException(paramName: nameof(value), message: "Requires a non-blank value for the HTTP request header where the dependency ID should be added when tracking HTTP dependencies");
+                    throw new ArgumentNullException(nameof(value), "Requires a non-blank value for the HTTP request header where the dependency ID should be added when tracking HTTP dependencies");
                 }
+
                 _upstreamServiceHeaderName = value;
             }
         }
@@ -60,8 +62,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (value is null)
                 {
-                    throw new ArgumentNullException(paramName: nameof(value), message: "Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies");
+                    throw new ArgumentNullException(nameof(value), "Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies");
                 }
+
                 _transactionIdHeaderName = value;
             }
         }
@@ -78,9 +81,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="telemetryContext"/> is <c>null</c>.</exception>
         public void AddTelemetryContext(Dictionary<string, object> telemetryContext)
         {
-            if (telemetryContext == null)
+            if (telemetryContext is null)
             {
-                throw new ArgumentNullException(paramName: nameof(telemetryContext), message: "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
+                throw new ArgumentNullException(nameof(telemetryContext), "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
             }
             foreach (KeyValuePair<string, object> item in telemetryContext)
             {

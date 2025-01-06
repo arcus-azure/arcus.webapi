@@ -31,15 +31,17 @@ namespace Arcus.WebApi.Logging
         {
             if (minimum < 100)
             {
-                throw new ArgumentOutOfRangeException(paramName: nameof(minimum), message: "Requires the minimum HTTP status code threshold to not be less than 100");
+                throw new ArgumentOutOfRangeException(nameof(minimum), "Requires the minimum HTTP status code threshold to not be less than 100");
             }
+
             if (maximum > 599)
             {
-                throw new ArgumentOutOfRangeException(paramName: nameof(maximum), message: "Requires the maximum HTTP status code threshold to not be greater than 599");
+                throw new ArgumentOutOfRangeException(nameof(maximum), "Requires the maximum HTTP status code threshold to not be greater than 599");
             }
+
             if (minimum > maximum)
             {
-                throw new ArgumentOutOfRangeException(paramName: nameof(minimum), message: "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+                throw new ArgumentOutOfRangeException(nameof(minimum), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
             }
             
             Minimum = minimum;
@@ -68,11 +70,12 @@ namespace Arcus.WebApi.Logging
         {
             if (statusCode < 100)
             {
-                throw new ArgumentOutOfRangeException(paramName: nameof(statusCode), message: "Requires the response HTTP status code to not be less than 100");
+                throw new ArgumentOutOfRangeException(nameof(statusCode), "Requires the response HTTP status code to not be less than 100");
             }
+
             if (statusCode > 599)
             {
-                throw new ArgumentOutOfRangeException(paramName: nameof(statusCode), message: "Requires the response HTTP status code to not be greater than 599");
+                throw new ArgumentOutOfRangeException(nameof(statusCode), "Requires the response HTTP status code to not be greater than 599");
             }
             
             return Minimum <= statusCode && statusCode <= Maximum;

@@ -28,11 +28,12 @@ namespace Serilog.Configuration
         {
             if (enrichmentConfiguration is null)
             {
-                throw new ArgumentNullException(paramName: nameof(enrichmentConfiguration), message: "Requires a Serilog logger enrichment configuration to register the HTTP correlation as enrichment");
+                throw new ArgumentNullException(nameof(enrichmentConfiguration), "Requires a Serilog logger enrichment configuration to register the HTTP correlation as enrichment");
             }
+
             if (serviceProvider is null)
             {
-                throw new ArgumentNullException(paramName: nameof(serviceProvider), message: "Requires a service provider to retrieve the HTTP correlation from the registered services when enriching the Serilog with the HTTP correlation");
+                throw new ArgumentNullException(nameof(serviceProvider), "Requires a service provider to retrieve the HTTP correlation from the registered services when enriching the Serilog with the HTTP correlation");
             }
 
             var correlationInfoAccessor = serviceProvider.GetService<IHttpCorrelationInfoAccessor>();

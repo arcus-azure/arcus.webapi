@@ -23,11 +23,12 @@ namespace System.Collections.Generic
         {
             if (dictionary is null)
             {
-                throw new ArgumentNullException(paramName: nameof(dictionary));
+                throw new ArgumentNullException(nameof(dictionary));
             }
+
             if (predicate is null)
             {
-                throw new ArgumentNullException(paramName: nameof(predicate));
+                throw new ArgumentNullException(nameof(predicate));
             }
 
             return Enumerable.Where(dictionary, predicate)
