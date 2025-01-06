@@ -85,6 +85,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 throw new ArgumentNullException(nameof(telemetryContext), "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
             }
+
             foreach (KeyValuePair<string, object> item in telemetryContext)
             {
                 TelemetryContext[item.Key] = item.Value;

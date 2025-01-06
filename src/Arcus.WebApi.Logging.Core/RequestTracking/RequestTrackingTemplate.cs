@@ -24,11 +24,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         protected RequestTrackingTemplate(RequestTrackingOptions options)
         {
-            if (options is null)
-            {
-                throw new ArgumentNullException(nameof(options), "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
-            }
-            Options = options;
+            Options = options ?? throw new ArgumentNullException(nameof(options), "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
         }
 
         /// <summary>
