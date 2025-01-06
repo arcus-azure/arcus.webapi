@@ -32,15 +32,16 @@ namespace Arcus.WebApi.OpenApi.Extensions
         {
             if (scopes.Any(String.IsNullOrWhiteSpace))
             {
-                throw new ArgumentException(message: "Requires a list of non-blank API scopes", paramName: nameof(scopes));
+                throw new ArgumentException("Requires a list of non-blank API scopes", nameof(scopes));
             }
+
             if (string.IsNullOrWhiteSpace(securitySchemaName))
             {
-                throw new ArgumentNullException(paramName: nameof(securitySchemaName), message: "Requires a name for the OAuth2 security scheme");
+                throw new ArgumentNullException(nameof(securitySchemaName), "Requires a name for the OAuth2 security scheme");
             }
 
             _securitySchemaName = securitySchemaName;
-            _scopes = scopes ?? throw new ArgumentNullException(paramName: nameof(scopes), message: "Requires a list of API scopes");
+            _scopes = scopes ?? throw new ArgumentNullException(nameof(scopes), "Requires a list of API scopes");
         }
 
         /// <summary>

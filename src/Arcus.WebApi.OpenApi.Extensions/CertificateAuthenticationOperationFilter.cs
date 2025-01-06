@@ -43,12 +43,12 @@ namespace Arcus.WebApi.OpenApi.Extensions
 #endif
         )
         {
-            _securitySchemeName = securitySchemeName ?? throw new ArgumentNullException(paramName: nameof(securitySchemeName), message: "Requires a name for the Certificate security scheme");
+            _securitySchemeName = securitySchemeName ?? throw new ArgumentNullException(nameof(securitySchemeName), "Requires a name for the Certificate security scheme");
 
 #if !NETSTANDARD2_1
             if (!Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType))
             {
-                throw new ArgumentException(paramName: nameof(securitySchemeType), message: "Requires a security scheme type for the Certificate authentication that is within the bounds of the enumeration");
+                throw new ArgumentException("Requires a security scheme type for the Certificate authentication that is within the bounds of the enumeration", nameof(securitySchemeType));
             }
 
             _securitySchemeType = securitySchemeType;

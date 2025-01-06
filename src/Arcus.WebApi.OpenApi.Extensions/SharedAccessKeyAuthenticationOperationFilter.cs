@@ -36,11 +36,12 @@ namespace Arcus.WebApi.OpenApi.Extensions
         {
             if (string.IsNullOrWhiteSpace(securitySchemeName))
             {
-                throw new ArgumentNullException(paramName: nameof(securitySchemeName), message: "Requires a name for the Shared Access Key security scheme");
+                throw new ArgumentNullException(nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
             }
+
             if (!Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType))
             {
-                throw new ArgumentException(message: "Requires a security scheme type for the Shared Access Key authentication that is within the bounds of the enumeration", paramName: nameof(securitySchemeType));
+                throw new ArgumentException("Requires a security scheme type for the Shared Access Key authentication that is within the bounds of the enumeration", nameof(securitySchemeType));
             }
 
             _securitySchemeName = securitySchemeName;
@@ -55,7 +56,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
         {
             if (string.IsNullOrWhiteSpace(securitySchemeName))
             {
-                throw new ArgumentNullException(paramName: nameof(securitySchemeName), message: "Requires a name for the Shared Access Key security scheme");
+                throw new ArgumentNullException(nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
             }
 
             _securitySchemeName = securitySchemeName;
