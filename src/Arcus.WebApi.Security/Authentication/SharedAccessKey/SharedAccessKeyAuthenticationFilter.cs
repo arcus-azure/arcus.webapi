@@ -136,7 +136,13 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
             Task<IEnumerable<string>> rawSecretAsync = userDefinedSecretProvider.GetRawSecretsAsync(_secretName) ?? throw new InvalidOperationException(
                     $"Configured {nameof(ISecretProvider)} is not implemented correctly as it returns 'null' for a {nameof(Task)} value when calling {nameof(ISecretProvider.GetRawSecretAsync)}");
             IEnumerable<string> foundSecrets = await rawSecretAsync;
-            return foundSecrets is null ? throw new SecretNotFoundException(_secretName) : foundSecrets.ToArray();
+
+            if (foundSecrets is null)
+            {
+                throw new SecretNotFoundException(_secretName);
+            }
+
+            return foundSecrets.ToArray();
         }
 
         private void ValidateSharedAccessKeyInRequestHeader(AuthorizationFilterContext context, string[] foundSecrets, ILogger logger)

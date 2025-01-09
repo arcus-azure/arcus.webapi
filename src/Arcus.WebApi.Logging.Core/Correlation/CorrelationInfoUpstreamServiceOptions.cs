@@ -40,7 +40,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentException(message: "Requires a non-blank value for the operation parent ID request header name", paramName: nameof(value));
+                    throw new ArgumentException("Requires a non-blank value for the operation parent ID request header name", nameof(value));
                 }
 
                 _headerName = value;
@@ -61,7 +61,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (value is null)
                 {
-                    throw new ArgumentNullException(paramName: nameof(value), "Requires a function to generate the operation parent ID");
+                    throw new ArgumentNullException(nameof(value), "Requires a function to generate the operation parent ID");
                 }
 
                 _generateId = value;

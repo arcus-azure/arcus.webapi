@@ -6,7 +6,7 @@ using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Arcus.WebApi.Security.Authentication.Certificates 
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Certificate location implementation to retrieve the expected <see cref="X509Certificate2"/> value from an <see cref="IConfiguration"/>
@@ -43,9 +43,14 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                     throw new ArgumentNullException(nameof(services), "Registered services cannot be 'null'");
                 }
 
-                var configuration = services.GetService<IConfiguration>() ?? throw new KeyNotFoundException(
+                var configuration = services.GetService<IConfiguration>();
+                if (configuration is null)
+                {
+                    throw new KeyNotFoundException(
                         $"No configured {nameof(IConfiguration)} implementation found in the request service container. "
                         + "Please configure such an implementation (ex. in the Startup) of your application");
+                }
+
                 string value = configuration[configurationKey];
                 return Task.FromResult(value);
             }

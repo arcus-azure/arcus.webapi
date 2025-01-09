@@ -43,9 +43,9 @@ namespace Arcus.WebApi.Logging.Correlation
                 throw new ArgumentNullException(nameof(options), "Requires a value in the set of options to configure the correlation process");
             }
 
-            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(paramName: nameof(httpContextAccessor), message: "Requires a HTTP context accessor to get the current HTTP context");
-            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(paramName: nameof(correlationInfoAccessor), message: "Requires a correlation info instance to set and retrieve the correlation information");
-            _options = options.Value ?? throw new ArgumentNullException(paramName: nameof(options.Value), message: "Requires a value in the set of options to configure the correlation process");
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
+            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
+            _options = options.Value ?? throw new ArgumentNullException(nameof(options.Value), "Requires a value in the set of options to configure the correlation process");
 
 
             _logger = logger ?? NullLogger<HttpCorrelation>.Instance;
@@ -82,7 +82,7 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentException">Thrown when the given <see cref="HttpContext"/> doesn't have any response headers to set the correlation headers.</exception>
         public HttpCorrelationResult CorrelateHttpRequest()
         {
-            HttpContext httpContext = _httpContextAccessor.HttpContext ?? throw new ArgumentNullException(paramName: nameof(HttpContext), "Requires a HTTP context from the HTTP context accessor to start correlating the HTTP request");
+            HttpContext httpContext = _httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(HttpContext), "Requires a HTTP context from the HTTP context accessor to start correlating the HTTP request");
 
             if (httpContext.Response is null)
             {
