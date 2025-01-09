@@ -61,20 +61,25 @@ namespace Arcus.WebApi.Logging.AzureFunctions
                         HttpResponseData response = context.GetHttpResponseData();
                         var attributeTrackedStatusCodes = Enumerable.Empty<StatusCodeRange>();
 
-                        if (response != null && AllowedToTrackStatusCode((int) response.StatusCode, attributeTrackedStatusCodes, logger))
+                        if (response != null && AllowedToTrackStatusCode((int)response.StatusCode, attributeTrackedStatusCodes, logger))
                         {
                             string responseBody = await GetPotentialResponseBodyAsync(response, logger);
-                            LogRequest(requestBody, responseBody, request, response, measurement, logger); 
+                            LogRequest(requestBody, responseBody, request, response, measurement, logger);
                         }
-                    } 
+                    }
                 }
             }
         }
 
         private static async Task<HttpRequestData> EnableHttpRequestBufferingAsync(FunctionContext context)
         {
-            BindingMetadata bindingMetadata = context.FunctionDefinition.InputBindings.Values.FirstOrDefault(a => a.Type == "httpTrigger") ?? throw new InvalidOperationException(
+            BindingMetadata bindingMetadata = context.FunctionDefinition.InputBindings.Values.FirstOrDefault(a => a.Type == "httpTrigger");
+            if (bindingMetadata is null)
+            {
+                throw new InvalidOperationException(
                     "Cannot enable HTTP request body buffering because it cannot find the Azure Functions' HTTP trigger input binding representing the HTTP request");
+            }
+
             InputBindingData<HttpRequestData> bindingData = await context.BindInputAsync<HttpRequestData>(bindingMetadata);
             bindingData.Value = new BufferedHttpRequestData(bindingData.Value);
 
@@ -146,7 +151,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
                     request.Url.Host,
                     request.Url.AbsolutePath,
                     operationName: null,
-                    (int) response.StatusCode,
+                    (int)response.StatusCode,
                     duration.StartTime,
                     duration.Elapsed,
                     logContext));
