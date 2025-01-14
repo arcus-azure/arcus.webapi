@@ -42,7 +42,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _upstreamServiceHeaderName;
             set
             {
-                if (value is null)
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     throw new ArgumentNullException(nameof(value), "Requires a non-blank value for the HTTP request header where the dependency ID should be added when tracking HTTP dependencies");
                 }
@@ -60,7 +60,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _transactionIdHeaderName;
             set
             {
-                if (value is null)
+                if (string.IsNullOrWhiteSpace(value))
                 {
                     throw new ArgumentNullException(nameof(value), "Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies");
                 }
