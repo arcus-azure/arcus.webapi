@@ -37,7 +37,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
 
             if (string.IsNullOrWhiteSpace(securitySchemaName))
             {
-                throw new ArgumentNullException(nameof(securitySchemaName), "Requires a name for the OAuth2 security scheme");
+                throw new ArgumentException("Requires a name for the OAuth2 security scheme", nameof(securitySchemaName));
             }
 
             _securitySchemaName = securitySchemaName;
