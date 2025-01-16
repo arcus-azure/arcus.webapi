@@ -62,7 +62,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             {
                 if (string.IsNullOrWhiteSpace(value))
                 {
-                    throw new ArgumentNullException(nameof(value), "Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies");
+                    throw new ArgumentException("Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies", nameof(value));
                 }
 
                 _transactionIdHeaderName = value;
