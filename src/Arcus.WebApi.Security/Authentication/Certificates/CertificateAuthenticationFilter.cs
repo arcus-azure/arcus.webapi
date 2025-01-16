@@ -5,7 +5,6 @@ using System.Net;
 using System.Security.Cryptography.X509Certificates;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -47,8 +46,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         [Obsolete("Use the new constructor with the certificate authentication filter instead")]
         public CertificateAuthenticationFilter(CertificateAuthenticationOptions options)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
-            _options = options;
+            _options = options ?? throw new ArgumentNullException(nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
         }
 
         /// <summary>
@@ -61,11 +59,8 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             CertificateAuthenticationValidator validator,
             CertificateAuthenticationOptions options)
         {
-            Guard.NotNull(validator, nameof(validator), "Requires an instance to validate the incoming client certificate of the HTTP request");
-            Guard.NotNull(options, nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
-
-            _validator = validator;
-            _options = options;
+            _validator = validator ?? throw new ArgumentNullException(nameof(validator), "Requires an instance to validate the incoming client certificate of the HTTP request");
+            _options = options ?? throw new ArgumentNullException(nameof(options), "Requires a set of additional consumer-configurable options to determine the behavior of the certificate authentication");
         }
 
         /// <summary>
@@ -74,10 +69,25 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <param name="context">The <see cref="T:Microsoft.AspNetCore.Mvc.Filters.AuthorizationFilterContext" />.</param>
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
-            Guard.NotNull(context, nameof(context));
-            Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
-            Guard.For<ArgumentException>(() => context.HttpContext.Connection is null, "Invalid action context given without any HTTP connection");
-            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.HttpContext is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.HttpContext.Connection is null)
+            {
+                throw new ArgumentException("Invalid action context given without any HTTP connection");
+            }
+
+            if (context.HttpContext.RequestServices is null)
+            {
+                throw new ArgumentException("Invalid action context given without any HTTP request services");
+            }
 
             IServiceProvider services = context.HttpContext.RequestServices;
             ILogger logger = services.GetLoggerOrDefault<CertificateAuthenticationFilter>();

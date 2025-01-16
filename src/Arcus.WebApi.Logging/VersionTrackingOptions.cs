@@ -1,4 +1,4 @@
-﻿using GuardNet;
+﻿using System;
 
 namespace Arcus.WebApi.Logging
 {
@@ -17,7 +17,11 @@ namespace Arcus.WebApi.Logging
             get => _headerName;
             set
             {
-                Guard.NotNullOrWhitespace(value, nameof(value), "Requires a non-blank header name to add the current application version to the response");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Requires a non-blank header name to add the current application version to the response", nameof(value));
+                }
+
                 _headerName = value;
             }
         }

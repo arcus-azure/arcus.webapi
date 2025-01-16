@@ -4,7 +4,6 @@ using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
-using GuardNet;
 using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
@@ -27,10 +26,15 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         internal CertificateAuthenticationConfig(
             IDictionary<X509ValidationRequirement, (IX509ValidationLocation location, string configuredKey)> locationAndKeyByRequirement)
         {
-            Guard.NotNull(locationAndKeyByRequirement, nameof(locationAndKeyByRequirement), "Location and key by certificate requirement dictionary cannot be 'null'");
-            Guard.For<ArgumentException>(
-                () => locationAndKeyByRequirement.Any(keyValue => keyValue.Value.location is null || keyValue.Value.configuredKey is null), 
-                "All locations and configured keys by certificate requirement cannot be 'null'");
+            if (locationAndKeyByRequirement is null)
+            {
+                throw new ArgumentNullException(nameof(locationAndKeyByRequirement), "Location and key by certificate requirement dictionary cannot be 'null'");
+            }
+
+            if (locationAndKeyByRequirement.Any(keyValue => keyValue.Value.location is null || keyValue.Value.configuredKey is null))
+            {
+                throw new ArgumentException("All locations and configured keys by certificate requirement cannot be 'null'");
+            }
 
             _locationAndKeyByRequirement = locationAndKeyByRequirement;
         }
@@ -45,8 +49,15 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="logger"/> is <c>null</c>.</exception>
         internal async Task<IDictionary<X509ValidationRequirement, string>> GetAllExpectedCertificateValuesAsync(IServiceProvider services, ILogger logger)
         {
-            Guard.NotNull(services, nameof(services), "Request services cannot be 'null'");
-            Guard.NotNull(logger, nameof(logger), "Logger cannot be 'null'");
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Request services cannot be 'null'");
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger), "Logger cannot be 'null'");
+            }
 
             var expectedValuesByRequirement = 
                 await Task.WhenAll(

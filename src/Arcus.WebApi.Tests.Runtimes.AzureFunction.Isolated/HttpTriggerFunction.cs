@@ -2,7 +2,6 @@ using System.Net;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
 using Azure.Core.Serialization;
-using GuardNet;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
@@ -20,11 +19,8 @@ namespace Arcus.WebApi.Tests.Runtimes.AzureFunction.Isolated
             JsonObjectSerializer serializer,
             ILoggerFactory loggerFactory)
         {
-            Guard.NotNull(correlationAccessor, nameof(correlationAccessor));
-            Guard.NotNull(serializer, nameof(serializer));
-
-            _correlationAccessor = correlationAccessor;
-            _serializer = serializer;
+            _correlationAccessor = correlationAccessor ?? throw new ArgumentNullException(nameof(correlationAccessor));
+            _serializer = serializer ?? throw new ArgumentNullException(nameof(serializer));
             _logger = loggerFactory.CreateLogger<HttpTriggerFunction>();
         }
 

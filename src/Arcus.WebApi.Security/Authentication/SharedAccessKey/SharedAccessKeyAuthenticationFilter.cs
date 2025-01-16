@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
-using GuardNet;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -52,10 +51,15 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> and <paramref name="queryParameterName"/> are blank.</exception>
         public SharedAccessKeyAuthenticationFilter(string headerName, string queryParameterName, string secretName, SharedAccessKeyAuthenticationOptions options)
         {
-            Guard.NotNullOrWhitespace(secretName, nameof(secretName), "Requires a non-blank secret name");
-            Guard.For<ArgumentException>(
-                () => String.IsNullOrWhiteSpace(headerName) && String.IsNullOrWhiteSpace(queryParameterName), 
-                "Requires either a non-blank header name or query parameter name");
+            if (string.IsNullOrWhiteSpace(secretName))
+            {
+                throw new ArgumentException("Requires a non-blank secret name", nameof(secretName));
+            }
+
+            if (string.IsNullOrWhiteSpace(headerName) && string.IsNullOrWhiteSpace(queryParameterName))
+            {
+                throw new ArgumentException("Requires either a non-blank header name or query parameter name");
+            }
 
             _headerName = headerName;
             _queryParameterName = queryParameterName;
@@ -72,11 +76,30 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
         /// </returns>
         public async Task OnAuthorizationAsync(AuthorizationFilterContext context)
         {
-            Guard.NotNull(context, nameof(context));
-            Guard.NotNull(context.HttpContext, nameof(context.HttpContext));
-            Guard.For<ArgumentException>(() => context.HttpContext.Request is null, "Invalid action context given without any HTTP request");
-            Guard.For<ArgumentException>(() => context.HttpContext.Request.Headers is null, "Invalid action context given without any HTTP request headers");
-            Guard.For<ArgumentException>(() => context.HttpContext.RequestServices is null, "Invalid action context given without any HTTP request services");
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
+            if (context.HttpContext is null)
+            {
+                throw new ArgumentNullException(nameof(context.HttpContext));
+            }
+
+            if (context.HttpContext.Request is null)
+            {
+                throw new ArgumentException("Invalid action context given without any HTTP request");
+            }
+
+            if (context.HttpContext.Request.Headers is null)
+            {
+                throw new ArgumentException("Invalid action context given without any HTTP request headers");
+            }
+
+            if (context.HttpContext.RequestServices is null)
+            {
+                throw new ArgumentException("Invalid action context given without any HTTP request services");
+            }
 
             ILogger logger = context.HttpContext.RequestServices.GetLoggerOrDefault<SharedAccessKeyAuthenticationFilter>();
             
@@ -106,23 +129,14 @@ namespace Arcus.WebApi.Security.Authentication.SharedAccessKey
 
         private async Task<string[]> GetAuthorizationSecretAsync(AuthorizationFilterContext context)
         {
-            var userDefinedSecretProvider = context.HttpContext.RequestServices.GetService<ISecretProvider>();
-            if (userDefinedSecretProvider is null)
-            {
-                throw new InvalidOperationException(
+            var userDefinedSecretProvider = context.HttpContext.RequestServices.GetService<ISecretProvider>() ?? throw new InvalidOperationException(
                     "Cannot retrieve the shared access key to validate the HTTP request because no Arcus secret store was registered in the application," 
                     + $"please register the secret store with '{nameof(IHostBuilderExtensions.ConfigureSecretStore)}' on the '{nameof(IHostBuilder)}' or with 'AddSecretStore' on the '{nameof(IServiceCollection)}'," 
                     + "for more information on the Arcus secret store: https://security.arcus-azure.net/features/secret-store");
-            }
-
-            Task<IEnumerable<string>> rawSecretAsync = userDefinedSecretProvider.GetRawSecretsAsync(_secretName);
-            if (rawSecretAsync is null)
-            {
-                throw new InvalidOperationException(
+            Task<IEnumerable<string>> rawSecretAsync = userDefinedSecretProvider.GetRawSecretsAsync(_secretName) ?? throw new InvalidOperationException(
                     $"Configured {nameof(ISecretProvider)} is not implemented correctly as it returns 'null' for a {nameof(Task)} value when calling {nameof(ISecretProvider.GetRawSecretAsync)}");
-            }
-
             IEnumerable<string> foundSecrets = await rawSecretAsync;
+
             if (foundSecrets is null)
             {
                 throw new SecretNotFoundException(_secretName);

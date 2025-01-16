@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
@@ -33,9 +32,20 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
             IHttpCorrelationInfoAccessor correlationInfoAccessor,
             ILogger<AzureFunctionsInProcessHttpCorrelation> logger)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of HTTP correlation options to determine where the correlation information should be added to the HTTP response headers");
-            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a HTTP correlation accessor to retrieve the current correlation information");
-            Guard.NotNull(logger, nameof(logger), "Requires a logging instance to write diagnostic trace messages while adding the correlation information to the HTTP response headers");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a set of HTTP correlation options to determine where the correlation information should be added to the HTTP response headers");
+            }
+
+            if (correlationInfoAccessor is null)
+            {
+                throw new ArgumentNullException(nameof(correlationInfoAccessor), "Requires a HTTP correlation accessor to retrieve the current correlation information");
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger), "Requires a logging instance to write diagnostic trace messages while adding the correlation information to the HTTP response headers");
+            }
 
             _options = options;
             _correlationInfoAccessor = correlationInfoAccessor;
@@ -57,8 +67,15 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="httpContext"/> is <c>null</c> or does not have a response present.</exception>
         public void AddCorrelationResponseHeaders(HttpContext httpContext)
         {
-            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context to add the correlation information to the response headers");
-            Guard.NotNull(httpContext.Response, nameof(httpContext), "Requires a HTTP response in the HTTP context to add the correlation information to the response headers");
+            if (httpContext is null)
+            {
+                throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP context to add the correlation information to the response headers");
+            }
+
+            if (httpContext.Response is null)
+            {
+                throw new ArgumentNullException(nameof(httpContext), "Requires a HTTP response in the HTTP context to add the correlation information to the response headers");
+            }
 
             if (_options.Operation.IncludeInResponse)
             {

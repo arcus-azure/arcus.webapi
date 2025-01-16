@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -22,9 +21,20 @@ namespace Arcus.WebApi.Tests.Integration.Logging.Fixture
         /// <exception cref="ArgumentException">Thrown when the <paramref name="name"/> is blank.</exception>
         public static IServiceCollection AddHttpAssert(this IServiceCollection services, string name, Action<HttpContext> assertion)
         {
-            Guard.NotNull(services, nameof(services), "Requires a set of services to add the HTTP assertion to");
-            Guard.NotNullOrWhitespace(name, nameof(name), "Requires a non-blank name to register the HTTP assertion");
-            Guard.NotNull(assertion, nameof(assertion), "Requires an assertion function to verify the currently available HTTP context");
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Requires a set of services to add the HTTP assertion to");
+            }
+
+            if (string.IsNullOrWhiteSpace(name))
+            {
+                throw new ArgumentException("Requires a non-blank name to register the HTTP assertion", nameof(name));
+            }
+
+            if (assertion is null)
+            {
+                throw new ArgumentNullException(nameof(assertion), "Requires an assertion function to verify the currently available HTTP context");
+            }
 
             services.TryAddSingleton<HttpAssertProvider>();
             return services.AddSingleton(Tuple.Create(name, HttpAssert.Create(assertion)));

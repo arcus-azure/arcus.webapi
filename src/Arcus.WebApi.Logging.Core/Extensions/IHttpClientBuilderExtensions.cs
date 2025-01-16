@@ -1,6 +1,5 @@
 ﻿using System;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
@@ -24,7 +23,11 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="InvalidOperationException">Thrown when the no <see cref="IHttpContextAccessor"/> was found in the dependency injection container.</exception>
         public static IHttpClientBuilder WithHttpCorrelationTracking(this IHttpClientBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a HTTP client builder instance to add the HTTP correlation message handler");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a HTTP client builder instance to add the HTTP correlation message handler");
+            }
+
             return WithHttpCorrelationTracking(builder, configureOptions: null);
         }
 
@@ -40,7 +43,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="InvalidOperationException">Thrown when the no <see cref="IHttpContextAccessor"/> was found in the dependency injection container.</exception>
         public static IHttpClientBuilder WithHttpCorrelationTracking(this IHttpClientBuilder builder, Action<HttpCorrelationClientOptions> configureOptions)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a HTTP client builder instance to add the HTTP correlation message handler");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a HTTP client builder instance to add the HTTP correlation message handler");
+            }
 
             return builder.AddHttpMessageHandler(serviceProvider =>
             {

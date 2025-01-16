@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Text.Json;
-using GuardNet;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -20,7 +19,10 @@ namespace Microsoft.AspNetCore.Mvc
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         public static MvcOptions OnlyAllowJsonFormatting(this MvcOptions options)
         {
-            Guard.NotNull(options, nameof(options), "Requires MVC options to restrict the formatting to only JSON formatting");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires MVC options to restrict the formatting to only JSON formatting");
+            }
             
             IInputFormatter[] allButJsonInputFormatters = 
                 options.InputFormatters.Where(formatter => !(formatter is SystemTextJsonInputFormatter))
@@ -46,8 +48,15 @@ namespace Microsoft.AspNetCore.Mvc
         [Obsolete("Use the " + nameof(MvcCoreMvcBuilderExtensions) + "." + nameof(MvcCoreMvcBuilderExtensions.AddJsonOptions) + " instead to configure the JSON formatters")]
         public static MvcOptions ConfigureJsonFormatting(this MvcOptions options, Action<JsonSerializerOptions> configureOptions)
         {
-            Guard.NotNull(options, nameof(options), "Requires MVC options to configure the JSON formatters");
-            Guard.NotNull(configureOptions, nameof(configureOptions), "Requires a function to configure the JSON formatters in the MVC options");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires MVC options to configure the JSON formatters");
+            }
+
+            if (configureOptions is null)
+            {
+                throw new ArgumentNullException(nameof(configureOptions), "Requires a function to configure the JSON formatters in the MVC options");
+            }
 
             SystemTextJsonInputFormatter[] onlyJsonInputFormatters = 
                 options.InputFormatters.OfType<SystemTextJsonInputFormatter>()

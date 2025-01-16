@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using Arcus.WebApi.Security.Authorization.Jwt;
-using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -60,8 +59,15 @@ namespace Arcus.WebApi.Security.Authorization
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> is blank.</exception>
         public JwtTokenAuthorizationOptions(IJwtTokenReader reader, string headerName)
         {
-            Guard.NotNull(reader, nameof(reader), $"Requires a valid {nameof(IJwtTokenReader)} to verify the JWT token");
-            Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Requires a non-blank request header name to look for the JWT token");
+            if (reader is null)
+            {
+                throw new ArgumentNullException(nameof(reader), $"Requires a valid {nameof(IJwtTokenReader)} to verify the JWT token");
+            }
+
+            if (string.IsNullOrWhiteSpace(headerName))
+            {
+                throw new ArgumentException("Requires a non-blank request header name to look for the JWT token", nameof(headerName));
+            }
 
             JwtTokenReader = reader;
             HeaderName = headerName;
@@ -76,7 +82,11 @@ namespace Arcus.WebApi.Security.Authorization
             get => _headerName;
             set
             {
-                Guard.NotNullOrWhitespace(value, nameof(value), "Requires an non-blank request header name to look for the JWT token");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Requires a non-blank request header name to look for the JWT token", nameof(value));
+                }
+
                 _headerName = value;
             }
         }
@@ -90,7 +100,11 @@ namespace Arcus.WebApi.Security.Authorization
             get => _jwtTokenReader;
             set
             {
-                Guard.NotNull(value, nameof(value), $"Requires a valid {nameof(IJwtTokenReader)} to verify the JWT token");
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value), $"Requires a valid {nameof(IJwtTokenReader)} to verify the JWT token");
+                }
+
                 _jwtTokenReader = value;
                 _createJwtTokenReader = null;
             }
@@ -119,10 +133,8 @@ namespace Arcus.WebApi.Security.Authorization
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="createReader"/> is <c>null</c>.</exception>
         public void AddJwtTokenReader(Func<IServiceProvider, IJwtTokenReader> createReader)
         {
-            Guard.NotNull(createReader, nameof(createReader), $"Requires an implementation function to create an {nameof(IJwtTokenReader)} instance");
-
             _jwtTokenReader = null;
-            _createJwtTokenReader = createReader;
+            _createJwtTokenReader = createReader ?? throw new ArgumentNullException(nameof(createReader), $"Requires an implementation function to create an {nameof(IJwtTokenReader)} instance");
         }
 
         /// <summary>
@@ -136,7 +148,11 @@ namespace Arcus.WebApi.Security.Authorization
             {
                 try
                 {
-                    Guard.NotNull(serviceProvider, nameof(serviceProvider), $"Requires an collection of services to create an {nameof(IJwtTokenReader)} instance");
+                    if (serviceProvider is null)
+                    {
+                        throw new ArgumentNullException(nameof(serviceProvider), $"Requires a collection of services to create an {nameof(IJwtTokenReader)} instance");
+                    }
+
                     return _createJwtTokenReader(serviceProvider);
                 }
                 catch (Exception exception)

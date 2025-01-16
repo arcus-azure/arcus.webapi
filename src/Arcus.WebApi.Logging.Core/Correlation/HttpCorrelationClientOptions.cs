@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
-using GuardNet;
 using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
@@ -25,7 +24,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _generateDependencyId;
             set
             {
-                Guard.NotNull(value, nameof(value), "Requires a function to generate the dependency ID used when tracking HTTP dependencies");
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value), "Requires a function to generate the dependency ID used when tracking HTTP dependencies");
+                }
+
                 _generateDependencyId = value;
             }
         }
@@ -39,7 +42,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _upstreamServiceHeaderName;
             set
             {
-                Guard.NotNullOrWhitespace(value, nameof(value), "Requires a non-blank value for the HTTP request header where the dependency ID should be added when tracking HTTP dependencies");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Requires a non-blank value for the HTTP request header where the dependency ID should be added when tracking HTTP dependencies", nameof(value));
+                }
+
                 _upstreamServiceHeaderName = value;
             }
         }
@@ -53,7 +60,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _transactionIdHeaderName;
             set
             {
-                Guard.NotNullOrWhitespace(value, nameof(value), "Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Requires a non-blank value for the HTTP request header where the transaction ID should be added when tracking HTTP dependencies", nameof(value));
+                }
+
                 _transactionIdHeaderName = value;
             }
         }
@@ -70,7 +81,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="telemetryContext"/> is <c>null</c>.</exception>
         public void AddTelemetryContext(Dictionary<string, object> telemetryContext)
         {
-            Guard.NotNull(telemetryContext, nameof(telemetryContext), "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
+            if (telemetryContext is null)
+            {
+                throw new ArgumentNullException(nameof(telemetryContext), "Requires a telemetry context dictionary to add to the HTTP dependency tracking");
+            }
+
             foreach (KeyValuePair<string, object> item in telemetryContext)
             {
                 TelemetryContext[item.Key] = item.Value;

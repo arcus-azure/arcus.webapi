@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -25,8 +24,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         protected RequestTrackingTemplate(RequestTrackingOptions options)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
-            Options = options;
+            Options = options ?? throw new ArgumentNullException(nameof(options), "Requires a set of additional user-configurable options to influence the behavior of the HTTP request tracking");
         }
 
         /// <summary>
@@ -46,7 +44,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
             IEnumerable<string> allOmittedRoutes = Options.OmittedRoutes ?? new Collection<string>();
             string[] matchedOmittedRoutes =
                 allOmittedRoutes
-                    .Select(omittedRoute => omittedRoute?.StartsWith("/") == true ? omittedRoute : "/" + omittedRoute)
+                    .Select(omittedRoute => omittedRoute?.StartsWith('/') == true ? omittedRoute : "/" + omittedRoute)
                     .Where(omittedRoute => requestPath.StartsWithSegments(omittedRoute, StringComparison.OrdinalIgnoreCase))
                     .ToArray();
 
@@ -120,12 +118,12 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
                 IDictionary<string, StringValues> headers = GetSanitizedRequestHeaders(requestHeaders, logger);
                 Dictionary<string, string> telemetryContext = headers.ToDictionary(header => header.Key, header => string.Join(",", header.Value));
 
-                if (string.IsNullOrWhiteSpace(requestBody) == false)
+                if (!string.IsNullOrWhiteSpace(requestBody))
                 {
                     telemetryContext.Add("RequestBody", requestBody);
                 }
 
-                if (string.IsNullOrWhiteSpace(responseBody) == false)
+                if (!string.IsNullOrWhiteSpace(responseBody))
                 {
                     telemetryContext.Add("ResponseBody", responseBody);
                 }
@@ -182,7 +180,11 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="body"/> is <c>null</c>.</exception>
         protected async Task<string> GetBodyAsync(Stream body, int? maxLength, string targetName, ILogger logger)
         {
-            Guard.NotNull(body, nameof(body), $"Requires a streamed body to read the string representation of the {targetName}");
+            if (body is null)
+            {
+                throw new ArgumentNullException(nameof(body), $"Requires a streamed body to read the string representation of the {targetName}");
+            }
+
             logger = logger ?? NullLogger.Instance;
 
             logger.LogTrace("Prepare for {Target} body to be tracked...", targetName);

@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 
@@ -23,7 +22,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         public static ILogger<T> GetLoggerOrDefault<T>(this IServiceProvider services)
         {
-            Guard.NotNull(services, nameof(services), "Requires a services collection to retrieve an logger instance");
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Requires a services collection to retrieve a logger instance");
+            }
             
             var loggerFactory = services.GetService<ILoggerFactory>();
             ILogger<T> logger = loggerFactory?.CreateLogger<T>();

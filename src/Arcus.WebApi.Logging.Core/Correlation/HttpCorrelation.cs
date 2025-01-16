@@ -2,7 +2,6 @@
 using System.Threading.Tasks;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -39,14 +38,16 @@ namespace Arcus.WebApi.Logging.Correlation
             ILogger<HttpCorrelation> logger)
             : base(options?.Value, correlationInfoAccessor, logger)
         {
-            Guard.NotNull(httpContextAccessor, nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
-            Guard.NotNull(correlationInfoAccessor, nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
-            Guard.NotNull(options, nameof(options), "Requires a value in the set of options to configure the correlation process");
-            Guard.NotNull(options.Value, nameof(options), "Requires a value in the set of options to configure the correlation process");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a value in the set of options to configure the correlation process");
+            }
 
-            _httpContextAccessor = httpContextAccessor;
-            _options = options.Value;
-            _correlationInfoAccessor = correlationInfoAccessor;
+            _httpContextAccessor = httpContextAccessor ?? throw new ArgumentNullException(nameof(httpContextAccessor), "Requires a HTTP context accessor to get the current HTTP context");
+            _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(nameof(correlationInfoAccessor), "Requires a correlation info instance to set and retrieve the correlation information");
+            _options = options.Value ?? throw new ArgumentNullException(nameof(options.Value), "Requires a value in the set of options to configure the correlation process");
+
+
             _logger = logger ?? NullLogger<HttpCorrelation>.Instance;
         }
 
@@ -65,7 +66,11 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="correlationInfo"/> is <c>null</c>.</exception>
         public void SetCorrelationInfo(CorrelationInfo correlationInfo)
         {
-            Guard.NotNull(correlationInfo, nameof(correlationInfo));
+            if (_correlationInfoAccessor is null)
+            {
+                throw new ArgumentNullException(nameof(correlationInfo), "Requires a correlation info instance to set and retrieve the correlation information");
+            }
+
             _correlationInfoAccessor.SetCorrelationInfo(correlationInfo);
         }
 
@@ -77,11 +82,17 @@ namespace Arcus.WebApi.Logging.Correlation
         /// <exception cref="ArgumentException">Thrown when the given <see cref="HttpContext"/> doesn't have any response headers to set the correlation headers.</exception>
         public HttpCorrelationResult CorrelateHttpRequest()
         {
-            HttpContext httpContext = _httpContextAccessor.HttpContext;
+            HttpContext httpContext = _httpContextAccessor.HttpContext ?? throw new ArgumentNullException(nameof(HttpContext), "Requires a HTTP context from the HTTP context accessor to start correlating the HTTP request");
 
-            Guard.NotNull(httpContext, nameof(httpContext), "Requires a HTTP context from the HTTP context accessor to start correlating the HTTP request");
-            Guard.For<ArgumentException>(() => httpContext.Response is null, "Requires a 'Response'");
-            Guard.For<ArgumentException>(() => httpContext.Response.Headers is null, "Requires a 'Response' object with headers");
+            if (httpContext.Response is null)
+            {
+                throw new ArgumentException("Requires a 'Response'", nameof(httpContext.Response));
+            }
+
+            if (httpContext.Response.Headers is null)
+            {
+                throw new ArgumentException("Requires a 'Response' object with headers", nameof(httpContext.Response.Headers));
+            }
 
             HttpCorrelationResult result = TrySettingCorrelationFromRequest(httpContext.Request, httpContext.TraceIdentifier);
             if (result.IsSuccess)

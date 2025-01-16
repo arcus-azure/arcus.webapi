@@ -1,7 +1,4 @@
 ﻿using System;
-using Arcus.Observability.Correlation;
-using GuardNet;
-using Microsoft.Net.Http.Headers;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -41,7 +38,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _headerName;
             set
             {
-                Guard.NotNullOrWhitespace(value, nameof(value), "Requires a non-blank value for the operation parent ID request header name");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Requires a non-blank value for the operation parent ID request header name", nameof(value));
+                }
+
                 _headerName = value;
             }
         }
@@ -58,7 +59,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _generateId;
             set
             {
-                Guard.NotNull(value, nameof (value), "Requires a function to generate the operation parent ID");
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value), "Requires a function to generate the operation parent ID");
+                }
+
                 _generateId = value;
             }
         }

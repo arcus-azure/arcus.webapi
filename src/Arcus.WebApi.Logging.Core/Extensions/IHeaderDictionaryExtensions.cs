@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 using Microsoft.Extensions.Primitives;
 
 // ReSharper disable once CheckNamespace
@@ -18,7 +17,10 @@ namespace Microsoft.AspNetCore.Http
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="headers"/> is <c>null</c>.</exception>
         public static StringValues GetTraceParent(this IHeaderDictionary headers)
         {
-            Guard.NotNull(headers, nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'traceparent' header value");
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'traceparent' header value");
+            }
 #if NET6_0
             StringValues traceParent = headers.TraceParent;
 #else
@@ -40,7 +42,10 @@ namespace Microsoft.AspNetCore.Http
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="headers"/> is <c>null</c>.</exception>
         internal static StringValues GetTraceState(this IHeaderDictionary headers)
         {
-            Guard.NotNull(headers, nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'tracestate' header value");
+            if (headers is null)
+            {
+                throw new ArgumentNullException(nameof(headers), "Requires a HTTP request headers dictionary instance to retrieve the 'tracestate' header value");
+            }
 #if NET6_0
             return headers.TraceState; 
 #else

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography.X509Certificates;
-using GuardNet;
 using Org.BouncyCastle.Asn1.X509;
 using Org.BouncyCastle.Crypto;
 using Org.BouncyCastle.Crypto.Generators;
@@ -36,7 +35,10 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture
         /// <exception cref="ArgumentException">When the <paramref name="subjectName"/> is <c>null</c>.</exception>
         public static X509Certificate2 CreateWithSubject(string subjectName)
         {
-            Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");
+            if (string.IsNullOrWhiteSpace(subjectName))
+            {
+                throw new ArgumentException("Subject name should not be blank", nameof(subjectName));
+            }
 
             return CreateWithIssuerAndSubjectName("TestCA", subjectName);
         }
@@ -50,8 +52,15 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication.Fixture
         /// <exception cref="ArgumentException">When the <paramref name="issuerName"/> is <c>null</c>.</exception>
         public static X509Certificate2 CreateWithIssuerAndSubjectName(string issuerName, string subjectName)
         {
-            Guard.NotNullOrWhitespace(subjectName, nameof(subjectName), "Subject name should not be blank");
-            Guard.NotNullOrWhitespace(issuerName, nameof(issuerName), "Issuer name should not be blank");
+            if (string.IsNullOrWhiteSpace(subjectName))
+            {
+                throw new ArgumentException("Subject name should not be blank", nameof(subjectName));
+            }
+
+            if (string.IsNullOrWhiteSpace(issuerName))
+            {
+                throw new ArgumentException("Issuer name should not be blank", nameof(issuerName));
+            }
 
             issuerName = issuerName.StartsWith("CN=") ? issuerName : "CN=" + issuerName;
             subjectName = subjectName.StartsWith("CN=") ? subjectName : "CN=" + subjectName;

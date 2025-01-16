@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
-using GuardNet;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 
-namespace Arcus.WebApi.Security.Authentication.Certificates 
+namespace Arcus.WebApi.Security.Authentication.Certificates
 {
     /// <summary>
     /// Certificate location implementation to retrieve the expected <see cref="X509Certificate2"/> value from an <see cref="IConfiguration"/>
@@ -34,11 +33,18 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         {
             try
             {
-                Guard.NotNullOrWhitespace(configurationKey, nameof(configurationKey), "Configured key cannot be blank");
-                Guard.NotNull(services, nameof(services), "Registered services cannot be 'null'");
+                if (string.IsNullOrWhiteSpace(configurationKey))
+                {
+                    throw new ArgumentException("Configured key cannot be blank", nameof(configurationKey));
+                }
+
+                if (services is null)
+                {
+                    throw new ArgumentNullException(nameof(services), "Registered services cannot be 'null'");
+                }
 
                 var configuration = services.GetService<IConfiguration>();
-                if (configuration == null)
+                if (configuration is null)
                 {
                     throw new KeyNotFoundException(
                         $"No configured {nameof(IConfiguration)} implementation found in the request service container. "

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Linq;
 using System.Net;
-using GuardNet;
 
 namespace Arcus.WebApi.Logging
 {
@@ -21,9 +20,10 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentOutOfRangeException">Thrown when the <paramref name="filter"/> is outside the range of the enumeration.</exception>
         public RequestTrackingAttribute(Exclude filter)
         {
-            Guard.For<ArgumentOutOfRangeException>(
-                () => !Enum.IsDefined(typeof(Exclude), filter) || filter is Exclude.None,
-                $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed");
+            if (!Enum.IsDefined(typeof(Exclude), filter) || filter is Exclude.None)
+            {
+                throw new ArgumentOutOfRangeException(nameof(filter), $"Requires the exclusion filter to be within these bounds of the enumeration '{ExcludeFilterNames}'; 'None' is not allowed");
+            }
 
             Filter = filter;
         }
@@ -44,8 +44,10 @@ namespace Arcus.WebApi.Logging
         /// <exception cref="ArgumentException">Thrown when the <paramref name="trackedStatusCode"/> is outside the expected range (100-599).</exception>
         public RequestTrackingAttribute(int trackedStatusCode)
         {
-            Guard.NotLessThan(trackedStatusCode, 100, nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to not be less than 100");
-            Guard.NotGreaterThan(trackedStatusCode, 599, nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to not be greater than 599");
+            if (trackedStatusCode < 100 || trackedStatusCode > 599)
+            {
+                throw new ArgumentOutOfRangeException(nameof(trackedStatusCode), "Requires the allowed tracked HTTP status code to be within the range of 100-599");
+            }
             
             StatusCodeRange = new StatusCodeRange(trackedStatusCode);
         }
@@ -62,9 +64,20 @@ namespace Arcus.WebApi.Logging
         /// </exception>
         public RequestTrackingAttribute(int minimumStatusCode, int maximumStatusCode)
         {
-            Guard.NotLessThan(minimumStatusCode, 100, nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold not be less than 100");
-            Guard.NotGreaterThan(maximumStatusCode, 599, nameof(maximumStatusCode), "Requires the maximum HTTP status code threshold not be greater than 599");
-            Guard.NotGreaterThan(minimumStatusCode, maximumStatusCode, nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            if (minimumStatusCode < 100)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to not be less than 100");
+            }
+
+            if (maximumStatusCode > 599)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maximumStatusCode), "Requires the maximum HTTP status code threshold to not be greater than 599");
+            }
+
+            if (minimumStatusCode >= maximumStatusCode)
+            {
+                throw new ArgumentOutOfRangeException(nameof(minimumStatusCode), "Requires the minimum HTTP status code threshold to be less than the maximum HTTP status code threshold");
+            }
             
             StatusCodeRange = new StatusCodeRange(minimumStatusCode, maximumStatusCode);
         }

@@ -1,5 +1,4 @@
 ﻿using System.Linq;
-using GuardNet;
 
 // ReSharper disable once CheckNamespace
 namespace System.Collections.Generic
@@ -22,8 +21,15 @@ namespace System.Collections.Generic
         /// </returns>
         public static IDictionary<TKey, TValue> Where<TKey, TValue>(this IDictionary<TKey, TValue> dictionary, Func<KeyValuePair<TKey, TValue>, bool> predicate)
         {
-            Guard.NotNull(dictionary, nameof(dictionary));
-            Guard.NotNull(predicate, nameof(predicate));
+            if (dictionary is null)
+            {
+                throw new ArgumentNullException(nameof(dictionary));
+            }
+
+            if (predicate is null)
+            {
+                throw new ArgumentNullException(nameof(predicate));
+            }
 
             return Enumerable.Where(dictionary, predicate)
                              .ToDictionary(item => item.Key, item => item.Value);

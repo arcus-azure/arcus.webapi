@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
@@ -21,7 +20,10 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns>A reference to builder after the operation has completed.</returns>
         public static AuthenticationBuilder AddJwtBearer(this AuthenticationBuilder builder, Action<JwtBearerOptions, IServiceProvider> configureOptions)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires an authentication builder instance to add the JWT Bearer authentication");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires an authentication builder instance to add the JWT Bearer authentication");
+            }
 
             if (configureOptions != null)
             {

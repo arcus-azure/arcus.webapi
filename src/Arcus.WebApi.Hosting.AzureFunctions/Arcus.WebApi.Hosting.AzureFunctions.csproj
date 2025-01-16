@@ -26,7 +26,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.Azure.Functions.Worker.Core" Version="1.6.0" />
-    <PackageReference Include="Guard.Net" Version="3.0.0" />
   </ItemGroup>
 
 </Project>

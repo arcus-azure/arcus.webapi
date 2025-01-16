@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Arcus.Security.Core;
 using Arcus.Security.Core.Caching;
 using Arcus.WebApi.Security.Authentication.Certificates.Interfaces;
-using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -34,8 +33,16 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <param name="services">The services collections of the HTTP request pipeline to retrieve registered instances.</param>
         public async Task<string> GetExpectedCertificateValueForConfiguredKeyAsync(string configurationKey, IServiceProvider services)
         {
-            Guard.NotNullOrWhitespace(configurationKey, nameof(configurationKey), "Configured key cannot be blank");
-            Guard.NotNull(services, nameof(services), "Registered services cannot be 'null'");
+            if (string.IsNullOrWhiteSpace(configurationKey))
+            {
+                throw new ArgumentException("Configured key cannot be blank", nameof(configurationKey));
+            }
+
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Registered services cannot be 'null'");
+            }
+
 
             var userDefinedSecretProvider = services.GetService<ISecretProvider>();
             if (userDefinedSecretProvider is null)

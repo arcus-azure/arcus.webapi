@@ -37,6 +37,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
             ILogger logger = context.GetLogger<AzureFunctionsRequestTrackingMiddleware>();
 
             HttpRequestData request = await context.GetHttpRequestDataAsync();
+
             if (request is null || IsRequestPathOmitted(PathString.FromUriComponent(request.Url), logger))
             {
                 await next(context);
@@ -60,12 +61,12 @@ namespace Arcus.WebApi.Logging.AzureFunctions
                         HttpResponseData response = context.GetHttpResponseData();
                         var attributeTrackedStatusCodes = Enumerable.Empty<StatusCodeRange>();
 
-                        if (response != null && AllowedToTrackStatusCode((int) response.StatusCode, attributeTrackedStatusCodes, logger))
+                        if (response != null && AllowedToTrackStatusCode((int)response.StatusCode, attributeTrackedStatusCodes, logger))
                         {
                             string responseBody = await GetPotentialResponseBodyAsync(response, logger);
-                            LogRequest(requestBody, responseBody, request, response, measurement, logger); 
+                            LogRequest(requestBody, responseBody, request, response, measurement, logger);
                         }
-                    } 
+                    }
                 }
             }
         }
@@ -150,7 +151,7 @@ namespace Arcus.WebApi.Logging.AzureFunctions
                     request.Url.Host,
                     request.Url.AbsolutePath,
                     operationName: null,
-                    (int) response.StatusCode,
+                    (int)response.StatusCode,
                     duration.StartTime,
                     duration.Elapsed,
                     logContext));

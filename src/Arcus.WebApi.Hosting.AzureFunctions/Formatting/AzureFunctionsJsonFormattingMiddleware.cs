@@ -44,6 +44,7 @@ namespace Arcus.WebApi.Hosting.AzureFunctions.Formatting
         private static async Task<HttpRequestData> DetermineHttpRequestAsync(FunctionContext context)
         {
             HttpRequestData request = await context.GetHttpRequestDataAsync();
+
             if (request is null)
             {
                 throw new InvalidOperationException(

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using IdentityModel;
@@ -35,7 +34,10 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <exception cref="ArgumentException">Thrown when the <paramref name="audience"/> is blank.</exception>
         public JwtTokenReader(string audience) : this(audience, NullLogger<JwtTokenReader>.Instance)
         {
-            Guard.NotNullOrWhitespace(audience, nameof(audience), "Requires an audience to validate against");
+            if (string.IsNullOrWhiteSpace(audience))
+            {
+                throw new ArgumentException("Requires an audience to validate against", nameof(audience));
+            }
         }
 
         /// <summary>
@@ -47,7 +49,10 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <exception cref="ArgumentException">Thrown when the <paramref name="audience"/> is blank.</exception>
         public JwtTokenReader(string audience, ILogger<JwtTokenReader> logger) : this(new Dictionary<string, string> {{ JwtClaimTypes.Audience, audience}}, logger)
         {
-            Guard.NotNullOrWhitespace(audience, nameof(audience), "Requires an audience to validate against");
+            if (string.IsNullOrWhiteSpace(audience))
+            {
+                throw new ArgumentException("Requires an audience to validate against", nameof(audience));
+            }
         }
 
         /// <summary>
@@ -71,10 +76,20 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <exception cref="ArgumentException">Thrown when the <paramref name="claimCheck"/> doesn't have any entries or one of the entries has blank key/value inputs.</exception>
         public JwtTokenReader(IDictionary<string, string> claimCheck, ILogger<JwtTokenReader> logger)
         {
-            Guard.NotNull(claimCheck, nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
-            Guard.NotAny(claimCheck, nameof(claimCheck), "Requires at least one entry in the set of claim checks to verify the claims in the request JWT");
-            Guard.For<ArgumentException>(() => claimCheck.Any(item => String.IsNullOrWhiteSpace(item.Key) || String.IsNullOrWhiteSpace(item.Value)), 
-                "Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+            if (claimCheck is null)
+            {
+                throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
+            }
+
+            if (!claimCheck.Any())
+            {
+                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the request JWT", nameof(claimCheck));
+            }
+
+            if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
+            {
+                throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT", nameof(claimCheck));
+            }
 
             _claimCheck = claimCheck;
             _logger = logger ?? NullLogger<JwtTokenReader>.Instance;
@@ -153,8 +168,15 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
         /// <exception cref="ArgumentException">Thrown when the <paramref name="openIdConnectDiscoveryUri"/> is blank.</exception>
         public JwtTokenReader(TokenValidationParameters tokenValidationParameters, string openIdConnectDiscoveryUri, ILogger<JwtTokenReader> logger)
         {
-            Guard.NotNull(tokenValidationParameters, nameof(tokenValidationParameters), "Requires a collection of parameters to influence how the token validation is done");
-            Guard.NotNullOrWhitespace(openIdConnectDiscoveryUri, nameof(openIdConnectDiscoveryUri), "Requires an non-blank OpenId URI connection endpoint for discovering the OpenId configuration");
+            if (tokenValidationParameters is null)
+            {
+                throw new ArgumentNullException(nameof(tokenValidationParameters), "Requires a collection of parameters to influence how the token validation is done");
+            }
+
+            if (string.IsNullOrWhiteSpace(openIdConnectDiscoveryUri))
+            {
+                throw new ArgumentException("Requires an non-blank OpenId URI connection endpoint for discovering the OpenId configuration", nameof(openIdConnectDiscoveryUri));
+            }
 
             _tokenValidationParameters = tokenValidationParameters;
             _logger = logger ?? NullLogger<JwtTokenReader>.Instance;
@@ -192,12 +214,31 @@ namespace Arcus.WebApi.Security.Authorization.Jwt
             IDictionary<string, string> claimCheck, 
             ILogger<JwtTokenReader> logger)
         {
-            Guard.NotNullOrWhitespace(openIdConnectDiscoveryUri, nameof(openIdConnectDiscoveryUri), "Requires an non-blank OpenId URI connection endpoint for discovering the OpenId configuration");
-            Guard.NotNull(tokenValidationParameters, nameof(tokenValidationParameters), "Requires a collection of parameters to influence how the token validation is done");
-            Guard.NotNull(claimCheck, nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
-            Guard.NotAny(claimCheck, nameof(claimCheck), "Requires at least one entry in the set of claim checks to verify the claims in the request JWT");
-            Guard.For<ArgumentException>(() => claimCheck.Any(item => String.IsNullOrWhiteSpace(item.Key) || String.IsNullOrWhiteSpace(item.Value)), 
-                "Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT");
+            if (string.IsNullOrWhiteSpace(openIdConnectDiscoveryUri))
+            {
+                throw new ArgumentException("Requires an non-blank OpenId URI connection endpoint for discovering the OpenId configuration", nameof(openIdConnectDiscoveryUri));
+            }
+
+            if (tokenValidationParameters is null)
+            {
+                throw new ArgumentNullException(nameof(tokenValidationParameters), "Requires a collection of parameters to influence how the token validation is done");
+            }
+
+            if (claimCheck is null)
+            {
+                throw new ArgumentNullException(nameof(claimCheck), "Requires a set of claim checks to verify the claims request JWT");
+            }
+
+            if (!claimCheck.Any())
+            {
+                throw new ArgumentException("Requires at least one entry in the set of claim checks to verify the claims in the " +
+                    "request JWT", nameof(claimCheck));
+            }
+
+            if (claimCheck.Any(item => string.IsNullOrWhiteSpace(item.Key) || string.IsNullOrWhiteSpace(item.Value)))
+            {
+                throw new ArgumentException("Requires all entries in the set of claim checks to be non-blank to correctly verify the claims in the request JWT", nameof(claimCheck));
+            }
 
             _tokenValidationParameters = tokenValidationParameters;
             _claimCheck = claimCheck;

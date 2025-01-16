@@ -1,5 +1,4 @@
 ﻿using System;
-using GuardNet;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -43,7 +42,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => _headerName;
             set
             {
-                Guard.NotNullOrWhitespace(value, nameof(value), "Correlation transaction header cannot be blank");
+                if (string.IsNullOrWhiteSpace(value))
+                {
+                    throw new ArgumentException("Header name cannot be blank", nameof(value));
+                }
+
                 _headerName = value;
             }
         }
@@ -62,7 +65,11 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             get => this._generateId;
             set
             {
-                Guard.NotNull(value, nameof(value), "Correlation function to generate an transaction ID cannot be 'null'");
+                if (value is null)
+                {
+                    throw new ArgumentNullException(nameof(value), "Correlation function to generate an transaction ID cannot be 'null'");
+                }
+
                 _generateId = value;
             }
         }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Net;
-using GuardNet;
 
 namespace Arcus.WebApi.Logging
 {
@@ -33,7 +32,11 @@ namespace Arcus.WebApi.Logging
             get => _requestBodyBufferSize;
             set
             {
-                Guard.For<ArgumentOutOfRangeException>(() => value < 0, "Requires a request body buffer size greater than zero");
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Requires a request body buffer size greater than zero");
+                }
+
                 _requestBodyBufferSize = value;
             }
         }
@@ -52,7 +55,11 @@ namespace Arcus.WebApi.Logging
             get => _responseBodyBufferSize;
             set
             {
-                Guard.For<ArgumentOutOfRangeException>(() => value < 0, "Requires a response body buffer size greater than zero");
+                if (value < 0)
+                {
+                    throw new ArgumentOutOfRangeException(nameof(value), "Requires a response body buffer size greater than zero");
+                }
+
                 _responseBodyBufferSize = value;
             }
         }

@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Linq;
 using Arcus.Observability.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.ApplicationInsights;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Azure.Functions.Worker.Http;
@@ -63,7 +62,10 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="request"/> is <c>null</c>.</exception>
         protected override IHeaderDictionary GetRequestHeaders(HttpRequestData request)
         {
-            Guard.NotNull(request, nameof(request), "Requires a HTTP request instance to retrieve the HTTP request headers");
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request), "Requires a HTTP request instance to retrieve the HTTP request headers");
+            }
 
             Dictionary<string, StringValues> dictionary = 
                 request.Headers.ToDictionary(
@@ -128,9 +130,20 @@ namespace Arcus.WebApi.Logging.AzureFunctions.Correlation
         /// <exception cref="ArgumentException">Thrown when the <paramref name="headerName"/> or <paramref name="headerValue"/> is blank.</exception>
         protected override void SetHttpResponseHeader(HttpResponseData response, string headerName, string headerValue)
         {
-            Guard.NotNull(response, nameof(response), "Requires a HTTP response to set the HTTP correlation headers");
-            Guard.NotNullOrWhitespace(headerName, nameof(headerName), "Requires a non-blank HTTP correlation header name to set the HTTP correlation header in the HTTP request");
-            Guard.NotNullOrWhitespace(headerValue, nameof(headerValue), "Requires a non-blank HTTP correlation header value to set the HTTP correlation header in the HTTP request");
+            if (response is null)
+            {
+                throw new ArgumentNullException(nameof(response), "Requires a HTTP response to set the HTTP correlation headers");
+            }
+
+            if (string.IsNullOrWhiteSpace(headerName))
+            {
+                throw new ArgumentException("Requires a non-blank HTTP correlation header name to set the HTTP correlation header in the HTTP request", nameof(headerName));
+            }
+
+            if (string.IsNullOrWhiteSpace(headerValue))
+            {
+                throw new ArgumentException("Requires a non-blank HTTP correlation header value to set the HTTP correlation header in the HTTP request", nameof(headerValue));
+            }
 
             response.Headers.Add(headerName, headerValue);
         }

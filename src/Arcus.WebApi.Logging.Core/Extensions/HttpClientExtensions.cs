@@ -2,7 +2,6 @@
 using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -36,14 +35,7 @@ namespace System.Net.Http
             HttpRequestMessage request,
             IHttpCorrelationInfoAccessor correlationAccessor,
             ILogger logger)
-        {
-            Guard.NotNull(client, nameof(client), "Requires a HTTP client to track the HTTP request with HTTP correlation");
-            Guard.NotNull(request, nameof(request), "Requires a HTTP request to enrich with HTTP correlation");
-            Guard.NotNull(correlationAccessor, nameof(correlationAccessor), "Requires a HTTP correlation accessor instance to retrieve the current correlation to include in the HTTP request");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to track the correlated HTTP request");
-
-            return await SendAsync(client, request, correlationAccessor, logger, configureOptions: null);
-        }
+            => await SendAsync(client, request, correlationAccessor, logger, configureOptions: null);
 
         /// <summary>
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
@@ -70,10 +62,10 @@ namespace System.Net.Http
             ILogger logger,
             Action<HttpCorrelationClientOptions> configureOptions)
         {
-            Guard.NotNull(client, nameof(client), "Requires a HTTP client to track the HTTP request with HTTP correlation");
-            Guard.NotNull(request, nameof(request), "Requires a HTTP request to enrich with HTTP correlation");
-            Guard.NotNull(correlationAccessor, nameof(correlationAccessor), "Requires a HTTP correlation accessor instance to retrieve the current correlation to include in the HTTP request");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to track the correlated HTTP request");
+            if (correlationAccessor is null)
+            {
+                throw new ArgumentNullException(nameof(correlationAccessor), "Requires a HTTP correlation accessor instance to retrieve the current correlation to include in the HTTP request");
+            }
 
             CorrelationInfo correlation = correlationAccessor.GetCorrelationInfo();
             return await SendAsync(client, request, correlation, logger, configureOptions);
@@ -101,14 +93,7 @@ namespace System.Net.Http
             HttpRequestMessage request,
             CorrelationInfo correlationInfo,
             ILogger logger)
-        {
-            Guard.NotNull(client, nameof(client), "Requires a HTTP client to track the HTTP request with HTTP correlation");
-            Guard.NotNull(request, nameof(request), "Requires a HTTP request to enrich with HTTP correlation");
-            Guard.NotNull(correlationInfo, nameof(correlationInfo), "Requires a HTTP correlation instance to include in the HTTP request");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to track the correlated HTTP request");
-
-            return await SendAsync(client, request, correlationInfo, logger, configureOptions: null);
-        }
+            => await SendAsync(client, request, correlationInfo, logger, configureOptions: null);
 
         /// <summary>
         /// Sends an HTTP request as an asynchronous operation while tracking the HTTP correlation.
@@ -135,10 +120,25 @@ namespace System.Net.Http
             ILogger logger,
             Action<HttpCorrelationClientOptions> configureOptions)
         {
-            Guard.NotNull(client, nameof(client), "Requires a HTTP client to track the HTTP request with HTTP correlation");
-            Guard.NotNull(request, nameof(request), "Requires a HTTP request to enrich with HTTP correlation");
-            Guard.NotNull(correlationInfo, nameof(correlationInfo), "Requires a HTTP correlation instance to include in the HTTP request");
-            Guard.NotNull(logger, nameof(logger), "Requires a logger instance to track the correlated HTTP request");
+            if (client is null)
+            {
+                throw new ArgumentNullException(nameof(client), "Requires a HTTP client to track the HTTP request with HTTP correlation");
+            }
+
+            if (request is null)
+            {
+                throw new ArgumentNullException(nameof(request), "Requires a HTTP request to enrich with HTTP correlation");
+            }
+
+            if (correlationInfo is null)
+            {
+                throw new ArgumentNullException(nameof(correlationInfo), "Requires a HTTP correlation instance to include in the HTTP request");
+            }
+
+            if (logger is null)
+            {
+                throw new ArgumentNullException(nameof(logger), "Requires a logger instance to track the correlated HTTP request");
+            }
 
             var options = new HttpCorrelationClientOptions();
             configureOptions?.Invoke(options);

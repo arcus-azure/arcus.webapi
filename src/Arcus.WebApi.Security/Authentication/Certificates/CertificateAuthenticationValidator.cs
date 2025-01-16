@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
-using GuardNet;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -24,9 +23,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">When the <paramref name="certificateAuthenticationConfig"/> is <c>null</c>.</exception>
         public CertificateAuthenticationValidator(CertificateAuthenticationConfig certificateAuthenticationConfig)
         {
-            Guard.NotNull(certificateAuthenticationConfig, nameof(certificateAuthenticationConfig), "Certificate authentication configuration cannot be 'null'");
-
-            _certificateAuthenticationConfig = certificateAuthenticationConfig;
+            _certificateAuthenticationConfig = certificateAuthenticationConfig ?? throw new ArgumentNullException(nameof(certificateAuthenticationConfig), "Certificate authentication configuration cannot be 'null'");
         }
 
         /// <summary>
@@ -42,8 +39,15 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="services"/> is <c>null</c>.</exception>
         internal async Task<bool> IsCertificateAllowedAsync(X509Certificate2 clientCertificate, IServiceProvider services)
         {
-            Guard.NotNull(clientCertificate, nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
-            Guard.NotNull(services, nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
+            if (clientCertificate is null)
+            {
+                throw new ArgumentNullException(nameof(clientCertificate), "Certificate authentication validation requires a client certificate");
+            }
+
+            if (services is null)
+            {
+                throw new ArgumentNullException(nameof(services), "Certificate authentication validation requires a service object to retrieve registered services");
+            }
 
             ILogger logger = 
                 services.GetService<ILogger<CertificateAuthenticationValidator>>() 

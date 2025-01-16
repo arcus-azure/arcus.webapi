@@ -3,7 +3,6 @@ using Microsoft.AspNetCore.Authorization;
 using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Collections.Generic;
 using System.Linq;
-using GuardNet;
 using Swashbuckle.AspNetCore.Swagger;
 #if !NETSTANDARD2_1
 using Microsoft.OpenApi.Models;
@@ -31,12 +30,18 @@ namespace Arcus.WebApi.OpenApi.Extensions
         /// </exception>
         public OAuthAuthorizeOperationFilter(IEnumerable<string> scopes, string securitySchemaName = "oauth2")
         {
-            Guard.NotNull(scopes, nameof(scopes), "Requires a list of API scopes");
-            Guard.For<ArgumentException>(() => scopes.Any(String.IsNullOrWhiteSpace), "Requires a list of non-blank API scopes");
-            Guard.NotNullOrWhitespace(securitySchemaName, nameof(securitySchemaName), "Requires a name for the OAuth2 security scheme");
+            if (scopes.Any(String.IsNullOrWhiteSpace))
+            {
+                throw new ArgumentException("Requires a list of non-blank API scopes", nameof(scopes));
+            }
+
+            if (string.IsNullOrWhiteSpace(securitySchemaName))
+            {
+                throw new ArgumentException("Requires a name for the OAuth2 security scheme", nameof(securitySchemaName));
+            }
 
             _securitySchemaName = securitySchemaName;
-            _scopes = scopes;
+            _scopes = scopes ?? throw new ArgumentNullException(nameof(scopes), "Requires a list of API scopes");
         }
 
         /// <summary>

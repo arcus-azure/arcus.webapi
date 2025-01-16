@@ -1,6 +1,5 @@
 ﻿using System;
 using Arcus.WebApi.Security.Authentication.Certificates;
-using GuardNet;
 using Microsoft.AspNetCore.Mvc;
 
 // ReSharper disable once CheckNamespace
@@ -23,12 +22,8 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="options"/> is <c>null</c>.</exception>
         [Obsolete("Use the " + nameof(AddCertificateAuthenticationFilter) + " overload where the certificate validation locations are configured directly")]
         public static MvcOptions AddCertificateAuthenticationFilter(this MvcOptions options)
-        {
-            Guard.NotNull(options, nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
+            => AddCertificateAuthenticationFilter(options, configureOptions: null);
 
-            return AddCertificateAuthenticationFilter(options, configureOptions: null);
-        }
-        
         /// <summary>
         /// Adds an certificate authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request.
         /// </summary>
@@ -46,7 +41,10 @@ namespace Microsoft.Extensions.DependencyInjection
             this MvcOptions options,
             Action<CertificateAuthenticationOptions> configureOptions)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
+            }
 
             var authOptions = new CertificateAuthenticationOptions();
             configureOptions?.Invoke(authOptions);
@@ -76,12 +74,7 @@ namespace Microsoft.Extensions.DependencyInjection
         public static MvcOptions AddCertificateAuthenticationFilter(
             this MvcOptions options,
             Action<CertificateAuthenticationConfigBuilder> configureAuthentication)
-        {
-            Guard.NotNull(options, nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
-            Guard.NotNull(configureAuthentication, nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
-
-            return AddCertificateAuthenticationFilter(options, configureAuthentication, configureOptions: null);
-        }
+            => AddCertificateAuthenticationFilter(options, configureAuthentication, configureOptions: null);
 
         /// <summary>
         /// Adds an certificate authentication MVC filter to the given <paramref name="options"/> that authenticates the incoming HTTP request.
@@ -109,8 +102,15 @@ namespace Microsoft.Extensions.DependencyInjection
             Action<CertificateAuthenticationConfigBuilder> configureAuthentication,
             Action<CertificateAuthenticationOptions> configureOptions)
         {
-            Guard.NotNull(options, nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
-            Guard.NotNull(configureAuthentication, nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
+            if (options is null)
+            {
+                throw new ArgumentNullException(nameof(options), "Requires a set of MVC filters to add the certificate authentication MVC filter");
+            }
+
+            if (configureAuthentication is null)
+            {
+                throw new ArgumentNullException(nameof(configureAuthentication), "Requires a function to configure the certificate validation locations");
+            }
 
             var builder = new CertificateAuthenticationConfigBuilder();
             configureAuthentication(builder);

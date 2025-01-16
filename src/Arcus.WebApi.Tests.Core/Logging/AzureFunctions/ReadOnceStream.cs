@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using GuardNet;
 
 namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
 {
@@ -14,8 +13,15 @@ namespace Arcus.WebApi.Tests.Unit.Logging.Fixture.AzureFunctions
         /// </summary>
         public ReadOnceStream(Stream innerStream)
         {
-            Guard.NotNull(innerStream, nameof(innerStream));
-            Guard.For<ArgumentException>(() => !innerStream.CanRead, "Requires a readable stream to represents a read-once stream");
+            if (innerStream is null)
+            {
+                throw new ArgumentNullException(nameof(innerStream));
+            }
+
+            if (!innerStream.CanRead)
+            {
+                throw new ArgumentException("Requires a readable stream to represent a read-once stream", nameof(innerStream));
+            }
 
             _innerStream = innerStream;
         }

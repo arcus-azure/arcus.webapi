@@ -4,7 +4,6 @@ using Arcus.WebApi.Logging;
 using Arcus.WebApi.Logging.AzureFunctions;
 using Arcus.WebApi.Logging.AzureFunctions.Correlation;
 using Arcus.WebApi.Logging.Core.Correlation;
-using GuardNet;
 using Microsoft.ApplicationInsights;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.DependencyInjection;
@@ -27,7 +26,10 @@ namespace Microsoft.Extensions.Hosting
         public static IFunctionsWorkerApplicationBuilder UseFunctionContext(
             this IFunctionsWorkerApplicationBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the function context middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the function context middleware");
+            }
 
             builder.Services.AddSingleton<IFunctionContextAccessor, DefaultFunctionContextAccessor>();
             builder.UseMiddleware<FunctionContextMiddleware>();
@@ -42,11 +44,7 @@ namespace Microsoft.Extensions.Hosting
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public static IFunctionsWorkerApplicationBuilder UseHttpCorrelation(
             this IFunctionsWorkerApplicationBuilder builder)
-        {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
-
-            return UseHttpCorrelation(builder, options => { });
-        }
+            => UseHttpCorrelation(builder, options => { });
 
         /// <summary>
         /// Adds a middleware component that exposes the <see cref="FunctionContext"/> in a scoped service <see cref="IFunctionContextAccessor"/>.
@@ -58,7 +56,10 @@ namespace Microsoft.Extensions.Hosting
             this IFunctionsWorkerApplicationBuilder builder,
             Action<HttpCorrelationInfoOptions> configureOptions)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP correlation middleware");
+            }
 
             builder.Services.AddApplicationInsightsTelemetryWorkerService();
             builder.Services.ConfigureFunctionsApplicationInsights();
@@ -98,8 +99,12 @@ namespace Microsoft.Extensions.Hosting
         /// <exception cref="ArgumentNullException">Thrown when the <paramref name="builder"/> is <c>null</c>.</exception>
         public static IFunctionsWorkerApplicationBuilder UseExceptionHandling(this IFunctionsWorkerApplicationBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
-             return builder.UseMiddleware<AzureFunctionsExceptionHandlingMiddleware>();
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
+            }
+
+            return builder.UseMiddleware<AzureFunctionsExceptionHandlingMiddleware>();
         }
 
         /// <summary>
@@ -111,7 +116,11 @@ namespace Microsoft.Extensions.Hosting
         public static IFunctionsWorkerApplicationBuilder UseExceptionHandling<TMiddleware>(this IFunctionsWorkerApplicationBuilder builder)
             where TMiddleware : AzureFunctionsExceptionHandlingMiddleware
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP exception handling middleware");
+            }
+
             return builder.UseMiddleware<TMiddleware>();
         }
 
@@ -123,7 +132,11 @@ namespace Microsoft.Extensions.Hosting
         public static IFunctionsWorkerApplicationBuilder UseRequestTracking(
             this IFunctionsWorkerApplicationBuilder builder)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            }
+
             return UseRequestTracking(builder, configureOptions: null);
         }
 
@@ -137,7 +150,10 @@ namespace Microsoft.Extensions.Hosting
             this IFunctionsWorkerApplicationBuilder builder,
             Action<RequestTrackingOptions> configureOptions)
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            }
 
             return UseRequestTracking<AzureFunctionsRequestTrackingMiddleware>(builder, configureOptions);
         }
@@ -152,7 +168,10 @@ namespace Microsoft.Extensions.Hosting
             this IFunctionsWorkerApplicationBuilder builder)
             where TMiddleware : AzureFunctionsRequestTrackingMiddleware
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            }
 
             return UseRequestTracking<TMiddleware>(builder, configureOptions: null);
         }
@@ -169,7 +188,10 @@ namespace Microsoft.Extensions.Hosting
             Action<RequestTrackingOptions> configureOptions)
             where TMiddleware : AzureFunctionsRequestTrackingMiddleware
         {
-            Guard.NotNull(builder, nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            if (builder is null)
+            {
+                throw new ArgumentNullException(nameof(builder), "Requires a function worker builder instance to add the HTTP request tracking middleware");
+            }
 
             var options = new RequestTrackingOptions();
             configureOptions?.Invoke(options);
