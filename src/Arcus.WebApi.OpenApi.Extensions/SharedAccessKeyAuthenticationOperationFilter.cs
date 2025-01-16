@@ -36,7 +36,7 @@ namespace Arcus.WebApi.OpenApi.Extensions
         {
             if (string.IsNullOrWhiteSpace(securitySchemeName))
             {
-                throw new ArgumentNullException(nameof(securitySchemeName), "Requires a name for the Shared Access Key security scheme");
+                throw new ArgumentException("Requires a name for the Shared Access Key security scheme", nameof(securitySchemeName));
             }
 
             if (!Enum.IsDefined(typeof(SecuritySchemeType), securitySchemeType))
