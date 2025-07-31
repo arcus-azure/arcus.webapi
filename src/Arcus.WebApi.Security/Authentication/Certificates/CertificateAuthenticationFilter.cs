@@ -163,11 +163,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
                     && Base64Regex.IsMatch(headerValue))
                 {
                     byte[] rawData = Convert.FromBase64String(headerValue);
-#if NET8_0
                     clientCertificate = new X509Certificate2(rawData);
-#else
-                    clientCertificate = X509CertificateLoader.LoadCertificate(rawData);
-#endif                    
                     return true;
                 }
 
