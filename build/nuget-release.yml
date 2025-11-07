@@ -76,23 +76,6 @@ stages:
               includePreviewVersions: $(DotNet.Sdk.IncludePreviewVersions)
               projectName: '$(Project).Tests.Unit'
 
-  - stage: DockerIntegrationTests
-    displayName: Integration Tests
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-      - job: DockerIntegrationTests
-        displayName: 'Run Docker integration tests'
-        pool:
-          vmImage: '$(Vm.Image)'
-        steps:
-          - task: DownloadPipelineArtifact@2
-            displayName: 'Download build artifacts'
-            inputs:
-              artifact: 'Build'
-              path: '$(Build.SourcesDirectory)'
-          - template: templates/run-docker-integration-tests.yml
-
   - stage: SelfContainedIntegrationTests
     displayName: Integration Tests
     dependsOn: Build
@@ -119,7 +102,6 @@ stages:
     displayName: 'Release to NuGet.org'
     dependsOn:
       - UnitTests
-      - DockerIntegrationTests
       - SelfContainedIntegrationTests
     condition: succeeded()
     jobs:

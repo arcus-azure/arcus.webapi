@@ -1,12 +1,16 @@
-﻿using System;
-using System.Text.Encodings.Web;
-using Arcus.Security.Core;
+﻿using Arcus.Security.Core;
+
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+
 using Moq;
+
+using System;
+using System.Text.Encodings.Web;
+
 using Xunit;
 
 namespace Arcus.WebApi.Tests.Unit.Security.Authentication
@@ -20,11 +24,12 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddSingleton(Mock.Of<ISystemClock>());
+            services.AddSingleton(Mock.Of<IAuthenticationConfigurationProvider>());
             services.AddSingleton(UrlEncoder.Default);
             services.AddSecretStore(stores => stores.AddInMemory());
             services.AddSingleton(Mock.Of<TimeProvider>());
             var builder = new AuthenticationBuilder(services);
-            
+
             // Act
             builder.AddJwtBearer((opt, provider) =>
             {
@@ -47,12 +52,13 @@ namespace Arcus.WebApi.Tests.Unit.Security.Authentication
             var services = new ServiceCollection();
             services.AddLogging();
             services.AddSingleton(Mock.Of<ISystemClock>());
+            services.AddSingleton(Mock.Of<IAuthenticationConfigurationProvider>());
             services.AddSingleton(UrlEncoder.Default);
             services.AddSingleton(Mock.Of<TimeProvider>());
             var builder = new AuthenticationBuilder(services);
-            
+
             // Act
-            builder.AddJwtBearer(configureOptions: (Action<JwtBearerOptions, IServiceProvider>) null);
+            builder.AddJwtBearer(configureOptions: (Action<JwtBearerOptions, IServiceProvider>)null);
 
             // Assert
             IServiceProvider provider = services.BuildServiceProvider();

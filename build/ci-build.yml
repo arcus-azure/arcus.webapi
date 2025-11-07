@@ -29,8 +29,8 @@ resources:
 variables:
   - group: 'Arcus Web API - Integration Testing'
   - group: 'Arcus Security - Integration Testing'
-  - group: 'Arcus - GitHub Package Registry'
   - group: 'Build Configuration'
+  - group: 'MyGet'
   - template: ./variables/build.yml
   - template: ./variables/test.yml
 
@@ -86,23 +86,6 @@ stages:
               includePreviewVersions: $(DotNet.Sdk.IncludePreviewVersions)
               projectName: '$(Project).Tests.Unit'
 
-  - stage: DockerIntegrationTests
-    displayName: Integration Tests
-    dependsOn: Build
-    condition: succeeded()
-    jobs:
-      - job: DockerIntegrationTests
-        displayName: 'Run Docker integration tests'
-        pool:
-          vmImage: '$(Vm.Image)'
-        steps:
-          - task: DownloadPipelineArtifact@2
-            displayName: 'Download build artifacts'
-            inputs:
-              artifact: 'Build'
-              path: '$(Build.SourcesDirectory)'
-          - template: templates/run-docker-integration-tests.yml
-
   - stage: SelfContainedIntegrationTests
     displayName: Integration Tests
     dependsOn: Build
@@ -129,7 +112,6 @@ stages:
     displayName: 'Release to MyGet'
     dependsOn:
       - UnitTests
-      - DockerIntegrationTests
       - SelfContainedIntegrationTests
     condition: succeeded()
     jobs:
@@ -143,4 +125,9 @@ stages:
             inputs:
               artifact: 'Build'
               path: '$(Build.SourcesDirectory)'
-          - template: nuget/publish-preview-package.yml@templates
+          - task: DotNetCoreCLI@2
+            displayName: 'Push to MyGet.org'
+            inputs:
+              command: 'custom'
+              custom: 'nuget'
+              arguments: 'push src/**/*.nupkg --skip-duplicate --source $(MyGet.SourceUrl) --api-key $(MyGet.ApiKey)'

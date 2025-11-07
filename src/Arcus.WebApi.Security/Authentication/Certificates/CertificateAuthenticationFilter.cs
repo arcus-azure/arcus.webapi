@@ -1,17 +1,18 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Security.Cryptography.X509Certificates;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Primitives;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net;
+using System.Security.Cryptography.X509Certificates;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 namespace Arcus.WebApi.Security.Authentication.Certificates
 {
@@ -157,8 +158,8 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             try
             {
                 var headerValue = headerValues.ToString();
-                if (!String.IsNullOrWhiteSpace(headerValue) 
-                    && headerValue.Trim().Length % 4 == 0 
+                if (!String.IsNullOrWhiteSpace(headerValue)
+                    && headerValue.Trim().Length % 4 == 0
                     && Base64Regex.IsMatch(headerValue))
                 {
                     byte[] rawData = Convert.FromBase64String(headerValue);
@@ -185,7 +186,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
             {
                 return;
             }
-            
+
             var telemetryContext = new Dictionary<string, object>
             {
                 ["EventType"] = "Security",
@@ -195,7 +196,7 @@ namespace Arcus.WebApi.Security.Authentication.Certificates
 
             if (responseStatusCode != null)
             {
-                telemetryContext["StatusCode"] = responseStatusCode.ToString(); 
+                telemetryContext["StatusCode"] = responseStatusCode.ToString();
             }
 
             logger.LogSecurityEvent("Authentication", telemetryContext);

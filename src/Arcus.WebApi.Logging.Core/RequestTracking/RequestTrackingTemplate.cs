@@ -1,14 +1,15 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.Extensions.Primitives;
+
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using Microsoft.Extensions.Primitives;
 
 namespace Arcus.WebApi.Logging.Core.RequestTracking
 {
@@ -78,7 +79,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
 
             StatusCodeRange[] combinedStatusCodeRanges =
                 optionsTrackedStatusCodes
-                    .Select(code => new StatusCodeRange((int) code))
+                    .Select(code => new StatusCodeRange((int)code))
                     .Concat(attributeTrackedStatusCodes ?? Enumerable.Empty<StatusCodeRange>())
                     .Concat(optionsTrackedStatusCodeRanges)
                     .Where(range => range != null)
@@ -116,7 +117,7 @@ namespace Arcus.WebApi.Logging.Core.RequestTracking
             try
             {
                 IDictionary<string, StringValues> headers = GetSanitizedRequestHeaders(requestHeaders, logger);
-                Dictionary<string, string> telemetryContext = headers.ToDictionary(header => header.Key, header => string.Join(",", header.Value));
+                Dictionary<string, string> telemetryContext = headers.ToDictionary(header => header.Key, header => string.Join(",", header.Value.ToString()));
 
                 if (!string.IsNullOrWhiteSpace(requestBody))
                 {

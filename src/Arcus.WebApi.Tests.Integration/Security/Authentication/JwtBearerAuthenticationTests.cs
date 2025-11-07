@@ -1,15 +1,10 @@
-﻿using System;
-using System.IdentityModel.Tokens.Jwt;
-using System.Net;
-using System.Net.Http;
-using System.Security.Claims;
-using System.Text;
-using System.Threading.Tasks;
-using Arcus.Security.Core;
+﻿using Arcus.Security.Core;
 using Arcus.Testing.Logging;
 using Arcus.WebApi.Tests.Integration.Fixture;
 using Arcus.WebApi.Tests.Integration.Security.Authentication.Controllers;
+
 using Bogus;
+
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
@@ -17,6 +12,15 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
+
+using System;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http;
+using System.Security.Claims;
+using System.Text;
+using System.Threading.Tasks;
+
 using Xunit;
 using Xunit.Abstractions;
 
@@ -26,7 +30,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
     [Trait(Constants.TestTraits.Category, Constants.TestTraits.Integration)]
     public class JwtBearerAuthenticationTests
     {
-        private const string IssuerName = "issuer.contoso.com", 
+        private const string IssuerName = "issuer.contoso.com",
                              AudienceName = "audience.contoso.com";
 
         private readonly ILogger _logger;
@@ -49,10 +53,11 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             const string secretName = "JwtSigningKey";
+            var suffix = BogusGenerator.Random.AlphaNumeric(50);
             var options = new TestApiServerOptions()
                 .ConfigureServices(services =>
                 {
-                    services.AddSecretStore(stores => stores.AddInMemory(secretName, expectedSecretValue))
+                    services.AddSecretStore(stores => stores.AddInMemory(secretName, expectedSecretValue + suffix))
                             .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer((jwt, serviceProvider) =>
                             {
@@ -64,10 +69,10 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 .Configure(app => app.UseAuthentication()
                                      .UseAuthorization());
 
-            string tokenText = CreateBearerTokenFromSecret(actualSecretValue);
+            string tokenText = CreateBearerTokenFromSecret(actualSecretValue + suffix);
             await using (var server = await TestApiServer.StartNewAsync(options, _logger))
             {
-                var request = 
+                var request =
                     HttpRequestBuilder.Get(AuthorizedController.GetRoute)
                                       .WithHeader("Authorization", $"Bearer {tokenText}");
 
@@ -86,7 +91,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
         {
             // Arrange
             const string secretName = "JwtSigningKey";
-            string secretValue = BogusGenerator.Random.AlphaNumeric(25);
+            string secretValue = BogusGenerator.Random.AlphaNumeric(50);
 
             var options = new TestApiServerOptions()
                           .ConfigureServices(services =>
@@ -149,7 +154,7 @@ namespace Arcus.WebApi.Tests.Integration.Security.Authentication
                 },
                 expires: DateTime.Now.AddMinutes(30),
                 signingCredentials: credentials);
-            
+
             string tokenText = new JwtSecurityTokenHandler().WriteToken(token);
             return tokenText;
         }
