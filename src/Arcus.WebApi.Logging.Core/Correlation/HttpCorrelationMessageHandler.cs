@@ -1,13 +1,11 @@
-﻿using Arcus.Observability.Correlation;
-using Arcus.Observability.Telemetry.Core;
-
-using Microsoft.Extensions.Logging;
-
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+﻿using Arcus.Observability.Correlation;
+using Arcus.Observability.Telemetry.Core;
+using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
