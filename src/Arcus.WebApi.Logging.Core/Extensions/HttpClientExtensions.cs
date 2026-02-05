@@ -1,9 +1,11 @@
-﻿using System.Threading.Tasks;
-using Arcus.Observability.Correlation;
+﻿using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging.Core.Correlation;
+
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace System.Net.Http
@@ -114,9 +116,9 @@ namespace System.Net.Http
         ///     Thrown when the <paramref name="client"/>, <paramref name="request"/>, <paramref name="correlationInfo"/>, <paramref name="logger"/> is <c>null</c>.
         /// </exception>
         public static async Task<HttpResponseMessage> SendAsync(
-            this HttpClient client, 
-            HttpRequestMessage request, 
-            CorrelationInfo correlationInfo, 
+            this HttpClient client,
+            HttpRequestMessage request,
+            CorrelationInfo correlationInfo,
             ILogger logger,
             Action<HttpCorrelationClientOptions> configureOptions)
         {
@@ -159,8 +161,10 @@ namespace System.Net.Http
                 }
                 finally
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     logger.LogHttpDependency(request, statusCode, measurement, dependencyId, options.TelemetryContext);
-                } 
+#pragma warning restore CS0618 // Type or member is obsolete
+                }
             }
         }
     }

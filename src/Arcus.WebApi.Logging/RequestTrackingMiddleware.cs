@@ -1,14 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
-using Arcus.Observability.Telemetry.Core;
+﻿using Arcus.Observability.Telemetry.Core;
+using Arcus.Observability.Telemetry.Core.Logging;
 using Arcus.WebApi.Logging.Core.RequestTracking;
+
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.Logging;
+
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Arcus.WebApi.Logging
 {
@@ -173,7 +176,7 @@ namespace Arcus.WebApi.Logging
                         if (AllowedToTrackStatusCode(httpContext.Response.StatusCode, attributeTrackedStatusCodes, _logger))
                         {
                             string responseBody = await GetPotentialResponseBodyAsync(httpContext, includeResponseBody);
-                            
+
                             LogRequest(requestBody, responseBody, httpContext, duration);
                         }
 
@@ -228,7 +231,12 @@ namespace Arcus.WebApi.Logging
 
             var operationName = DetermineRequestOperationName(httpContext);
 
-            _logger.LogRequest(httpContext.Request, httpContext.Response, operationName, duration, telemetryContext);
+            var request = httpContext.Request;
+            _logger.LogWarning(MessageFormats.RequestFormat,
+#pragma warning disable CS0618 // Type or member is obsolete
+                RequestLogEntry.CreateForHttpRequest(
+#pragma warning restore CS0618 // Type or member is obsolete
+                    request.Method, request.Scheme, request.Host.ToString(), request.Path, operationName, httpContext.Response.StatusCode, duration.StartTime, duration.Elapsed, telemetryContext));
         }
 
         private static string DetermineRequestOperationName(HttpContext httpContext)

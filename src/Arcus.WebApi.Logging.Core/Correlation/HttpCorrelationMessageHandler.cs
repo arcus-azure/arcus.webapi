@@ -1,11 +1,13 @@
-﻿using System;
+﻿using Arcus.Observability.Correlation;
+using Arcus.Observability.Telemetry.Core;
+
+using Microsoft.Extensions.Logging;
+
+using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Arcus.Observability.Correlation;
-using Arcus.Observability.Telemetry.Core;
-using Microsoft.Extensions.Logging;
 
 namespace Arcus.WebApi.Logging.Core.Correlation
 {
@@ -28,8 +30,8 @@ namespace Arcus.WebApi.Logging.Core.Correlation
         ///     Thrown when the <paramref name="correlationInfoAccessor"/>, <paramref name="options"/>, or <paramref name="logger"/> is <c>null</c>.
         /// </exception>
         public HttpCorrelationMessageHandler(
-            IHttpCorrelationInfoAccessor correlationInfoAccessor, 
-            HttpCorrelationClientOptions options, 
+            IHttpCorrelationInfoAccessor correlationInfoAccessor,
+            HttpCorrelationClientOptions options,
             ILogger<HttpCorrelationMessageHandler> logger)
         {
             _correlationInfoAccessor = correlationInfoAccessor ?? throw new ArgumentNullException(nameof(correlationInfoAccessor), "Requires a HTTP context accessor to retrieve the current HTTP correlation");
@@ -52,7 +54,7 @@ namespace Arcus.WebApi.Logging.Core.Correlation
 
             CorrelationInfo correlation = DetermineCorrelationInfo();
             request.Headers.Add(_options.TransactionIdHeaderName, correlation.TransactionId);
-            
+
             using (var measurement = DurationMeasurement.Start())
             {
                 try
@@ -64,7 +66,9 @@ namespace Arcus.WebApi.Logging.Core.Correlation
                 }
                 finally
                 {
+#pragma warning disable CS0618 // Type or member is obsolete
                     _logger.LogHttpDependency(request, statusCode, measurement, dependencyId, _options.TelemetryContext);
+#pragma warning restore CS0618 // Type or member is obsolete
                 }
             }
         }
@@ -75,8 +79,8 @@ namespace Arcus.WebApi.Logging.Core.Correlation
             if (correlation is null)
             {
                 throw new InvalidOperationException(
-                    "Cannot enrich the HTTP request with HTTP correlation because no HTTP correlation was registered in the application, " 
-                    + "make sure that you register the HTTP correlation services with 'services.AddHttpCorrelation()' " 
+                    "Cannot enrich the HTTP request with HTTP correlation because no HTTP correlation was registered in the application, "
+                    + "make sure that you register the HTTP correlation services with 'services.AddHttpCorrelation()' "
                     + "and that you use the HTTP correlation middleware 'app.UseHttpCorrelation()' in API scenario's");
             }
 
