@@ -1,11 +1,9 @@
-﻿using Arcus.Observability.Correlation;
+using System.Threading.Tasks;
+using Arcus.Observability.Correlation;
 using Arcus.Observability.Telemetry.Core;
 using Arcus.WebApi.Logging.Core.Correlation;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-
-using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace System.Net.Http
